@@ -47,10 +47,11 @@ class MyScatterLayout(ScatterLayout):
 
 class DDTLauncher(App):
 
-    def __init__(self, filterText=None):
+    def __init__(self, opt_car=None, elm=None, savedCAR=None):
         self.eculist = mod_ddt_utils.loadECUlist()
         self.Window_size = mod_globals.windows_size
-        self.filterText = filterText
+
+        self.filterText = opt_car
         global fs
         fs = mod_globals.fontSize
         
@@ -61,7 +62,7 @@ class DDTLauncher(App):
         
         self.ecutree = {}
         
-        self.elm = None
+        self.elm = elm
         self.clock_event = None
         self.scf = 10.0
 
@@ -90,7 +91,6 @@ class DDTLauncher(App):
         super(DDTLauncher, self).__init__()
 
     def build(self):
-        print mod_globals.opt_demo
         p = len(self.carecus)
         if not mod_globals.opt_demo: height_g = fs*4.07*len([v for v in range(len(self.carecus)) if self.carecus[v]['xml']])
         else: height_g = fs*4.07*(p)
@@ -162,13 +162,18 @@ class DDTLauncher(App):
         quitbutton = MyButton(text='<BACK>', size_hint=(1, None), height=fs*4, on_release=self.stop)
         self.OpenECUScreens(ecu)
         popup_init.dismiss()
-        
+
+    def initELM(self, elm):
+        self.elm = elm
+        if self.ecudata['pin'].lower() == 'can':
+            self.elm.init_can()
+            self.elm.set_can_addr(self.ecudata['dst'], self.ecudata)
+        else:
+            self.elm.init_iso()
+            self.elm.set_iso_addr(self.ecudata['dst'], self.ecudata)
+        self.elm.start_session(self.ecudata['startDiagReq'])
+
     def OpenECUScreens(self, ce):
-        self.decu = None
-        try:
-            self.enableELM()
-        except:
-            return
         if not mod_globals.opt_demo and self.var_dump:
             mod_globals.opt_dump = True
         else:
@@ -221,7 +226,7 @@ class DDTLauncher(App):
                 if ce['xml'][:-4] in ec['xml']:
                     ec['dump'] = ce['dump']
             self.renewEcuList()
-            self.SaveBtnClick(self.label.text)
+            self.SaveBtnClick(self.label.text, None)
 
         if not mod_db_manager.file_in_ddt(self.decu.ecufname):
             return None
@@ -253,25 +258,6 @@ class DDTLauncher(App):
         roots.add_widget(box)
         self.Layout.add_widget(roots)
         self.Layout.add_widget(quitbutton)
-
-    def DDTScreen(self, xdoc):
-        self.Screens = {}
-        self.screens = {}
-        categs = xdoc.findall ("ns0:Target/ns1:Categories/ns1:Category", mod_globals.ns)
-        if len(categs):
-            for cat in categs:
-                catname = cat.attrib["Name"]
-                self.screens[catname] = []
-                screens = cat.findall ("ns1:Screen", mod_globals.ns)
-                if len(screens):
-                    for scr in screens:
-                        scrname = scr.attrib["Name"]
-                        self.screens[catname].append(scrname)
-                        self.Screens[scrname] = scr
-        self.screens['ddt_all_commands'] = []
-        for req in sorted(self.decu.requests.keys()):
-            if self.decu.requests[req].SentBytes[:2] in ['21','22']:
-                self.screens['ddt_all_commands'].append(req)
 
     def res_show_screen(self, x, data):
         x = x.text
@@ -583,11 +569,6 @@ class DDTLauncher(App):
     def ScanAllBtnClick(self):
         self.v_proj = self.filterText.split(':')[0].strip()
         self.addr = mod_ddt_utils.ddtAddressing(self.v_proj, self.eculist)
-        try:
-            self.enableELM()
-        except:
-            return
-        
         ecus = {}
         for key, val in self.addr.alist.items():
             if len(val['xml']) == 1:
@@ -603,7 +584,6 @@ class DDTLauncher(App):
         EventLoop.idle()
         i = 0
         self.detectedEcus = {}
-        
         x = 0
         p1=0
         self.back_can = ''
@@ -633,13 +613,21 @@ class DDTLauncher(App):
                 ce['undef'] = self.detectedEcus[ce['addr']]['undef']
                 ce['dump'] = self.detectedEcus[ce['addr']]['dump']
                 ce['prot'] = self.detectedEcus[ce['addr']]['prot']
-                self.renewEcuList()
         if self.v_vin=='' and len(vins.keys()):
             self.v_vin = (max(vins.iteritems(), key=operator.itemgetter(1))[0])
         EventLoop.window.remove_widget(popup_scan)
         popup_scan.dismiss()
         base.stopTouchApp()
-        EventLoop.window.canvas.clear()        
+        EventLoop.window.canvas.clear()
+        mod_globals.opt_scan = False
+        self.renewEcuList()
+        if self.v_vin:
+            self.SaveBtnClick(self.v_vin, None)
+            mod_globals.savedCAR = 'savedCAR_'+self.v_vin+'.csv'
+        else:
+            name = self.filterText.replace(':', '_').replace(' ', '_')
+            self.SaveBtnClick(name, None)
+            mod_globals.savedCAR = 'savedCAR_'+name+'.csv'
 
     def cheks(self, Addr, pro, i, x, vins, iso):
         if pro[1].startswith('CAN'):
@@ -651,7 +639,7 @@ class DDTLauncher(App):
         EventLoop.idle()
         self.setEcuAddress({'addr':Addr, 'prot':pro[1], 'iso8':iso})
         StartSession, DiagVersion, Supplier, Version, Soft, Std, VIN = mod_scan_ecus.readECUIds(self.elm)
-        #print mod_scan_ecus.readECUIds(self.elm)
+        if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': return
         xml = mod_ddt_ecu.ecuSearch(self.v_proj, Addr, DiagVersion, Supplier, Soft, Version, self.eculist, interactive = False)
         if xml:
             if isinstance(xml, list): xml = xml[0]
@@ -747,10 +735,6 @@ class DDTLauncher(App):
         self.start = Clock.schedule_once(self.update_values, 0.02)
         self.update_dInputs()
 
-    def update_dInputs(self):
-        for i in self.iValueNeedUpdate.keys():
-            self.iValueNeedUpdate[i] = True
-
     def buttonPressed(self, btn, key):
         self.start = False
         layout = GridLayout(cols=1, padding=10, spacing=10, size_hint=(1, 1))
@@ -823,38 +807,6 @@ class DDTLauncher(App):
                 mod_globals.opt_si = True
             ecudata['pin'] = 'iso'
             self.elm.set_iso_addr(ce['addr'], ecudata)
-
-    def enableELM(self):
-        if self.elm != None:
-            try:
-                self.elm.port.hdr.close()
-                del(self.elm)
-                self.elm = None
-                gc.collect()
-            except:
-                pass
-        self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
-        """try:
-            self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
-        except:
-            labelText = '''
-                Could not connect to the ELM.
-
-                Possible causes:
-                - Bluetooth is not enabled
-                - other applications are connected to your ELM e.g Torque
-                - other device is using this ELM
-                - ELM got unpaired
-                - ELM is read under new name or it changed its name
-
-                Check your ELM connection and try again.
-            '''
-            lbltxt = Label(text=labelText, font_size=mod_globals.fontSize)
-            popup_load = Popup(title='ELM connection error', content=lbltxt, size=(800, 800), auto_dismiss=True, on_dismiss=exit)
-            popup_load.open()
-            base.runTouchApp()"""
-        if mod_globals.opt_speed < mod_globals.opt_rate and not mod_globals.opt_demo:
-            self.elm.port.soft_boudrate(mod_globals.opt_rate)
 
     def getSelectedECU(self, xml):
         if len(self.ecutree)==0:
@@ -936,6 +888,7 @@ class DDTLauncher(App):
         self.dv_addr = inst
         layout = GridLayout(cols=1, spacing=5, size_hint=(1, None))
         layout.bind(minimum_height=layout.setter('height'))
+        layout.add_widget(MyButton(text='CLEAR', size_hint=(1, None), id=inst.id, height=fs*4, on_press=lambda i,k='',v='': self.select_xml(i,k,v)))
         for k, v in self.addr.alist[inst.id]['xml'].iteritems():
             btn = MyButton(text=k, size_hint=(1, None), id=inst.id, height=fs*4, on_press=lambda i,k=k,v=v: self.select_xml(i,k,v))
             layout.add_widget(btn)
@@ -964,6 +917,7 @@ class DDTLauncher(App):
         label1 = MyLabel(text='Name savedCAR:', size_hint=(0.5, 1), bgcolor=(0,0.5,0,1))
         lab = mod_globals.savedCAR[9:-4]
         if self.v_vin: lab = self.v_vin
+        if not lab: lab = self.filterText
         self.labels = TextInput(text=lab, size_hint=(0.6, None), padding=[0, fs/1.5], font_size=fs, height=3*fs)
         self.savedECU = MyButton(text='Save', size_hint=(0.5, 1), on_press=lambda args: self.SaveBtnClick(self.labels.text))
         glay.add_widget(label1)
@@ -974,6 +928,25 @@ class DDTLauncher(App):
 
     def finish(self, instance):
         exit()
+
+    def DDTScreen(self, xdoc):
+        self.Screens = {}
+        self.screens = {}
+        categs = xdoc.findall ("ns0:Target/ns1:Categories/ns1:Category", mod_globals.ns)
+        if len(categs):
+            for cat in categs:
+                catname = cat.attrib["Name"]
+                self.screens[catname] = []
+                screens = cat.findall ("ns1:Screen", mod_globals.ns)
+                if len(screens):
+                    for scr in screens:
+                        scrname = scr.attrib["Name"]
+                        self.screens[catname].append(scrname)
+                        self.Screens[scrname] = scr
+        self.screens['ddt_all_commands'] = []
+        for req in sorted(self.decu.requests.keys()):
+            if self.decu.requests[req].SentBytes[:2] in ['21','22']:
+                self.screens['ddt_all_commands'].append(req)
 
     def CarDoubleClick(self):
         self.addr = mod_ddt_utils.ddtAddressing(self.filterText.split(':')[0].strip(), self.eculist)
@@ -1019,7 +992,7 @@ class DDTLauncher(App):
             else:
                 self.ecutree.append(dict(text=ecu['addr'], values=columns, tag=''))
 
-    def SaveBtnClick(self, name):
+    def SaveBtnClick(self, name, pop=True):
         filename = os.path.join(mod_globals.user_data_dir, './savedCAR_'+name+'.csv')
         with open( filename, 'w') as fout:
             car = ['car',self.v_proj, self.v_addr, self.v_pcan, self.v_mcan, self.v_vin]
@@ -1034,9 +1007,8 @@ class DDTLauncher(App):
                      ecu['ses']]
                 fout.write(unicode(';'.join(e)).encode("ascii", "ignore") + '\n')
         fout.close()
-
         copyfile(filename, os.path.join(mod_globals.user_data_dir, "./savedCAR_prev.csv"))
-        self.MyPopup(content='Save file ECUS name savedCAR_'+name+'.csv', height=fs*30)
+        if pop: self.MyPopup(content='Save file ECUS name savedCAR_'+name+'.csv', height=fs*30)
         return
 
     def LoadCarFile(self, filename):
@@ -1068,6 +1040,7 @@ class DDTLauncher(App):
                 ecu['dump'] = li[5]
                 ecu['ses']  = li[6]
                 self.carecus.append(ecu)
+        self.addr = mod_ddt_utils.ddtAddressing(self.v_proj, self.eculist)
         self.renewEcuList()
 
     def make_box_params(self, i, v):
@@ -1125,9 +1098,9 @@ class DDTLauncher(App):
         else:
             btn.bind(on_press=popup.dismiss)
 
-def DDT_START(filterText):
+def DDT_START(filterText, elm=None):
     while 1:
-        root = DDTLauncher(filterText)
+        root = DDTLauncher(filterText, elm)
         root.run()
 
 class MyLabel_scr(Label):
@@ -1306,10 +1279,7 @@ class DDTECU():
             pass
     
     def setELM(self, elm):
-        if self.elm!=None:
-            del(self.elm)
-        if elm!=None:
-            self.elm = elm
+        self.elm = elm
 
     def translate(self, data):
         
@@ -1446,127 +1416,6 @@ class DDTECU():
             value = hst
 
         return value
-
-    def getValue(self, data, auto=True, request=None, responce=None):
-        hv = self.getHex(data, auto, request, responce)
-
-        if hv == mod_globals.none_val:
-            return mod_globals.none_val
-        
-        if data in self.datas.keys():
-            d = self.datas[data]
-        else:
-            return hv
-        
-        if len(d.List.keys()):
-            listIndex = int(hv,16)
-            if listIndex in d.List.keys():
-                hv = hex(listIndex)[2:]
-                return hv+':'+d.List[listIndex]
-            else:
-                return hv
-
-        if d.Scaled:
-            p = int(hv,16)
-            if d.signed and p>(2**(d.BitsCount-1)-1):
-                p = p-2**d.BitsCount
-            res =(p*float(d.Step)+float(d.Offset))/float(d.DivideBy)
-            if len(d.Format) and '.' in d.Format:
-                acc = len(d.Format.split('.')[1])
-                fmt = '%.'+str(acc)+'f'
-                res = fmt%(res)
-            res = str(res)
-            if res.endswith('.0'): res = res[:-2]
-            return res+' '+d.Unit
-        
-        if d.BytesASCII:
-            res = hv.decode('hex')
-            
-            if not all(c in string.printable for c in res): 
-                res = hv
-            return res 
-
-        return hv
-
-    def getHex(self, data, auto=True, request=None, responce=None):
-        if data in self.datas.keys():
-            d = self.datas[data]
-        else:
-            if data not in self.requests.keys():
-                return mod_globals.none_val
-
-        if request==None:
-            if data in self.req4data.keys() and self.req4data[data] in self.requests.keys():
-                r = self.requests[self.req4data[data]]
-            else:
-                if data in self.requests.keys():
-                    r = self.requests[data]
-                else: 
-                    return mod_globals.none_val
-        else:
-            r = request
-        
-        if auto and(r.ManuelSend or len(r.SentDI.keys())>0) and data not in r.SentDI.keys():
-            return mod_globals.none_val
-            
-        if(r.SentBytes[:2] not in AllowedList) and not mod_globals.opt_exp and data not in r.SentDI.keys(): 
-            return mod_globals.none_val
-
-        if responce==None:
-            resp = self.elmRequest(r.SentBytes)
-        else:
-            resp = responce
-
-        if data not in self.datas.keys():
-            return resp
-        
-        resp = resp.strip().replace(' ','')
-        if not all(c in string.hexdigits for c in resp): resp = ''
-        resp = ' '.join(a+b for a,b in zip(resp[::2], resp[1::2]))
-            
-        if data in r.ReceivedDI.keys():
-            littleEndian = True if r.ReceivedDI[data].Endian=="Little" else False
-            sb = r.ReceivedDI[data].FirstByte - 1 
-            sbit = r.ReceivedDI[data].BitOffset
-        else:
-            littleEndian = True if r.SentDI[data].Endian=="Little" else False
-            sb = r.SentDI[data].FirstByte - 1 
-            sbit = r.SentDI[data].BitOffset
-                    
-        bits = d.BitsCount
-        bytes =(bits+sbit-1)/8 + 1
-        if littleEndian:
-            rshift = sbit
-        else:
-            rshift =((bytes+1)*8 -(bits+sbit))%8
-        
-        if(sb*3+bytes*3-1)>(len(resp)):
-            return mod_globals.none_val
-        
-        hexval = resp[sb*3:(sb+bytes)*3-1]
-        hexval = hexval.replace(" ","")
-
-        val =(int(hexval,16)>>int(rshift))&(2**bits-1)
-
-            
-        hexval = hex(val)[2:]
-        if hexval[-1:].upper()=='L':
-            hexval = hexval[:-1]
-        if len(hexval)%2:
-            hexval = '0'+hexval
-
-        if len(hexval)/2 < d.BytesCount:
-            hexval = '00'*(d.BytesCount-len(hexval)/2) + hexval
-
-        if littleEndian:
-            a = hexval
-            b = ''
-            if not len(a) % 2:
-                for i in range(0,len(a),2):
-                    b = a[i:i+2]+b
-                hexval = b
-        
-        return hexval
 
     def elmRequest(self, req, delay='0', positive='', cache=True):
         if req.startswith('10'):

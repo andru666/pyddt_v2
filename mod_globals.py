@@ -94,7 +94,6 @@ class Settings:
         global opt_port
         global opt_cfc0
         global screen_orient
-        global opt_demo
         global opt_csv
         global opt_dev_address
         self.load()
@@ -106,7 +105,6 @@ class Settings:
         opt_port = self.port
         opt_cfc0 = self.cfc
         screen_orient = self.screen_orient
-        opt_demo = self.demo
         opt_csv = self.csv
         opt_dev_address = self.dev_address
 
@@ -135,7 +133,6 @@ class Settings:
         self.port = opt_port
         self.cfc = opt_cfc0
         self.screen_orient = screen_orient
-        self.demo = opt_demo
         self.csv = opt_csv
         self.dev_address = opt_dev_address
         with open('settings.p', 'wb') as f:

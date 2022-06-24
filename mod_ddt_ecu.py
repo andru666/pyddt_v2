@@ -876,40 +876,6 @@ class DDTECU():
 
         return equ
 
-def minDist(a, b):
-    """ calculate distance between strings """
-    """ a - readen value                                     """
-    """ b - pattern from eculist                     """
-
-    d = 0
-    if a == b:
-        return d
-
-    try:
-        d = abs(int(a, 16) - int(b, 16))
-        return d
-    except:
-        d = 0
-
-    l = min(len(a), len(b))
-    for i in range(0, l):
-        if b[i] != '?':
-            d = d + abs(ord(a[i]) - ord(b[i]))
-
-    return d
-
-def srav(i, ai, val):
-    if len(i) == 3:
-        if ai[i[0]] == val[i[0]] and  ai[i[1]] == val[i[1]] and  ai[i[2]] == val[i[2]]:
-            return True
-        else:
-            return False
-    if len(i) == 2:
-        if ai[i[0]] == val[i[0]] and  ai[i[1]] == val[i[1]]:
-            return True
-        else:
-            return False
-
 def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, interactive = True):
     if Address not in el.keys():
         return []
@@ -919,26 +885,17 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, in
         print Address, '#', pyren_encode(ela['FuncName'])
     t = ela['targets']
     cand = {}
-    min = 0xFFFFFFFF
-    kOther = ''
-    minOther = 0xFFFFFFFF
 
-    val = {'DiagVersion':DiagVersion, 'Supplier':Supplier, 'Version':Version, 'Soft': Soft}
-    
-    if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': return
     for k in t.keys():
-        #print k
         for ai in t[k]['AutoIdents']:
             ai['DiagVersion'], ai['Supplier'], ai['Soft'], ai['Version']
             h = ai['DiagVersion']+ai['Supplier']+ai['Soft']+ai['Version']
             if DiagVersion == ai['DiagVersion'] and Supplier == ai['Supplier'] and Soft == ai['Soft'] and Version == ai['Version']:
-                cand[h] = k
+                return k
             elif Supplier == ai['Supplier'] and Soft == ai['Soft'] and Version == ai['Version']:
                 cand[h] = k
             elif Supplier == ai['Supplier'] and Soft == ai['Soft']:
                 cand[h] = k
-            
-    #print len(cand)
     if len(cand) > 0:
         if DiagVersion+Supplier+Soft+Version in cand.keys():
             return cand[DiagVersion+Supplier+Soft+Version]
@@ -969,7 +926,7 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, in
                                 return k
                         if int(v[-4:], 16) == V:
                             return k
-            
+
 def minD(value, items):
     found = items[0]
     for item in items:

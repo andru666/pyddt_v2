@@ -45,7 +45,6 @@ def get_devices():
         iterator = sorted(list(list_ports.comports()))
         for port, desc, hwid in iterator:
             devs[desc] = port
-
         return devs
     
     paired_devices = BluetoothAdapter.getDefaultAdapter().getBondedDevices().toArray()

@@ -17,7 +17,7 @@ if platform != 'android':
     from kivy.core.window import Window
     Window.size = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 from mod_db_manager import get_zip
-
+from mod_elm import ELM
 import mod_globals, mod_ddt_utils, mod_ddt
 
 mod_globals.os = platform
@@ -99,7 +99,7 @@ def my_excepthook(excType, excValue, tb):
         string += m
 
     error = TextInput(text=string)
-    popup = Popup(title='Crash', content=error, size=(800, 800), size_hint=(None, None), auto_dismiss=True, on_dismiss=exit)
+    popup = Popup(title='Crash', content=error, size=(Window.size[0]*0.9, Window.size[1]*0.9), size_hint=(None, None), auto_dismiss=True, on_dismiss=exit)
     popup.open()
     base.runTouchApp()
     exit(2)
@@ -123,6 +123,7 @@ class PYDDT(App):
         self.button = {}
         self.textInput = {}
         self.ptree = {}
+        self.elm = None
         super(PYDDT, self).__init__()
         Window.bind(on_keyboard=self.key_handler)
 
@@ -169,9 +170,8 @@ class PYDDT(App):
         return root
 
     def scanALLecus(self, instance):
-        self.finish(instance.id)
         mod_globals.opt_scan = True
-        #mod_globals.opt_car = 'x64 : Espace IV'
+        self.finish(instance.id)
         label = Label(text='Not select car')
         popup = Popup(title='ERROR', content=label, size=(400, 400), size_hint=(None, None))
         if mod_globals.opt_car != 'ALL CARS':
@@ -186,22 +186,19 @@ class PYDDT(App):
             popup_init.dismiss()
             base.stopTouchApp()
             base.EventLoop.window.canvas.clear()
-            mod_ddt.DDTLauncher(mod_globals.opt_car).run()
+            mod_ddt.DDT_START(mod_globals.opt_car, self.elm)
         else:
             popup.open()
             return
     
     def OpenEcu(self, instance):
-        self.finish(instance.id)
         if instance.id == 'demo': 
             mod_globals.opt_demo = True
+        self.finish(instance.id)
         label = Label(text='Not select car or savedCAR')
         popup = Popup(title='ERROR', content=label, size=(400, 400), size_hint=(None, None))
-        #mod_globals.opt_car = 'x06 : Twingo'
-        #mod_globals.savedCAR = 'savedCAR_x81.csv'
         if mod_globals.opt_car != 'ALL CARS' or mod_globals.savedCAR != 'Select':
             instance.background_color= (0,1,0,1)
-            self.stop()
             if mod_globals.opt_demo:
                 lbltxt = Label(text='Loading in DEMO', font_size=20)
             elif mod_globals.savedCAR != 'Select':
@@ -217,7 +214,7 @@ class PYDDT(App):
             popup_init.dismiss()
             base.stopTouchApp()
             base.EventLoop.window.canvas.clear()
-            mod_ddt.DDT_START(mod_globals.opt_car)
+            mod_ddt.DDT_START(mod_globals.opt_car, self.elm)
         else:
             popup.open()
             return
@@ -269,7 +266,29 @@ class PYDDT(App):
         except:
             mod_globals.fontSize = 20
         mod_globals.opt_car = self.carbutton.text
-        if mod_globals.opt_car != 'ALL CARS'and mod_globals.savedCAR != 'Select':self.stop()
+        if mod_globals.opt_car != 'ALL CARS' or mod_globals.savedCAR != 'Select':
+            self.stop()
+            try:
+                self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
+            except:
+                labelText = '''
+                    Could not connect to the ELM.
+
+                    Possible causes:
+                    - Bluetooth is not enabled
+                    - other applications are connected to your ELM e.g Torque
+                    - other device is using this ELM
+                    - ELM got unpaired
+                    - ELM is read under new name or it changed its name
+
+                    Check your ELM connection and try again.
+                '''
+                lbltxt = Label(text=labelText, font_size=mod_globals.fontSize)
+                popup_load = Popup(title='ELM connection error', content=lbltxt, size=(Window.size[0]*0.9, Window.size[1]*0.9), auto_dismiss=True, on_dismiss=exit)
+                popup_load.open()
+                base.runTouchApp()
+                exit(2)
+                return
 
     def find_in_car(self, ins):
         glay = GridLayout(cols=1, spadding=20, size_hint=(1, 1))
