@@ -351,7 +351,7 @@ class DDTLauncher(App):
         self.out = False
         self.DValue = {}
         self.IValue = {}
-        self.LValue = {}
+        self.LValue = []
         self.BValue = {}
         self.SValue = {}
 
@@ -398,9 +398,9 @@ class DDTLauncher(App):
         box = GridLayout(cols=1, spacing=3, size_hint=(1, None), height=max_y)
 
         if len(self.LValue) > 0:
-            for l in self.LValue:
-                xColor, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = self.LValue[l]
-                self.flayout.add_widget(MyLabel_scr(text=l, id=l, halign=halign, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, valign=xAlignment, bgcolor=self.hex_to_rgb(xColor),  size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrHeight+xrTop)/self.scf)))
+            for l in sorted(self.LValue, key=lambda k: k['sq'], reverse=True):
+                xText, xColor, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = l['values']
+                self.flayout.add_widget(MyLabel_scr(text=xText, id=xText, halign=halign, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, valign=xAlignment, bgcolor=self.hex_to_rgb(xColor),  size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrHeight+xrTop)/self.scf)))
         
         if len(self.DValue) > 0:
             for d in self.DValue:

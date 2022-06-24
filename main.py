@@ -221,7 +221,7 @@ class PYDDT(App):
 
     def make_savedEcus(self):
         ecus = sorted(glob.glob(os.path.join(mod_globals.user_data_dir, 'savedCAR_*.csv')))
-        toggle = Button(text='Load savedCAR', id='open', size_hint=(1, None), height=(fs * 3,  'dp'), on_press=lambda bt:self.OpenEcu(bt))
+        toggle = Button(text='Load savedCAR', id='open', size_hint=(0.3, None), height=(fs * 3,  'dp'), on_press=lambda bt:self.OpenEcu(bt))
         self.ecus_dropdown = DropDown(size_hint=(1, None), height=(fs,  'dp'))
         glay = MyGridLayout(cols=2, padding=(fs/2,  'dp'), height=(fs * 4,  'dp'), spadding=20, size_hint=(1, None))
         for s_ecus in ecus:
@@ -229,7 +229,7 @@ class PYDDT(App):
             btn= Button(text=s_ecus, size_hint_y=None, height=(fs * 3,  'dp'))
             btn.bind(on_release=lambda btn: self.ecus_dropdown.select(btn.text))
             self.ecus_dropdown.add_widget(btn)
-        self.ecusbutton = Button(text='Select', size_hint=(1, None), height=(fs * 3,  'dp'))
+        self.ecusbutton = Button(text='Select', size_hint=(0.7, None), height=(fs * 3,  'dp'))
         self.ecusbutton.bind(on_release=self.ecus_dropdown.open)
         self.ecus_dropdown.bind(on_select=lambda instance, x: setattr(self.ecusbutton, 'text', x))
         glay.add_widget(toggle)

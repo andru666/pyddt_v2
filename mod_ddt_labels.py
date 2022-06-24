@@ -49,4 +49,4 @@ class ecu_labels:
                 else:
                     xAlignment = 'top'
                     halign = 'left'
-                LValue[xText] = [xColor, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign]
+                LValue.append({'sq':lab['sq'], 'values':[xText, xColor, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign]})
