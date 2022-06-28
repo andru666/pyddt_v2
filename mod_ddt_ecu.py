@@ -252,8 +252,6 @@ class DDTECU():
                     self.ecufname = 'ecus/'+fname
                     if mod_db_manager.file_in_ddt(self.ecufname):
                         break
-                    else:
-                        print "No such file :",self.ecufname
                 else:
                     return
                 
@@ -421,7 +419,6 @@ class DDTECU():
         else:
             if data not in self.requests.keys():
                 return mod_globals.none_val
-        print request
         if request==None:
             if data in self.req4data.keys() and self.req4data[data] in self.requests.keys():
                 r = self.requests[self.req4data[data]]
@@ -881,8 +878,6 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, in
         return []
     
     ela = el[Address]
-    if interactive:
-        print Address, '#', pyren_encode(ela['FuncName'])
     t = ela['targets']
     cand = {}
 

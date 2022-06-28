@@ -65,7 +65,7 @@ class DDTLauncher(App):
         self.elm = elm
         self.clock_event = None
         self.scf = 10.0
-
+        
         self.v_proj = ''
         self.v_addr = ''
         self.v_vin = ''
@@ -144,23 +144,22 @@ class DDTLauncher(App):
         root.add_widget(box)
         self.Layout.add_widget(box111)
         self.Layout.add_widget(root)
-        quitbutton = MyButton(text='<QUIT>', size_hint=(1, None), height=fs*4, on_release=self.finish)
+        quitbutton = MyButton(text='<QUIT>', size_hint=(1, None), height=fs*4, on_release=exit)
         self.Layout.add_widget(quitbutton)
         return self.Layout
 
     def openECUS(self, bt):
+        self.lbltxt = Label(text='Open Screens', title_size=fs)
+        self.title = 'Loading'
+        popup_init = Popup(title='Loading', content=self.lbltxt, size=(400, 400), size_hint=(None, None))
+        popup_init.open()
+        EventLoop.idle()
         ecu = self.getSelectedECU(bt.text)
-
         if ecu==None or ecu['xml']=='':
             self.MyPopup(content='Selected ECU is undefined. Please scan it first.', stop=1)
             return None
-        lbltxt = Label(text='Open Screens', font_size=20)
-        popup_init = Popup(title='Loading', content=lbltxt, size=(400, 400), size_hint=(None, None))
-        popup_init.open()
-        
-        self.Layout.clear_widgets()
-        quitbutton = MyButton(text='<BACK>', size_hint=(1, None), height=fs*4, on_release=self.stop)
         self.OpenECUScreens(ecu)
+        EventLoop.window.remove_widget(popup_init)
         popup_init.dismiss()
 
     def initELM(self, elm):
@@ -214,19 +213,32 @@ class DDTLauncher(App):
                 if (xfn + '.') in f:
                     dumpIs = True
                     break
-        os.path.join(mod_globals.dumps_dir, )
         if mod_globals.opt_demo:            
             if len(ce['dump'])==0:
+                self.lbltxt = Label(text='Loading dump', title_size=fs)
+                popup_init = Popup(title='Loading', content=self.lbltxt, size=(400, 400), size_hint=(None, None))
+                popup_init.open()
+                EventLoop.idle()
                 self.decu.loadDump()
+                popup_init.dismiss()
             else:
+                self.lbltxt = Label(text='Loading dump', title_size=fs)
+                popup_init = Popup(title='Loading', content=self.lbltxt, size=(400, 400), size_hint=(None, None))
+                popup_init.open()
                 self.decu.loadDump(os.path.join(mod_globals.dumps_dir, ce['dump']))
+                popup_init.dismiss()
         elif mod_globals.opt_dump:
+            self.lbltxt = Label(text='Save dump', title_size=fs)
+            popup_init = Popup(title='Loading', content=self.lbltxt, size=(400, 400), size_hint=(None, None))
+            popup_init.open()
+            EventLoop.idle()
             ce['dump'] = self.guiSaveDump(self.decu)
             for ec in self.carecus:
                 if ce['xml'][:-4] in ec['xml']:
                     ec['dump'] = ce['dump']
             self.renewEcuList()
-            self.SaveBtnClick(self.label.text, None)
+            self.SaveBtnClick(self.labels.text, None)
+            popup_init.dismiss()
 
         if not mod_db_manager.file_in_ddt(self.decu.ecufname):
             return None
@@ -236,6 +248,7 @@ class DDTLauncher(App):
         self.show_screen(ce['xml'], self.screens)
 
     def show_screen(self, xml, data):
+        self.make_box = False
         self.start = False
         self.clock_event = ''
         box = GridLayout(cols=1, spacing=3, size_hint=(1, None), height=fs*4*(len(data) + 2))
@@ -274,7 +287,7 @@ class DDTLauncher(App):
         W = W*self.flayout.scale
         if W*self.flayout.scale > self.Window_size[0]: W = self.Window_size[0]
         for o in optionList:
-            btn = Button(text=o, id=o, font_size=int(f)*self.flayout.scale, size_hint=(None,None), size=(W,H*self.flayout.scale))
+            btn = MyButton(text=o, id=o, font_size=int(f)*self.flayout.scale, size_hint=(None,None), size=(W,H*self.flayout.scale))
             btn.bind(on_release=lambda btn = btn, i = i: self.select_option(btn.text, i))
             self.dropdowns[i].add_widget(btn)
         self.dropdowns[i].bind(on_select=lambda instance, x: setattr(self.triggers[i], 'text', x))
@@ -299,7 +312,10 @@ class DDTLauncher(App):
             return
         self.decu.elm.clear_cache()
         self.elm.clear_cache()
-        params = self.get_ecu_values()
+        try:
+            params = self.get_ecu_values()
+        except:
+            return
         for key, val in params.iteritems():
             if key in self.dLabels.keys():
                 self.dLabels[key].text = val
@@ -317,7 +333,7 @@ class DDTLauncher(App):
     def get_ecu_values(self):
         dct = {}
         if len(self.dValue):
-            for d in self.dValue:
+            for d in self.dValue.keys():
                 if self.dValue[d]['request'] not in self.REQ: continue
                 EventLoop.window._mainloop()
                 val = get_value(self.dValue[d], self.decu, self.elm)
@@ -328,18 +344,28 @@ class DDTLauncher(App):
                 dct[d] = val
         return dct
 
+    def change_screen(self, dt=False):
+        if self.make_box:
+            self.make_box = False
+            self.update_dInputs()
+            self.loadScreen(self.currentscreen)
+        else:
+            self.update_dInputs()
+            self.make_box = True
+            self.loadScreen(self.currentscreen)
+    
     def loadScreen(self, scr):
         self.Layout.clear_widgets()
         self.start = True
-        self.startStopButton = Button(text='', size_hint=(1, 1))
+        self.startStopButton = MyButton(text='', size_hint=(1, 1))
         if self.start:
             self.startStopButton.text = 'STOP'
         else:
             self.startStopButton.text = 'START'
+        self.currentscreen = scr
         
         if scr in self.Screens.keys():
             scr = self.Screens[scr]
-        self.currentscreen = scr
         if type(scr) is str or type(scr) is unicode:
             self.loadSyntheticScreen(scr)
             return
@@ -360,7 +386,7 @@ class DDTLauncher(App):
         self.oLabels = {}
         self.dLabels = {}
         self.iLabels = {}
-
+        self.bValue = {}
         self.dValue = {}
         self.iValue = {}
         self.iValueNeedUpdate = {}
@@ -376,13 +402,13 @@ class DDTLauncher(App):
         self.dropdowns = {}
         self.triggers = {}
         
-        box1 = GridLayout(cols=2, size_hint=(1, None), height=fs*3)
-        box2 = GridLayout(cols=1, size=(self.Window_size[0], self.Window_size[1]-fs*3), size_hint=(None, None))
+        box1 = GridLayout(cols=3, size_hint=(1, None), height=fs*3)
+        box2 = GridLayout(cols=1, spacing=5, padding=5, size=(self.Window_size[0], self.Window_size[1]-fs*3), size_hint=(None, None))
         box1.add_widget(self.startStopButton)
         box1.add_widget(MyButton(text='CLOSE', size_hint=(1, 1), on_release=lambda x:self.show_screen(x, self.screens)))
+        box1.add_widget(MyButton(text='Change view', size_hint=(1, 1), on_release=self.change_screen))
         self.Layout.add_widget(box1)
         self.startStopButton.bind(on_release=lambda args:self.startStop())
-        self.flayout = MyScatterLayout(size_hint=(None, None), bgcolor=self.hex_to_rgb(self.scr_c), size=self.size_screen, do_rotation=False )
         if scr_w > scr_h:
             src = (scr_w*1.0 / scr_h)
         else:
@@ -395,77 +421,131 @@ class DDTLauncher(App):
         inputs = ecu_inputs(self.IValue, scr)
         sends = ecu_sends(self.sReq_lst, scr)
         max_y = fs*3*(len(self.DValue)+len(self.IValue))
-        box = GridLayout(cols=1, spacing=3, size_hint=(1, None), height=max_y)
-
-        if len(self.LValue) > 0:
-            for l in sorted(self.LValue, key=lambda k: k['sq'], reverse=True):
-                xText, xColor, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = l['values']
-                self.flayout.add_widget(MyLabel_scr(text=xText, id=xText, halign=halign, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, valign=xAlignment, bgcolor=self.hex_to_rgb(xColor),  size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrHeight+xrTop)/self.scf)))
-        
-        if len(self.DValue) > 0:
-            for d in self.DValue:
-                xText, xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = self.DValue[d]
-                self.dReq[xReq] = self.decu.requests[xReq].ManuelSend
-                if xText+'_'+xReq not in self.dValue.keys():
-                    self.dValue[xText+'_'+xReq] = {'value':mod_globals.none_val, 'name':xText, 'request':xReq}
-                if xWidth/self.scf > 40:
-                    label = MyLabel_scr(text=xText, id=d, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, halign='left', bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
-                    self.flayout.add_widget(label)
-                label_D = MyLabel_scr(text=self.dValue[xText+'_'+xReq]['value'], id=d, valign=xAlignment, bgcolor=(0, 1, 0, 1), color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
-                self.dLabels[xText+'_'+xReq] = label_D
-                self.flayout.add_widget(label_D)
-        
-        if len(self.BValue) > 0:
-            for b in self.BValue:
-                xText, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = self.BValue[b]
-                button = Button(text=xText, text_size=(xrWidth/self.scf, xrHeight/self.scf), valign='middle', id=b, color=self.hex_to_rgb(xfColor), bold=xfBold, halign=halign, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
-                button.bind(on_release = lambda btn=xText, key=b: self.buttonPressed(btn.text, btn.id))
-                self.flayout.add_widget(button)
-        
-        if len(self.IValue) > 0:
-            for i in self.IValue:
-                xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = self.IValue[i]
-                if xWidth/self.scf > 40:
-                    label = MyLabel_scr(text=i, id=i, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, halign='left', font_size=xfSize*src, bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
-                    self.flayout.add_widget(label)
-                if i+'_'+xReq not in self.iValue.keys():
-                    if i+'_'+xReq not in self.dValue.keys():
-                        self.dValue[i+'_'+xReq] = {'value':mod_globals.none_val, 'name':i, 'request':xReq}
-                    if i in self.decu.req4data.keys() and self.decu.req4data[i] in self.decu.requests.keys():
-                        self.dReq[self.decu.req4data[i]] = self.decu.requests[self.decu.req4data[i]].ManuelSend
-                    self.iValue[i+'_'+xReq] = {'value':'', 'name':i, 'request':xReq}
-                    self.iValueNeedUpdate[i+'_'+xReq] = True
-                if i in self.decu.datas.keys() and len(self.decu.datas[i].List.keys()):
-                    optionList = []
+        if self.make_box:
+            self.Layout.add_widget(MyLabel(text=self.currentscreen, color=(0,0,0,1), bgcolor=self.hex_to_rgb(self.scr_c)))
+            if len(self.BValue):
+                for b in self.BValue:
+                    self.bValue[eval(b)[0]['RequestName']] = {'send':b, 'xText':self.BValue[b][0]}
+            if len(self.DValue) > 0:
+                for d in self.DValue:
+                    xText, xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = self.DValue[d]
+                    if xText in self.decu.req4data.keys() and self.decu.req4data[xText] in self.decu.requests.keys():
+                        self.dReq[self.decu.req4data[xText]] = self.decu.requests[self.decu.req4data[xText]].ManuelSend
+                    if xText+'_'+xReq not in self.dValue.keys():
+                        self.dValue[xText+'_'+xReq] = {'value':mod_globals.none_val, 'name':xText, 'request':xReq}
+                    box2.add_widget(self.make_box_params(xText, xReq))
+            if len(self.IValue) > 0:
+                for i in self.IValue:
+                    xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = self.IValue[i]
                     if i+'_'+xReq not in self.iValue.keys():
+                        if i+'_'+xReq not in self.dValue.keys():
+                            self.dValue[i+'_'+xReq] = {'value':mod_globals.none_val, 'name':i, 'request':xReq}
+                        if i in self.decu.req4data.keys() and self.decu.req4data[i] in self.decu.requests.keys():
+                            self.dReq[self.decu.req4data[i]] = self.decu.requests[self.decu.req4data[i]].ManuelSend
                         self.iValue[i+'_'+xReq] = {'value':'', 'name':i, 'request':xReq}
                         self.iValueNeedUpdate[i+'_'+xReq] = True
-                    for ii in self.decu.datas[i].List.keys():
-                        optionList.append(
-                            hex(int(ii)).replace("0x", "").upper() + ':' + self.decu.datas[i].List[ii])
-                    self.iValue[i+'_'+xReq] = {'value':optionList[0], 'name':i, 'request':xReq}
-                    self.dropdowns[i+'_'+xReq] = DropDown()
-                    for o in optionList:
-                        btn = Button(text=o, id=o, font_size=xfSize*src*self.flayout.scale, size_hint_y=None, height=xrHeight)
-                        btn.bind(on_release=lambda btn=btn, i=i: self.select_option(btn.text, i))
-                        self.dropdowns[i+'_'+xReq].add_widget(btn)
-                    self.triggers[i+'_'+xReq] = Button(text=self.iValue[i+'_'+xReq]['value'], id=i+'_'+xReq, size_hint=(None, None), font_size=xfSize*src, size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
-                    self.triggers[i+'_'+xReq].bind(on_release=lambda bt,L=optionList,f=xfSize*src,H=xrHeight/self.scf,W=(xrWidth - xWidth)/self.scf:self.drop(bt.id, L, f, H, W))
-                    self.oLabels[i+'_'+xReq] = self.triggers[i+'_'+xReq]
-                    self.dropdowns[i+'_'+xReq].bind(on_select=lambda instance, x: setattr(self.triggers[i+'_'+xReq], 'text', x))
-                    
-                    self.flayout.add_widget(self.triggers[i+'_'+xReq])
-                else:
-                    self.iValue[i+'_'+xReq] = {'value':'Enter here', 'name':i, 'request':xReq}
-                    label_IT = TextInput(text=self.iValue[i+'_'+xReq]['value'], valign=xAlignment, color=xfColor, bgcolor=xColor, bold=xfBold, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
-                    self.iLabels[i+'_'+xReq] = label_IT
-                    self.flayout.add_widget(label_IT)
+                    if i in self.decu.datas.keys() and len(self.decu.datas[i].List.keys()):
+                        optionList = []
+                        if i+'_'+xReq not in self.iValue.keys():
+                            self.iValue[i+'_'+xReq] = {'value':'', 'name':i, 'request':xReq}
+                            self.iValueNeedUpdate[i+'_'+xReq] = True
+                        for ii in self.decu.datas[i].List.keys():
+                            optionList.append(hex(int(ii)).replace("0x", "").upper() + ':' + self.decu.datas[i].List[ii])
+                        self.ListOption[i+'_'+xReq] = optionList
+                        self.iValue[i+'_'+xReq] = {'value':optionList[0], 'name':i, 'request':xReq}
+                    else:
+                        self.iValue[i+'_'+xReq] = {'value':'Enter here', 'name':i, 'request':xReq}
+                    box2.add_widget(self.make_box_params(i, xReq))
+            box2.size[1] = len(self.dValue) * fs * 5
+            if len(self.BValue):
+                dv = []
+                for d in self.dValue.values():
+                    dv.append(d['request'])
+                for b in self.BValue:
+                    xText = self.BValue[b][0]
+                    button = MyButton(text=xText, size_hint=(1, 1), id=b, on_release = lambda btn=xText, key=b: self.buttonPressed(btn.text, btn.id))
+                    if len(self.BValue) == 1:
+                        box2.size[1] = int(box2.size[1]) + fs * 5
+                        box2.add_widget(button)
+                    else:
+                        if eval(b)[0]['RequestName'] not in dv:
+                            box2.size[1] = int(box2.size[1]) + fs * 5
+                            box2.add_widget(button)
+            root = ScrollView(size_hint=(1, None), height=self.Window_size[1]-fs*5)
+            root.add_widget(box2)
+            self.Layout.add_widget(root)
+        else:
+            self.flayout = MyScatterLayout(size_hint=(None, None), bgcolor=self.hex_to_rgb(self.scr_c), size=self.size_screen, do_rotation=False )
+            if len(self.LValue) > 0:
+                for l in sorted(self.LValue, key=lambda k: k['sq'], reverse=True):
+                    xText, xColor, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = l['values']
+                    self.flayout.add_widget(MyLabel_scr(text=xText, id=xText, halign=halign, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, valign=xAlignment, bgcolor=self.hex_to_rgb(xColor),  size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrHeight+xrTop)/self.scf)))
+            
+            if len(self.DValue) > 0:
+                for d in self.DValue:
+                    xText, xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = self.DValue[d]
+                    self.dReq[xReq] = self.decu.requests[xReq].ManuelSend
+                    if xText+'_'+xReq not in self.dValue.keys():
+                        self.dValue[xText+'_'+xReq] = {'value':mod_globals.none_val, 'name':xText, 'request':xReq}
+                    if xWidth/self.scf > 40:
+                        label = MyLabel_scr(text=xText, id=d, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, halign='left', bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        self.flayout.add_widget(label)
+                    label_D = MyLabel_scr(text=self.dValue[xText+'_'+xReq]['value'], id=d, valign=xAlignment, bgcolor=(0, 1, 0.8, 1), color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                    self.dLabels[xText+'_'+xReq] = label_D
+                    self.flayout.add_widget(label_D)
+            
+            if len(self.BValue) > 0:
+                for b in self.BValue:
+                    xText, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = self.BValue[b]
+                    button = MyButton(text=xText, text_size=(xrWidth/self.scf, xrHeight/self.scf), valign='middle', id=b, color=self.hex_to_rgb(xfColor), bold=xfBold, halign=halign, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                    button.bind(on_release = lambda btn=xText, key=b: self.buttonPressed(btn.text, btn.id))
+                    self.flayout.add_widget(button)
+            
+            if len(self.IValue) > 0:
+                for i in self.IValue:
+                    xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = self.IValue[i]
+                    if xWidth/self.scf > 40:
+                        label = MyLabel_scr(text=i, id=i, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, halign='left', font_size=xfSize*src, bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        self.flayout.add_widget(label)
+                    if i+'_'+xReq not in self.iValue.keys():
+                        if i+'_'+xReq not in self.dValue.keys():
+                            self.dValue[i+'_'+xReq] = {'value':mod_globals.none_val, 'name':i, 'request':xReq}
+                        if i in self.decu.req4data.keys() and self.decu.req4data[i] in self.decu.requests.keys():
+                            self.dReq[self.decu.req4data[i]] = self.decu.requests[self.decu.req4data[i]].ManuelSend
+                        self.iValue[i+'_'+xReq] = {'value':'', 'name':i, 'request':xReq}
+                        self.iValueNeedUpdate[i+'_'+xReq] = True
+                    if i in self.decu.datas.keys() and len(self.decu.datas[i].List.keys()):
+                        optionList = []
+                        if i+'_'+xReq not in self.iValue.keys():
+                            self.iValue[i+'_'+xReq] = {'value':'', 'name':i, 'request':xReq}
+                            self.iValueNeedUpdate[i+'_'+xReq] = True
+                        for ii in self.decu.datas[i].List.keys():
+                            optionList.append(
+                                hex(int(ii)).replace("0x", "").upper() + ':' + self.decu.datas[i].List[ii])
+                        self.iValue[i+'_'+xReq] = {'value':optionList[0], 'name':i, 'request':xReq}
+                        self.dropdowns[i+'_'+xReq] = DropDown(auto_width=False, width=xrWidth)
+                        for o in optionList:
+                            btn = MyButton(text=o, id=o, font_size=xfSize*src*self.flayout.scale, size_hint_y=None, height=xrHeight)
+                            btn.bind(on_release=lambda btn=btn, i=i: self.select_option(btn.text, i))
+                            self.dropdowns[i+'_'+xReq].add_widget(btn)
+                        self.triggers[i+'_'+xReq] = MyButton(text=self.iValue[i+'_'+xReq]['value'], id=i+'_'+xReq, size_hint=(None, None), font_size=xfSize*src, size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        self.triggers[i+'_'+xReq].bind(on_release=lambda bt,L=optionList,f=xfSize*src,H=xrHeight/self.scf,W=(xrWidth - xWidth)/self.scf:self.drop(bt.id, L, f, H, W))
+                        self.oLabels[i+'_'+xReq] = self.triggers[i+'_'+xReq]
+                        self.dropdowns[i+'_'+xReq].bind(on_select=lambda instance, x: setattr(self.triggers[i+'_'+xReq], 'text', x))
+                        
+                        self.flayout.add_widget(self.triggers[i+'_'+xReq])
+                    else:
+                        self.iValue[i+'_'+xReq] = {'value':'Enter here', 'name':i, 'request':xReq}
+                        label_IT = TextInput(text=self.iValue[i+'_'+xReq]['value'], valign=xAlignment, color=xfColor, bgcolor=xColor, bold=xfBold, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        self.iLabels[i+'_'+xReq] = label_IT
+                        self.flayout.add_widget(label_IT)
+            box2.add_widget(self.flayout)
+            self.Layout.add_widget(box2)
         if self.sReq_lst:
             self.startScreen(self.sReq_lst)
         if self.dReq:
             self.startScreen(self.dReq)
-        box2.add_widget(self.flayout)
-        self.Layout.add_widget(box2)
+        
         self.update_dInputs()
         if self.start:
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
@@ -494,6 +574,12 @@ class DDTLauncher(App):
         self.oLabels = {}
         self.dLabels = {}
         self.iLabels = {}
+        
+        self.ListOption = {}
+        self.dropdowns = {}
+        self.triggers = {}
+        
+        
         wc = ''
         set1 = set(self.decu.requests[rq].ReceivedDI.keys())
         set2 = []
@@ -577,8 +663,8 @@ class DDTLauncher(App):
                 for k, v in val['xml'].items():
                     ecus[k] = {'prot':v, 'addr':key, 'iso8':val['iso8']}
         vins = {}
-        self.scantxt = Label(text='Init', font_size=20)
-        popup_scan = Popup(title='Scanning CAN bus', content=self.scantxt, size=(400, 400), size_hint=(None, None))
+        self.scantxt = Label(text='Init', title_size=fs)
+        popup_scan = Popup(title='Scanning CAN bus', title_size=fs*1.5, title_align='center', content=self.scantxt, size=(400, 400), size_hint=(None, None))
         base.runTouchApp(slave=True)
         popup_scan.open()
         EventLoop.idle()
@@ -621,7 +707,7 @@ class DDTLauncher(App):
         EventLoop.window.canvas.clear()
         mod_globals.opt_scan = False
         self.renewEcuList()
-        if self.v_vin:
+        if len(self.v_vin) > 0:
             self.SaveBtnClick(self.v_vin, None)
             mod_globals.savedCAR = 'savedCAR_'+self.v_vin+'.csv'
         else:
@@ -698,23 +784,23 @@ class DDTLauncher(App):
         box.add_widget(b)
         root = ScrollView(size_hint=(1, 1))
         root.add_widget(box)
-        self.confirm_popup = Popup(title=title, content=root, size_hint=(None, None), size=self.Window_size)
+        self.confirm_popup = Popup(title=title, title_size=fs*1.5, title_align='center', content=root, size_hint=(None, None), size=self.Window_size)
         self.confirm_popup.open()
 
     def ButtonConfirmation(self, text, data=None):
         layout = GridLayout(cols=1, padding=10, spacing=10, size_hint=(1, 1))
         box1 = BoxLayout(orientation='vertical', size_hint=(1, 0.8), height=fs * 2.0)
         box2 = BoxLayout(orientation='horizontal', size_hint=(1, 0.2), height=fs * 2.0)
-        button1 = Button(text='YES')
+        button1 = MyButton(text='YES')
         if not 'ERROR' in text: box2.add_widget(button1)
-        button2 = Button(text='NO')
+        button2 = MyButton(text='NO')
         box2.add_widget(button2)
         layout.add_widget(MyLabel(text=text))
         layout.add_widget(box1)
         layout.add_widget(box2)
         root = ScrollView(size_hint=(1, 1), size=self.Window_size)
         root.add_widget(layout)
-        self.popup_confirm = Popup(title='Please confirm', content=root, size=self.Window_size, size_hint=(None, None))
+        self.popup_confirm = Popup(title='Please confirm', title_size=fs*1.5, title_align='center', content=root, size=self.Window_size, size_hint=(None, None))
         self.popup_confirm.open()
         button1.bind(on_release=lambda args:self.yes(data))
         button2.bind(on_release=self.no)
@@ -831,8 +917,8 @@ class DDTLauncher(App):
 
     def popup_dump(self, bt):
         test = self.getDumpListByXml(self.label[bt.id[:-5]+'_xml'].text)
-        lbltxt = Label(text='SCANNING DUMP FILE', font_size=20)
-        popup_init = Popup(title='Loading', content=lbltxt, size_hint=(1, 1))
+        lbltxt = Label(text='SCANNING DUMP FILE', title_size=fs)
+        popup_init = Popup(title='Loading', title_size=fs*1.5, title_align='center', content=lbltxt, size_hint=(1, 1))
         popup_init.open()
         EventLoop.idle()
         sys.stdout.flush()
@@ -847,7 +933,7 @@ class DDTLauncher(App):
         popup_init.dismiss()
         btn_close = MyButton(text='CLOSE', size_hint=(1, None), height=fs*4)
         layout.add_widget(btn_close)
-        self.popup = Popup(title='Select dump', content=self.root_dump, size_hint=(None, None), size=(self.Window_size[0], self.Window_size[1]*0.7))
+        self.popup = Popup(title='Select dump', title_size=fs*1.5, title_align='center', content=self.root_dump, size_hint=(None, None), size=(self.Window_size[0], self.Window_size[1]*0.7))
         self.popup.open()
         btn_close.bind(on_press=self.popup.dismiss)
 
@@ -880,8 +966,8 @@ class DDTLauncher(App):
                         self.v_dumpList.append(f)
             
     def popup_xml(self, inst):
-        lbltxt = Label(text='SCANNING XML FILE', font_size=20)
-        popup_init = Popup(title='Loading', content=lbltxt, size_hint=(1, 1))
+        lbltxt = Label(text='SCANNING XML FILE', title_size=fs)
+        popup_init = Popup(title='Loading', title_size=fs*1.5, title_align='center', content=lbltxt, size_hint=(1, 1))
         popup_init.open()
         EventLoop.idle()
         sys.stdout.flush()
@@ -897,7 +983,7 @@ class DDTLauncher(App):
         self.root_xml = ScrollView(size_hint=(1, 1))
         self.root_xml.add_widget(layout)
         popup_init.dismiss()
-        self.popup = Popup(title='Select xml ECU', content=self.root_xml, size_hint=(None, None), size=(self.Window_size[0], self.Window_size[1]*0.9))
+        self.popup = Popup(title='Select xml ECU', title_size=fs*1.5, title_align='center', content=self.root_xml, size_hint=(None, None), size=(self.Window_size[0], self.Window_size[1]*0.9))
         self.popup.open()        
         btn_close.bind(on_press=self.popup.dismiss)
 
@@ -925,9 +1011,6 @@ class DDTLauncher(App):
         glay.add_widget(self.labels)
         glay.add_widget(self.savedECU)
         return glay
-
-    def finish(self, instance):
-        exit()
 
     def DDTScreen(self, xdoc):
         self.Screens = {}
@@ -993,7 +1076,8 @@ class DDTLauncher(App):
                 self.ecutree.append(dict(text=ecu['addr'], values=columns, tag=''))
 
     def SaveBtnClick(self, name, pop=True):
-        filename = os.path.join(mod_globals.user_data_dir, './savedCAR_'+name+'.csv')
+        if not name: name = ''
+        filename = os.path.join(mod_globals.user_data_dir, './savedCAR_'+str(name)+'.csv')
         with open( filename, 'w') as fout:
             car = ['car',self.v_proj, self.v_addr, self.v_pcan, self.v_mcan, self.v_vin]
             fout.write(';'.join(car)+'\n')
@@ -1044,33 +1128,38 @@ class DDTLauncher(App):
         self.renewEcuList()
 
     def make_box_params(self, i, v):
-        glay = BoxLayout(orientation='horizontal', size_hint=(1, 1))
-        label1 = MyLabelBlue(text=i, halign='left', valign='middle', size_hint=(0.6, 1), font_size=fs)
+        glay = GridLayout(cols=2, size_hint=(1, 1))
+        label1 = MyLabelBlue(text=i, halign='left', valign='middle', size_hint=(1, 1), font_size=fs)
         glay.add_widget(label1)
         if i+'_'+v in self.dValue:
-            label_D = MyLabelGreen(text=self.dValue[i+'_'+v]['value'], size_hint=(0.4, 1))
+            label_D = MyLabelGreen(text=self.dValue[i+'_'+v]['value'], size_hint=(1, 1))
             self.Labels[i+'_'+v] = label_D
             glay.add_widget(label_D)
         if i+'_'+v in self.iValue:
-            if self.iValue[i+'_'+v] == 'Enter here':
-                label_IT = TextInput(text=self.iValue[i+'_'+v]['value'], size_hint=(0.3, 1))
+            glay.cols = 3
+            if self.iValue[i+'_'+v]['value'] == 'Enter here':
+                label_IT = TextInput(text=self.iValue[i+'_'+v]['value'], size_hint=(1, 1))
                 self.Labels[i] = label_IT
                 glay.add_widget(label_IT)
-            else:
-                label_IT = MyLabelGreen(text=self.iValue[i+'_'+v]['value'], size_hint=(0.3, 1))
-                self.Labels[i+'_'+v] = label_IT
-                glay.add_widget(label_IT)
         if i+'_'+v in self.ListOption.keys():
-            self.dropdowns[i+'_'+v] = DropDown()
+            glay.cols = 3
+            self.dropdowns[i+'_'+v] = DropDown(auto_width=False, width=self.Window_size[0]*0.8)
             for o in self.ListOption[i+'_'+v]:
-                btn = Button(text=o, id=o, size_hint=(0.3, None), height=fs*2)
+                btn = MyButton(text=o, id=o, size_hint=(1, None), height=fs*3)
                 btn.bind(on_release=lambda btn=btn, i=i+'_'+v: self.select_option(btn.text, i))
                 self.dropdowns[i+'_'+v].add_widget(btn)
-            self.triggers[i+'_'+v] = Button(text=self.ListOption[i+'_'+v][0], id=i, size_hint=(0.3, 1))
-            self.triggers[i+'_'+v].bind(on_release=self.dropdowns[i].open)
-            self.oLabels[i+'_'+v] = self.triggers[i]
+            self.triggers[i+'_'+v] = MyButton(text=self.ListOption[i+'_'+v][0], id=i, size_hint=(1, 1))
+            self.triggers[i+'_'+v].bind(on_release=self.dropdowns[i+'_'+v].open)
+            self.oLabels[i+'_'+v] = self.triggers[i+'_'+v]
             self.dropdowns[i+'_'+v].bind(on_select=lambda instance, x: setattr(self.triggers[i+'_'+v], 'text', x))
             glay.add_widget(self.triggers[i+'_'+v])
+        if v in self.bValue.keys() and len(self.BValue) > 1:
+            glay.cols = 4
+            button = MyButton(text=self.bValue[v]['xText'], id=str(self.bValue[v]['send']), size_hint=(1, 1), on_release = lambda btn=self.bValue[v]['xText']: self.buttonPressed(btn.text, btn.id))
+            glay.add_widget(button)
+        if glay.cols == 2:
+            glay.size_hint = (1, None)
+            glay.height = fs * 3
         return glay
 
     def MyPopup(self, title=None, content=None, height=None, weigh=None, stop=None):
@@ -1091,12 +1180,47 @@ class DDTLauncher(App):
         layout.add_widget(label)
         btn = MyButton(text='CLOSE')
         layout.add_widget(btn)
-        popup = Popup(title=title, content=layout, size_hint=(None, None), size=(weigh, height))
+        popup = Popup(title=title, title_size=fs*1.5, title_align='center', content=layout, size_hint=(None, None), size=(weigh, height))
         popup.open()
         if stop:
             btn.bind(on_press=self.stop)
         else:
             btn.bind(on_press=popup.dismiss)
+
+    def guiSaveDump(self,decu):
+
+        xmlname = decu.ecufname
+        if xmlname.upper().endswith('.XML'):
+            xmlname = xmlname[:-4]
+
+        if '/' in xmlname:
+            xmlname = xmlname.split('/')[-1]
+        else:
+            xmlname = xmlname.split('\\')[-1]
+        dumpFileName = str(int(time.time())) + '_' + xmlname + '.txt'
+        df = open(os.path.join(mod_globals.dumps_dir, dumpFileName), 'wt')
+        decu.elm.clear_cache()
+
+        max = len(decu.requests.keys())
+
+        progressValue = 1
+
+        im = ' from ' + str(max)
+        i = 0
+        for request in decu.requests.values():
+            i = i + 1
+            progressValue = progressValue + 1
+            sys.stdout.flush()
+            if request.SentBytes[:2] in AllowedList + ['17', '19']:
+                if request.SentBytes[:2] == '19' and request.SentBytes[:2] != '1902':
+                    continue
+                pos = chr(ord(request.SentBytes[0]) + 4) + request.SentBytes[1]
+                rsp = decu.elm.request(request.SentBytes, pos, False)
+                if ':' in rsp: continue
+                df.write('%s:%s\n' % (request.SentBytes, rsp))
+        df.close()
+        return dumpFileName
+
 
 def DDT_START(filterText, elm=None):
     while 1:
@@ -1340,7 +1464,6 @@ class DDTECU():
     def packValues(self, requestName, iValues):
         r = self.requests[requestName]
         cmdPatt = r.SentBytes
-        
         for sdi in r.SentDI.values():
         
             d = self.datas[sdi.Name]
@@ -1348,7 +1471,6 @@ class DDTECU():
                 continue
             value = iValues[d.Name+'_'+requestName]['value'].strip()
             value = self.getValueFromInput(d, value)
-            
             littleEndian = True if sdi.Endian=="Little" else False
             sb = sdi.FirstByte - 1 
             bits = d.BitsCount
@@ -1392,7 +1514,9 @@ class DDTECU():
         return cmdPatt
 
     def getValueFromInput(self, d, value):
-
+        if value == 'Enter here':
+            return 'ERROR: Wrong value in parametr:%s(it should have %d bytes), be decimal or starts with 0x for hex' %(
+                    d.Name, d.BytesCount)
         if len(d.List.keys()) and ':' in value:
             value = value.split(':')[0]
 
@@ -1414,7 +1538,6 @@ class DDTECU():
             for c in value:
                 hst = hst + hex(ord(c))[2:].zfill(2)
             value = hst
-
         return value
 
     def elmRequest(self, req, delay='0', positive='', cache=True):
@@ -1435,30 +1558,6 @@ class DDTECU():
             self.sentRequests.append(req)
 
         return rsp
-
-    def saveDump(self):
-        xmlname = self.ecufname.split('/')[-1]
-        if xmlname.upper().endswith('.XML'):
-            xmlname = xmlname[:-4]
-
-        dumpname = os.path.join(mod_globals.dumps_dir, str(int(time.time()))+'_'+xmlname+'.txt')
-        df = open(dumpname,'wt')
-
-        self.elm.clear_cache()
-
-        im = ' from ' + str(len(self.requests.keys()))
-        i = 0
-        for request in self.requests.values():
-            i = i + 1
-            sys.stdout.flush()
-            if request.SentBytes[:2] in AllowedList + ['17','19']:
-                if request.SentBytes[:2] == '19' and request.SentBytes[:2] != '1902':
-                    continue
-                pos = chr(ord(request.SentBytes[0])+4)+request.SentBytes[1]
-                rsp = self.elm.request(request.SentBytes, pos, False)
-                if ':' in rsp: continue
-                df.write('%s:%s\n'%(request.SentBytes,rsp))
-        df.close()
 
     def loadDump(self, dumpname=''):
         global ecudump
