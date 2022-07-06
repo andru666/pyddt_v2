@@ -46,10 +46,6 @@ def readECUIds( elm ):
         Supplier = IdRsp[24:32].replace(' ', '').strip().decode('hex').decode('ASCII', errors='ignore')
         Soft = IdRsp[48:53].strip().replace(' ', '')
         Version = IdRsp[54:59].strip().replace(' ', '')
-        if not DiagVersion.isalnum(): DiagVersion = '0'
-        if not Supplier.isalnum(): Supplier = '000'
-        if not Soft.isalnum(): Soft = '0000'
-        if not Version.isalnum(): Version = '0000'
 
         Std = 'STD_A'
 
@@ -78,5 +74,8 @@ def readECUIds( elm ):
                 VIN = vinRsp[9:59].strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
         except:
             pass
-
+    if not DiagVersion.isalnum(): DiagVersion = '0'
+    if not Supplier.isalnum(): Supplier = '000'
+    if not Soft.isalnum(): Soft = '0000'
+    if not Version.isalnum(): Version = '0000'
     return StartSession, DiagVersion, Supplier, Version, Soft, Std, VIN

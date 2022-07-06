@@ -1,13 +1,14 @@
 import string
 import mod_globals
 
-def get_value(n, decu, elm, auto=True, request=None, responce=None):
+def get_value(n, decu, elm, auto=True, request=None, responce=None, resp=None):
     try:
         r = decu.requests[n['request']].ReceivedDI[n['name']]
     except:
         r = decu.requests[n['request']].SentDI[n['name']]
     d = decu.datas[n['name']]
-    resp = elm.request(decu.requests[n['request']].SentBytes, '', True)
+    if not resp:
+        resp = elm.request(decu.requests[n['request']].SentBytes, '', True)
     resp = resp.strip().replace(' ', '')
     if not all((c in string.hexdigits for c in resp)):
         resp = ''

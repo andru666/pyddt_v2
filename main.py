@@ -3,9 +3,7 @@ try:
     from kivy_deps import sdl2, glew
 except:
     pass
-
 from kivy.utils import platform
-
 from kivy.config import Config
 Config.set('kivy', 'exit_on_escape', '0')
 if platform != 'android':
@@ -155,7 +153,7 @@ class PYDDT(App):
         get_zip()
         layout = GridLayout(cols=1, padding=10, spacing=20, size_hint=(1, None))
         layout.bind(minimum_height=layout.setter('height'))
-        layout.add_widget(MyLabel(text='PyDDT', font_size=(fs*3, 'dp'), height=(fs*3, 'dp'), size_hint=(1, None)))
+        layout.add_widget(MyLabel(text='PyDDT', font_size=(fs*2, 'dp'), height=(fs*2, 'dp'), size_hint=(1, None)))
         try:
             self.archive = str(mod_globals.db_archive_file).rpartition('/')[2]
         except:
@@ -240,6 +238,7 @@ class PYDDT(App):
         self.ecus_dropdown = DropDown(size_hint=(1, None), height=(fs))
         glay = MyGridLayout(cols=2, padding=(fs/2), height=(fs * 4), spadding=20, size_hint=(1, None))
         for s_ecus in ecus:
+            if s_ecus == 'savedCAR_prev.csv': continue
             s_ecus = os.path.split(s_ecus)[1]
             btn= Button(text=s_ecus, size_hint_y=None, height=(fs * 3))
             btn.bind(on_release=lambda btn: self.ecus_dropdown.select(btn.text))
@@ -439,12 +438,11 @@ def kivyScreenConfig():
         width = height/1.3
         Window.size = (width, height)
     Window.bind(on_close=destroy)
-    while 1:
-        config = PYDDT()
-        config.run()
-        if not resizeFont:
-            return
-        resizeFont = False
+    config = PYDDT()
+    config.run()
+    if not resizeFont:
+        return
+    resizeFont = False
 
 def main():
     if not os.path.exists(mod_globals.cache_dir):

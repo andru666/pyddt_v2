@@ -65,8 +65,8 @@ class DDTLauncher(App):
         self.elm = elm
         self.clock_event = None
         self.scf = 10.0
-        
-        self.v_proj = ''
+        self.v_proj = self.filterText.split(':')[0].strip()
+        self.labels = TextInput(text=self.v_proj, size_hint=(0.6, None), padding=[0, fs/1.5], font_size=fs, height=3*fs)
         self.v_addr = ''
         self.v_vin = ''
         self.v_pcan = ''
@@ -78,7 +78,6 @@ class DDTLauncher(App):
         self.var_port = ''
         self.var_speed = ''
         self.label = {}
-        
         self.var_dump = mod_globals.opt_dump
         self.pl = mod_ddt_utils.ddtProjects()
         if mod_globals.savedCAR != 'Select':
@@ -140,7 +139,7 @@ class DDTLauncher(App):
                     box1.add_widget(self.label_prot)
             box111.add_widget(box11)
             box.add_widget(box1)
-        root = ScrollView(size_hint=(1, None), height=self.Window_size[1]-(fs*11))
+        root = ScrollView(size_hint=(1, None), height=self.Window_size[1]-(fs*10))
         root.add_widget(box)
         self.Layout.add_widget(box111)
         self.Layout.add_widget(root)
@@ -149,28 +148,19 @@ class DDTLauncher(App):
         return self.Layout
 
     def openECUS(self, bt):
+        self.xml = bt.text
         self.lbltxt = Label(text='Open Screens', title_size=fs)
         self.title = 'Loading'
         popup_init = Popup(title='Loading', content=self.lbltxt, size=(400, 400), size_hint=(None, None))
         popup_init.open()
         EventLoop.idle()
-        ecu = self.getSelectedECU(bt.text)
+        ecu = self.getSelectedECU(self.xml)
         if ecu==None or ecu['xml']=='':
             self.MyPopup(content='Selected ECU is undefined. Please scan it first.', stop=1)
             return None
         self.OpenECUScreens(ecu)
         EventLoop.window.remove_widget(popup_init)
         popup_init.dismiss()
-
-    def initELM(self, elm):
-        self.elm = elm
-        if self.ecudata['pin'].lower() == 'can':
-            self.elm.init_can()
-            self.elm.set_can_addr(self.ecudata['dst'], self.ecudata)
-        else:
-            self.elm.init_iso()
-            self.elm.set_iso_addr(self.ecudata['dst'], self.ecudata)
-        self.elm.start_session(self.ecudata['startDiagReq'])
 
     def OpenECUScreens(self, ce):
         if not mod_globals.opt_demo and self.var_dump:
@@ -272,9 +262,10 @@ class DDTLauncher(App):
         self.Layout.add_widget(roots)
         self.Layout.add_widget(quitbutton)
 
-    def res_show_screen(self, x, data):
+    def res_show_screen(self, x, data=None):
         x = x.text
-        if x == '<BACK>': self.show_screen(x,data)
+        if x == '<Read DTC>': self.readDTC()
+        elif x == '<BACK>': self.show_screen(x,data)
         elif isinstance(data, dict): self.show_screen(x,data[x])
         elif isinstance(data, list): self.loadScreen(x)
 
@@ -475,7 +466,7 @@ class DDTLauncher(App):
             root.add_widget(box2)
             self.Layout.add_widget(root)
         else:
-            self.flayout = MyScatterLayout(size_hint=(None, None), bgcolor=self.hex_to_rgb(self.scr_c), size=self.size_screen, do_rotation=False )
+            self.flayout = MyScatterLayout(size_hint=(None, None), bgcolor=self.hex_to_rgb(self.scr_c), size=self.size_screen, do_rotation=False)
             if len(self.LValue) > 0:
                 for l in sorted(self.LValue, key=lambda k: k['sq'], reverse=True):
                     xText, xColor, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = l['values']
@@ -565,6 +556,7 @@ class DDTLauncher(App):
         self.dValue = {}
         self.iValue = {}
         self.Value = {}
+        self.bValue = {}
         self.iValueNeedUpdate = {}
         self.ListOption = {}
         self.dReq = {}
@@ -589,8 +581,8 @@ class DDTLauncher(App):
                 if set1 == set2:
                     wc = r
                     break
-        del( set1 )
-        del( set2 )
+        del(set1)
+        del(set2)
         self.ListOption = {}
         max_x = self.Window_size[0]
         max_y = fs*3.5*(len(self.decu.requests[rq].ReceivedDI))
@@ -652,8 +644,106 @@ class DDTLauncher(App):
         if self.start:
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
 
+    def readDTC(self):
+        if "ReadDTCInformation.ReportDTC" in self.decu.requests.keys():
+            requests = self.decu.requests["ReadDTCInformation.ReportDTC"]
+        elif "ReadDTC" in self.decu.requests.keys():
+            requests = self.decu.requests["ReadDTC"]
+        else:
+            self.MyPopup(content="No ReadDTC request for that ECU")
+            return False
+        shiftbytecount = requests.ShiftBytesCount
+        bytestosend = map(''.join, zip(*[iter(requests.SentBytes.encode('ascii'))]*2))
+        dtcread_command = ''.join(bytestosend)
+        can_response = self.elm.request(dtcread_command)
+        moredtcread_command = None
+        if 'MoreDTC' in requests.SentDI.keys():
+            moredtcfirstbyte = int(requests.SentDI['MoreDTC'].FirstByte)
+            bytestosend[moredtcfirstbyte - 1] = "FF"
+            moredtcread_command = ''.join(bytestosend)
+        if "RESPONSE" or "DATA" or 'INIT' in can_response:
+            self.MyPopup(content="Invalid response for ReadDTC command")
+            return
+        can_response = can_response.split(' ')
+        if can_response[0].upper() == "7F":
+            self.MyPopup(content="Read DTC returned an error")
+            return
+        if len(can_response) == 2:
+            self.MyPopup(content="No DTC")
+            return
+        maxcount = 50
+        if moredtcread_command is not None:
+            while maxcount > 0:
+                more_can_response = self.elm.request(moredtcread_command)
+                more_can_response = more_can_response.split(' ')
+
+                if more_can_response[0].upper() == 'WRONG':
+                    break
+                # Append result to build one frame
+                can_response += more_can_response[2:]
+                maxcount -= 1
+        numberofdtc = int('0x' + can_response[1], 16)
+        
+        self.Layout.clear_widgets()
+        self.Layout.add_widget(MyLabel(text='<Read DTC>', height=fs*3, bgcolor=(0.8,0,0,1), markup=True))
+        root = ScrollView(size_hint=(1, None), height=self.Window_size[1]-fs*9)
+        
+        box = GridLayout(cols=1, size_hint=(1, None), height=fs)
+        for dn in range(0, numberofdtc):
+            box.add_widget(MyLabel(text='', height=fs*0.4, bgcolor=(0,0,0.2,1)))
+            ln = MyLabel(text='[b]DTC #%i' % dn + '[/b]', bgcolor=(0,0.5,0,1), markup=True)
+            box.add_widget(ln)
+            box.height = box.height + ln.height + fs*0.4
+            for k in requests.ReceivedDI.keys():
+                if k == "NDTC":
+                    continue
+                value_hex = get_value({'request':requests.Name,'name':k}, self.decu, self.elm, resp=' '.join(can_response))
+                if value_hex is None:
+                    continue
+                if len(self.decu.datas[k].List) > 0:
+                    if ':' not in value_hex:
+                        value = int('0x' + value_hex, 16)
+                        box.add_widget(MyLabel(text='', height=fs*0.2, bgcolor=(1,1,0,1)))
+                        l = MyLabel(text='[b]'+k+'[/b] : [' + str(value) + '] ' + hex(value), bgcolor=(0,0,0.5,1), markup=True)
+                        box.add_widget(l)
+                        box.height = box.height + fs*0.2 + l.height
+                    else:
+                        value = value_hex.split(':', 1)
+                        box.add_widget(MyLabel(text='', height=fs*0.2, bgcolor=(1,1,0,1)))
+                        l = MyLabel(text='[b]'+k+'[/b] : [' + str(value[0]) + '] ' + value[1], bgcolor=(0,0,0.5,1), markup=True)
+                        box.add_widget(l)
+                        box.height = box.height + fs*0.2 + l.height
+            can_response = can_response[shiftbytecount:]
+        root.add_widget(box)
+        self.Layout.add_widget(root)
+        self.Layout.add_widget(MyButton(text='Clear ALL DTC', size_hint=(1, None), height=fs*3, on_release=lambda args:self.dialogClearDTC()))
+        self.Layout.add_widget(MyButton(text='CLOSE', size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(x, self.screens)))
+
+    def dialogClearDTC(self):
+        self.ButtonConfirmation('You are about to clear diagnostic troubles codes.\nAe you sure this is what you want.', 'clearDTC')
+
+    def clearDTC(self):
+        self.popup_confirm.dismiss()
+        self.Layout.clear_widgets()
+        self.Layout.add_widget(MyLabel(text='Clearing DTC information', bgcolor=(0,0.5,0.5,1)))
+        if 'ClearDiagnosticInformation.All' in self.decu.requests.keys():
+            requests = self.decu.requests['ClearDiagnosticInformation.All']
+        elif 'ClearDTC' in self.decu.requests.keys():
+            requests = self.decu.requests['ClearDTC']
+        elif 'Clear Diagnostic Information' in self.decu.requests.keys():
+            requests = self.decu.requests['Clear Diagnostic Information']
+        else:
+            self.Layout.add_widget(MyLabel(text="No ClearDTC request for that ECU, will send default 14FF00", bgcolor=(0,0.5,0,1)))
+            request = "14FF00"
+        self.setEcuAddress(self.getSelectedECU(self.xml))
+        response = self.elm.request(request)
+        if 'WRONG' in response:
+            self.Layout.add_widget(MyLabel(text='There was an error clearing DTC.\n\nClear DTC failed', bgcolor=(0,0.5,0,1)))
+        else:
+            self.Layout.add_widget(MyLabel(text='Clear DTC successfully done', bgcolor=(0,0.5,0,1)))
+        self.Layout.add_widget(MyButton(text='CLOSE', size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(x, self.screens)))
+
     def ScanAllBtnClick(self):
-        self.v_proj = self.filterText.split(':')[0].strip()
         self.addr = mod_ddt_utils.ddtAddressing(self.v_proj, self.eculist)
         ecus = {}
         for key, val in self.addr.alist.items():
@@ -695,25 +785,29 @@ class DDTLauncher(App):
         for ce in self.carecus:
             if ce['addr'] in self.detectedEcus.keys():
                 ce['xml'] = self.detectedEcus[ce['addr']]['xml']
+                ce['iso8'] = self.detectedEcus[ce['addr']]['iso8']
                 ce['ses'] = self.detectedEcus[ce['addr']]['ses']
                 ce['undef'] = self.detectedEcus[ce['addr']]['undef']
                 ce['dump'] = self.detectedEcus[ce['addr']]['dump']
                 ce['prot'] = self.detectedEcus[ce['addr']]['prot']
         if self.v_vin=='' and len(vins.keys()):
             self.v_vin = (max(vins.iteritems(), key=operator.itemgetter(1))[0])
+        if len(self.v_vin) > 0 and self.v_vin.isalnum():
+            try:
+                mod_globals.savedCAR = 'savedCAR_'+self.v_vin+'.csv'
+                self.SaveBtnClick(self.v_vin, None)
+            except:
+                mod_globals.savedCAR = 'savedCAR_'+self.v_proj+'.csv'
+                self.SaveBtnClick(self.v_proj, None)
+        else:
+            mod_globals.savedCAR = 'savedCAR_'+self.v_proj+'.csv'
+            self.SaveBtnClick(self.v_proj, None)
         EventLoop.window.remove_widget(popup_scan)
         popup_scan.dismiss()
         base.stopTouchApp()
         EventLoop.window.canvas.clear()
         mod_globals.opt_scan = False
         self.renewEcuList()
-        if len(self.v_vin) > 0:
-            self.SaveBtnClick(self.v_vin, None)
-            mod_globals.savedCAR = 'savedCAR_'+self.v_vin+'.csv'
-        else:
-            name = self.filterText.replace(':', '_').replace(' ', '_')
-            self.SaveBtnClick(name, None)
-            mod_globals.savedCAR = 'savedCAR_'+name+'.csv'
 
     def cheks(self, Addr, pro, i, x, vins, iso):
         if pro[1].startswith('CAN'):
@@ -729,7 +823,7 @@ class DDTLauncher(App):
         xml = mod_ddt_ecu.ecuSearch(self.v_proj, Addr, DiagVersion, Supplier, Soft, Version, self.eculist, interactive = False)
         if xml:
             if isinstance(xml, list): xml = xml[0]
-            self.detectedEcus[Addr] = {'prot':pro[1], 'xml':xml,'ses':StartSession, 'undef':'0'}
+            self.detectedEcus[Addr] = {'prot':pro[1], 'xml':xml,'ses':StartSession, 'undef':'0', 'iso8':iso}
             self.getDumpListByXml(xml)
             if len(self.v_dumpList) > 0:
                 self.detectedEcus[Addr]['dump'] = self.v_dumpList[-1]
@@ -770,23 +864,6 @@ class DDTLauncher(App):
                 continue
             if r not in self.REQ: self.REQ.append(r)
 
-    def ButtonConfirmationDialog(self, bt, title=None, content=None):
-        if not title:
-            title = 'Info'
-        box = GridLayout(cols=1, padding=10, spacing=10, size_hint=(1.0, None))
-        label = MyLabel(text='Info')
-        box.add_widget(label)
-        if content:
-            label.text = content
-        b = BoxLayout(orientation='horizontal')
-        b.add_widget(MyButton(text='YES'))
-        b.add_widget(MyButton(text='NO', on_press=lambda args:self.confirm_popup.dismiss()))
-        box.add_widget(b)
-        root = ScrollView(size_hint=(1, 1))
-        root.add_widget(box)
-        self.confirm_popup = Popup(title=title, title_size=fs*1.5, title_align='center', content=root, size_hint=(None, None), size=self.Window_size)
-        self.confirm_popup.open()
-
     def ButtonConfirmation(self, text, data=None):
         layout = GridLayout(cols=1, padding=10, spacing=10, size_hint=(1, 1))
         box1 = BoxLayout(orientation='vertical', size_hint=(1, 0.8), height=fs * 2.0)
@@ -802,7 +879,10 @@ class DDTLauncher(App):
         root.add_widget(layout)
         self.popup_confirm = Popup(title='Please confirm', title_size=fs*1.5, title_align='center', content=root, size=self.Window_size, size_hint=(None, None))
         self.popup_confirm.open()
-        button1.bind(on_release=lambda args:self.yes(data))
+        if data == 'clearDTC':
+            button1.bind(on_press=lambda k:self.clearDTC())
+        else:
+            button1.bind(on_press=lambda k:self.yes(data))
         button2.bind(on_release=self.no)
 
     def no(self, instance):
@@ -854,7 +934,7 @@ class DDTLauncher(App):
         commandSet = '\n\n'
         for c in slist:
             commandSet += "%-10s Delay:%-3s (%s)\n" % (c['c'], c['d'], c['r'].Name)
-        self.ButtonConfirmation(commandSet, slist)
+        self.ButtonConfirmation(commandSet, self.yes(slist))
 
     def setEcuAddress(self, ce):
         ecudata = {'idTx': '',
@@ -874,7 +954,6 @@ class DDTLauncher(App):
 
             ecudata['pin'] = 'can'
             self.elm.set_can_addr(ce['addr'], ecudata)
-
         if ce['prot'].startswith('KWP') or ce['prot'].startswith('ISO'):
             if ce['prot'] == 'KWP-FAST':
                 ecudata['protocol'] = 'KWP_Fast'
@@ -925,6 +1004,7 @@ class DDTLauncher(App):
         id = bt.id
         layout = GridLayout(cols=1, spacing=5, size_hint=(1, None))
         layout.bind(minimum_height=layout.setter('height'))
+        layout.add_widget(MyButton(text='CLEAR', size_hint=(1, None), height=fs*4, on_press=lambda bts,ids=bt.id: self.select_dump(bts, ids)))
         for v in self.v_dumpList:
             btn = MyButton(text=v, size_hint=(1, None), height=fs*4, on_press=lambda bts, ids = bt.id: self.select_dump(bts, ids))
             layout.add_widget(btn)
@@ -942,6 +1022,7 @@ class DDTLauncher(App):
         for n in self.carecus:
             if n['addr'] == addr:
                 n['dump'] = bt.text
+        if bt.text == 'CLEAR': bt.text = ''
         self.label[idds].text = bt.text
         self.popup.dismiss()
         self.renewEcuList()
@@ -1001,10 +1082,10 @@ class DDTLauncher(App):
     def make_savedECU(self):
         glay = GridLayout(cols=4, size_hint=(1, None), height=3*fs)
         label1 = MyLabel(text='Name savedCAR:', size_hint=(0.5, 1), bgcolor=(0,0.5,0,1))
-        lab = mod_globals.savedCAR[9:-4]
-        if self.v_vin: lab = self.v_vin
-        if not lab: lab = self.filterText
-        self.labels = TextInput(text=lab, size_hint=(0.6, None), padding=[0, fs/1.5], font_size=fs, height=3*fs)
+        if self.v_vin.isalnum():
+            self.labels.text = self.v_vin
+        elif mod_globals.savedCAR[9:-4] != '' and mod_globals.savedCAR[9:-4].isalnum():
+            self.labels.text = mod_globals.savedCAR[9:-4]
         self.savedECU = MyButton(text='Save', size_hint=(0.5, 1), on_press=lambda args: self.SaveBtnClick(self.labels.text))
         glay.add_widget(label1)
         glay.add_widget(MyLabel(text='savedCAR_', size_hint=(0.34, 1), halign='right', bgcolor=(0.5,0,0,1)))
@@ -1015,6 +1096,7 @@ class DDTLauncher(App):
     def DDTScreen(self, xdoc):
         self.Screens = {}
         self.screens = {}
+        self.screens['<Read DTC>'] = ''
         categs = xdoc.findall ("ns0:Target/ns1:Categories/ns1:Category", mod_globals.ns)
         if len(categs):
             for cat in categs:
@@ -1043,6 +1125,7 @@ class DDTLauncher(App):
                     v_xml = ''
                 ecu = {}
                 ecu['undef'] = '1'
+                ecu['iso8'] = self.addr.alist[e]['iso8']
                 ecu['addr'] = e
                 ecu['name'] = self.addr.alist[e]['FuncName']
                 if not mod_globals.opt_scan:
@@ -1068,7 +1151,7 @@ class DDTLauncher(App):
 
     def renewEcuList(self):
         self.ecutree = []
-        for ecu in mod_ddt_utils.multikeysort( self.carecus, ['undef','addr']):
+        for ecu in mod_ddt_utils.multikeysort(self.carecus, ['undef','addr']):
             columns = (ecu['prot'], ecu['name'], ecu['xml'], ecu['dump'], ecu)
             if ecu['undef']=='0':
                 self.ecutree.append(dict(text=ecu['addr'], values=columns, tag='t1'))
@@ -1076,21 +1159,21 @@ class DDTLauncher(App):
                 self.ecutree.append(dict(text=ecu['addr'], values=columns, tag=''))
 
     def SaveBtnClick(self, name, pop=True):
-        if not name: name = ''
+        if not name or not name.isalnum(): name = self.v_proj
         filename = os.path.join(mod_globals.user_data_dir, './savedCAR_'+str(name)+'.csv')
-        with open( filename, 'w') as fout:
+        with open(filename, 'w') as fout:
             car = ['car',self.v_proj, self.v_addr, self.v_pcan, self.v_mcan, self.v_vin]
             fout.write(';'.join(car)+'\n')
             for ecu in self.carecus:
                 e = [ecu['undef'],
                      ecu['addr'],
+                     ecu['iso8'],
                      ecu['prot'],
                      ecu['name'],
                      ecu['xml'],
                      ecu['dump'],
                      ecu['ses']]
                 fout.write(unicode(';'.join(e)).encode("ascii", "ignore") + '\n')
-        fout.close()
         copyfile(filename, os.path.join(mod_globals.user_data_dir, "./savedCAR_prev.csv"))
         if pop: self.MyPopup(content='Save file ECUS name savedCAR_'+name+'.csv', height=fs*30)
         return
@@ -1118,11 +1201,12 @@ class DDTLauncher(App):
                 ecu = {}
                 ecu['undef'] = li[0]
                 ecu['addr'] = li[1]
-                ecu['prot'] = li[2]
-                ecu['name'] = li[3]
-                ecu['xml'] = li[4]
-                ecu['dump'] = li[5]
-                ecu['ses']  = li[6]
+                ecu['iso8'] = li[2]
+                ecu['prot'] = li[3]
+                ecu['name'] = li[4]
+                ecu['xml'] = li[5]
+                ecu['dump'] = li[6]
+                ecu['ses']  = li[7]
                 self.carecus.append(ecu)
         self.addr = mod_ddt_utils.ddtAddressing(self.v_proj, self.eculist)
         self.renewEcuList()
@@ -1162,7 +1246,7 @@ class DDTLauncher(App):
             glay.height = fs * 3
         return glay
 
-    def MyPopup(self, title=None, content=None, height=None, weigh=None, stop=None):
+    def MyPopup(self, close=True, title=None, content=None, height=None, weigh=None, stop=None):
         if title:
             title = title
         else:
@@ -1179,7 +1263,7 @@ class DDTLauncher(App):
         layout = GridLayout(cols=1, padding=10, spacing=20, size_hint=(1, 1))
         layout.add_widget(label)
         btn = MyButton(text='CLOSE')
-        layout.add_widget(btn)
+        if close: layout.add_widget(btn)
         popup = Popup(title=title, title_size=fs*1.5, title_align='center', content=layout, size_hint=(None, None), size=(weigh, height))
         popup.open()
         if stop:
@@ -1283,12 +1367,11 @@ class MyLabel(Label):
             lines = len(self.text.split('\n'))
             simb = len(self.text) / 60
             if lines < simb: lines = simb
-            if lines < 7: lines = 7
+            if lines < 2: lines = 2
             if lines > 20: lines = 20
             if 1 > simb: lines = 2
             if fs > 20: 
                 lines = lines * 1.05
-                fmn = 1.5
             self.height = fmn * lines * fs
 
     def on_size(self, *args):
