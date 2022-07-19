@@ -1,7 +1,6 @@
 opt_demo = False
 
 def readECUIds( elm ):
-
     elm.clear_cache()
 
     StartSession = ''
@@ -12,10 +11,8 @@ def readECUIds( elm ):
     Std = ''
     VIN = ''
     rsp = ''
-
     if elm.startSession == '':
         res = elm.request(req='10C0', positive='50', cache=False)
-
         if res=='' or 'ERROR' in res:
             return StartSession, DiagVersion, Supplier, Version, Soft, Std, VIN
 
@@ -36,7 +33,6 @@ def readECUIds( elm ):
     else:
         StartSession = elm.startSession
         res = elm.request(req=elm.startSession, positive='50', cache=False)
-
     if not res.startswith('50'):
         pass
 
@@ -63,11 +59,12 @@ def readECUIds( elm ):
 
             IdRsp_F194 = elm.request(req='22F194', positive='62', cache=False)
             if len(IdRsp_F194) > 8 and 'NR' not in IdRsp_F194 and 'BUS' not in IdRsp_F194:
-                Soft = IdRsp_F194[9:].strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
+                Soft = IdRsp_F194[9:].split(' B', 1)[0].split(' 6', 1)[0].strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
             IdRsp_F195 = elm.request(req='22F195', positive='62', cache=False)
             if len(IdRsp_F195) > 8 and 'NR' not in IdRsp_F195 and 'BUS' not in IdRsp_F195:
-                Version = IdRsp_F195[9:].strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
-
+                Version = IdRsp_F195[9:].split(' B', 1)[0].split(' 6', 1)[0].strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
+            else:
+                Version = Soft
             Std = 'STD_B'
             vinRsp = elm.request(req='22F190', positive='62', cache=False)
             if len(vinRsp) > 58:

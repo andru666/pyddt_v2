@@ -14,6 +14,18 @@ if platform != 'android':
     Config.set('graphics', 'top',  50)
     from kivy.core.window import Window
     Window.size = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+    if Window.size[1] > Window.size[0]:
+        fs = Window.size[1]*8.0/Window.size[0]
+        Window.size = Window.size[0]*0.6, Window.size[0]*0.85
+    else:
+        fs = Window.size[0]*8.0/Window.size[1]
+        Window.size = Window.size[1]*0.6, Window.size[1]*0.85
+else:
+    from kivy.core.window import Window
+    if Window.size[1] > Window.size[0]:
+        fs = Window.size[1]*8.0/Window.size[0]
+    else:
+        fs = Window.size[0]*8.0/Window.size[1]
 from mod_db_manager import get_zip
 from mod_elm import ELM
 import mod_globals, mod_ddt_utils, mod_ddt
@@ -36,11 +48,6 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.togglebutton import ToggleButton
 import traceback
 import os, sys, glob
-
-if int(Window.size[1]) > int(Window.size[0]):
-    fs = int(Window.size[1])/(int(Window.size[0])/9)
-else:
-    fs = int(Window.size[0])/(int(Window.size[1])/9)
 
 __all__ = 'install_android'
 
@@ -153,14 +160,14 @@ class PYDDT(App):
         get_zip()
         layout = GridLayout(cols=1, padding=10, spacing=20, size_hint=(1, None))
         layout.bind(minimum_height=layout.setter('height'))
-        layout.add_widget(MyLabel(text='PyDDT', font_size=(fs*2, 'dp'), height=(fs*2, 'dp'), size_hint=(1, None)))
+        layout.add_widget(MyLabel(text='PyDDT', font_size=(fs*3), height=(fs*3), size_hint=(1, None)))
         try:
             self.archive = str(mod_globals.db_archive_file).rpartition('/')[2]
         except:
             self.archive = str(mod_globals.db_archive_file).rpartition('\\')[2]
         if self.archive == 'None':
             self.archive = 'NOT BASE DDT2000'
-            root = GridLayout(cols=1, padding=20, spacing=20, size_hint=(1, 1))
+            root = GridLayout(cols=1, padding=15, spacing=15, size_hint=(1, 1))
             linkB = Button(text='Click to download database.\n\nНажмите для скачивания базы.', valign = 'middle', halign = 'center', size_hint=(1, 1), font_size=fs*1.5, on_release=lambda args:webbrowser.open('https://t.me/c/1606228375/25'))
             exitB = Button(text='Click on the screen to exit and place the base in the folder /pyddt.\n\nНажмите на экран для выхода и поместите базу в папку /pyddt.', valign = 'middle', halign = 'center', size_hint=(1, 1), font_size=fs*1.5, on_press=exit)
             linkB.bind(size=linkB.setter('text_size'))
@@ -169,7 +176,7 @@ class PYDDT(App):
             root.add_widget(exitB)
             popup = Popup(title=self.archive, title_size=fs*1.5, title_align='center', content=root, size=(Window.size[0], Window.size[1]), size_hint=(None, None), auto_dismiss=True)
             return popup
-        layout.add_widget(MyLabel(text='DB archive : ' + self.archive, font_size=(fs*0.9), multiline=True, size_hint=(1, None)))
+        layout.add_widget(MyLabel(text='DB archive : ' + self.archive, font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
         layout.add_widget(Button(text= 'SCAN', id='scan', font_size=fs*2, size_hint=(1, None), on_press=self.scanALLecus, height=(fs * 4)))
         self.but_demo = Button(text= 'Open ECUs DEMO', font_size=fs*2, id='demo', size_hint=(1, None), on_press=lambda bt:self.OpenEcu(bt), height=(fs * 4))
         layout.add_widget(self.but_demo)
@@ -433,10 +440,6 @@ def destroy():
 
 def kivyScreenConfig():
     global resizeFont
-    if mod_globals.os != 'android':
-        height = Window.size[1]*0.85
-        width = height/1.3
-        Window.size = (width, height)
     Window.bind(on_close=destroy)
     config = PYDDT()
     config.run()

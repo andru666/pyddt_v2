@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import sys, os, ast, time, pickle, copy, string
 from shutil import copyfile
-import xml.dom.minidom
 from kivy import base
 from kivy.app import App
 from kivy.base import EventLoop
@@ -143,9 +142,12 @@ class DDTLauncher(App):
         root.add_widget(box)
         self.Layout.add_widget(box111)
         self.Layout.add_widget(root)
-        quitbutton = MyButton(text='<QUIT>', size_hint=(1, None), height=fs*4, on_release=exit)
+        quitbutton = MyButton(text='<QUIT>', size_hint=(1, None), height=fs*4, on_release=self.EXIT)
         self.Layout.add_widget(quitbutton)
         return self.Layout
+
+    def EXIT(self, dt):
+        exit()
 
     def openECUS(self, bt):
         self.xml = bt.text
@@ -478,8 +480,13 @@ class DDTLauncher(App):
                     self.dReq[xReq] = self.decu.requests[xReq].ManuelSend
                     if xText+'_'+xReq not in self.dValue.keys():
                         self.dValue[xText+'_'+xReq] = {'value':mod_globals.none_val, 'name':xText, 'request':xReq}
+                    
+                    if xWidth/self.scf < (xfSize*len(xText)) and xfSize*src > xrHeight/self.scf/2:
+                        xSize = xrHeight/self.scf/src/2.5
+                    else:
+                        xSize = xfSize
                     if xWidth/self.scf > 40:
-                        label = MyLabel_scr(text=xText, id=d, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, halign='left', bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        label = MyLabel_scr(text=xText, id=d, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xSize*src, halign='left', bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
                         self.flayout.add_widget(label)
                     label_D = MyLabel_scr(text=self.dValue[xText+'_'+xReq]['value'], id=d, valign=xAlignment, bgcolor=(0, 1, 0.8, 1), color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
                     self.dLabels[xText+'_'+xReq] = label_D
@@ -661,7 +668,7 @@ class DDTLauncher(App):
             moredtcfirstbyte = int(requests.SentDI['MoreDTC'].FirstByte)
             bytestosend[moredtcfirstbyte - 1] = "FF"
             moredtcread_command = ''.join(bytestosend)
-        if "RESPONSE" or "DATA" or 'INIT' in can_response:
+        if "RESPONSE" in can_response or "DATA" in can_response or 'INIT' in can_response or not can_response:
             self.MyPopup(content="Invalid response for ReadDTC command")
             return
         can_response = can_response.split(' ')
@@ -676,10 +683,8 @@ class DDTLauncher(App):
             while maxcount > 0:
                 more_can_response = self.elm.request(moredtcread_command)
                 more_can_response = more_can_response.split(' ')
-
                 if more_can_response[0].upper() == 'WRONG':
                     break
-                # Append result to build one frame
                 can_response += more_can_response[2:]
                 maxcount -= 1
         numberofdtc = int('0x' + can_response[1], 16)
@@ -810,6 +815,7 @@ class DDTLauncher(App):
         self.renewEcuList()
 
     def cheks(self, Addr, pro, i, x, vins, iso):
+
         if pro[1].startswith('CAN'):
             self.elm.init_can()
         else:
@@ -1174,6 +1180,8 @@ class DDTLauncher(App):
                      ecu['dump'],
                      ecu['ses']]
                 fout.write(unicode(';'.join(e)).encode("ascii", "ignore") + '\n')
+        self.renewEcuList()
+        mod_globals.savedCAR = 'savedCAR_'+str(name)+'.csv'
         copyfile(filename, os.path.join(mod_globals.user_data_dir, "./savedCAR_prev.csv"))
         if pop: self.MyPopup(content='Save file ECUS name savedCAR_'+name+'.csv', height=fs*30)
         return
@@ -1272,7 +1280,6 @@ class DDTLauncher(App):
             btn.bind(on_press=popup.dismiss)
 
     def guiSaveDump(self,decu):
-
         xmlname = decu.ecufname
         if xmlname.upper().endswith('.XML'):
             xmlname = xmlname[:-4]
@@ -1305,7 +1312,6 @@ class DDTLauncher(App):
         df.close()
         return dumpFileName
 
-
 def DDT_START(filterText, elm=None):
     while 1:
         root = DDTLauncher(filterText, elm)
@@ -1326,19 +1332,19 @@ class MyLabel_scr(Label):
         if 'height' not in kwargs:
             self.height = self.size[1]
         if 'size' in kwargs:
-            self.size[0] = self.size[0]+4
+            self.size[0] = self.size[0]*0.99
         if 'pos' in kwargs:
-            self.pos[0] = self.pos[0]+4
+            self.pos[0] = self.pos[0]*1.01
     def on_size(self, *args):
         if not self.canvas:
             return
         self.canvas.before.clear()
-        '''with self.canvas.before:
+        """with self.canvas.before:
             Color(0, 0, 0, 1)
-            Rectangle(pos=(self.pos[0]-4, self.pos[1]), size=(self.size[0], self.size[1]*1.1))'''
+            Rectangle(pos=(self.pos[0], self.pos[1]), size=(self.size[0], self.size[1]))"""
         with self.canvas.before:
             Color(self.bgcolor[0], self.bgcolor[1], self.bgcolor[2], self.bgcolor[3])
-            Rectangle(pos=(self.pos[0], self.pos[1]), size=(self.size[0],self.size[1]))
+            Rectangle(pos=(self.pos[0]/1.01, self.pos[1]), size=(self.size[0]/0.99, self.size[1]))
             
 class MyLabel(Label):
     global fs

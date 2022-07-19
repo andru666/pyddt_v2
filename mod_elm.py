@@ -94,6 +94,7 @@ class Port:
                 self.check_elm()
 
     def reinit(self):
+        
         if self.portType != 1: return
         self.hdr.close()
         self.hdr = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
@@ -447,7 +448,6 @@ class ELM:
 
             if no_negative_wait_response:
                 break
-
         if devmode:
             self.startSession = saveSession
             self.start_session(self.startSession)
@@ -948,7 +948,7 @@ class ELM:
         if not mod_globals.opt_demo:
             self.port.reinit()
         self.currentprotocol = 'can'
-        self.currentaddress = '7e0'
+        self.currentaddress = '7E0'
         self.startSession = ''
         self.lastCMDtime = 0
         self.l1_cache = {}
