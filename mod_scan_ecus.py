@@ -15,7 +15,6 @@ def readECUIds( elm ):
         res = elm.request(req='10C0', positive='50', cache=False)
         if res=='' or 'ERROR' in res:
             return StartSession, DiagVersion, Supplier, Version, Soft, Std, VIN
-
         if res.startswith('50'):
             StartSession = '10C0'
         else:
@@ -35,7 +34,6 @@ def readECUIds( elm ):
         res = elm.request(req=elm.startSession, positive='50', cache=False)
     if not res.startswith('50'):
         pass
-
     IdRsp = elm.request(req='2180', positive='61', cache=False)
     if len(IdRsp) > 59:
         DiagVersion = str(int(IdRsp[21:23], 16))

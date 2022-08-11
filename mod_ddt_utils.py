@@ -222,15 +222,16 @@ class ddtAddressing():
                         elif data[f]['targets'][t]['Protocol'].startswith('ISO8'):
                             self.alist[f]['xml'][t] = 'ISO8'
                         elif data[f]['targets'][t]['Protocol'].startswith('DiagOnCAN'):
-                            if not fun:
-                                self.alist[f]['xml'][t] = 'CAN-250'
-                            elif int(f, 16) in fun.keys():
-                                if fun[int(f, 16)]['baudRate'] == '250000':
-                                    self.alist[f]['xml'][t] = 'CAN-250'
+                            if fun:
+                                if f in fun.keys():
+                                    if int(fun[f]['baudRate']) > 250000:
+                                        self.alist[f]['xml'][t] = 'CAN-500'
+                                    else:
+                                        self.alist[f]['xml'][t] = 'CAN-250'
                                 else:
-                                    self.alist[f]['xml'][t] = 'CAN-500'
+                                    self.alist[f]['xml'][t] = 'CAN-250'
                             else:
-                                self.alist[f]['xml'][t] = 'CAN-500'
+                                self.alist[f]['xml'][t] = 'CAN-250'
                         else:
                             self.alist[f]['xml'][t] = data[f]['targets'][t]['Protocol']
 
@@ -252,7 +253,8 @@ class ddtAddressing():
         Function = root.findall('ns0:Function', ns)
         if Function:
             for fu in Function:
-                addr = int(fu.attrib['Address'])
+                addr = hex(int(fu.attrib['Address'])).replace("0x", "").zfill(2).upper()
+                
                 fun[addr] = {}
                 baudRate = fu.findall('ns0:baudRate',ns)
                 if baudRate:

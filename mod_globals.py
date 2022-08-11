@@ -13,7 +13,6 @@ opt_protocol = ""
 opt_speed = 38400
 opt_rate = 38400
 opt_dev_address = ''
-opt_lang = ""
 opt_car = ""
 opt_log = ""
 opt_ecuid_on = False
@@ -41,6 +40,7 @@ currentDDTscreen = None
 ext_cur_DTC = "000000"
 os = ""
 language_dict = {}
+opt_lang = 'en'
 bt_dev = ''
 ecu_root = ''
 user_data_dir = "./"
@@ -92,6 +92,7 @@ class Settings:
         global opt_dump
         global fontSize
         global opt_port
+        global opt_lang
         global opt_cfc0
         global screen_orient
         global opt_csv
@@ -103,6 +104,7 @@ class Settings:
         opt_dump = self.useDump
         fontSize = self.fontSize
         opt_port = self.port
+        opt_lang = self.lang
         opt_cfc0 = self.cfc
         screen_orient = self.screen_orient
         opt_csv = self.csv
@@ -115,18 +117,19 @@ class Settings:
         if not sysos.path.isfile(user_data_dir + '/settings.p'):
             self.save()
         try:
-            with open('settings.p', 'rb') as f:
+            with open(user_data_dir + 'settings.p', 'rb') as f:
                 tmp_dict = pickle.load(f)
         except:
             sysos.remove(user_data_dir + '/settings.p')
             self.save()
-            with open('settings.p', 'rb') as f:
+            with open(user_data_dir + 'settings.p', 'rb') as f:
                 tmp_dict = pickle.load(f)
         self.__dict__.update(tmp_dict)        
     
     def save(self):
         self.opt_ecu = opt_ecu
         self.si = opt_si
+        self.lang = opt_lang
         self.logName = opt_log
         self.useDump = opt_dump
         self.fontSize = fontSize
@@ -135,5 +138,5 @@ class Settings:
         self.screen_orient = screen_orient
         self.csv = opt_csv
         self.dev_address = opt_dev_address
-        with open('settings.p', 'wb') as f:
+        with open(user_data_dir + 'settings.p', 'wb') as f:
             pickle.dump(self.__dict__, f)

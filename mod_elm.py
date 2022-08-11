@@ -328,8 +328,6 @@ class ELM:
         if len(mod_globals.opt_log) > 0:
             self.lf = open(mod_globals.log_dir + 'elm_' + mod_globals.opt_log, 'at')
             self.vf = open(mod_globals.log_dir + 'ecu_' + mod_globals.opt_log, 'at')
-        if mod_globals.opt_debug and mod_globals.debug_file == None:
-            mod_globals.debug_file = open(mod_globals.log_dir + 'debug.txt', 'at')
         self.lastCMDtime = 0
         self.ATCFC0 = mod_globals.opt_cfc0
 
@@ -566,7 +564,6 @@ class ELM:
                 else:
                     self.error_frame += 1
                     noerrors = False
-
         if result[:2] == '7F':
             noerrors = False
         if noerrors and nframes < 16 and command[:1] == '2' and not mod_globals.opt_n1c:

@@ -881,10 +881,15 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, in
     ela = el[Address]
     t = ela['targets']
     cand = {}
-    xml = {0:{}, 1:{}, 2:{}, 3:{}, 4:{}}
+    xml = {0:{}, 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{}}
+    
     for k in t.keys():
         for ai in t[k]['AutoIdents']:
+            if len(DiagVersion) == 1:
+                DiagVersion = '0' + DiagVersion
             ai['DiagVersion'] = ai['DiagVersion'].strip()
+            if len(ai['DiagVersion']) == 1:
+                ai['DiagVersion'] = '0'+ai['DiagVersion']
             ai['Supplier'] = ai['Supplier'].strip()
             ai['Soft'] = ai['Soft'].strip()
             ai['Version'] = ai['Version'].strip()
@@ -898,23 +903,26 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, in
                     ai['Version'] = ai['Version'].replace(' ', '').strip().decode('hex').decode('ASCII', errors='ignore')
                 except:
                     pass
-
             h = ai['DiagVersion']+ai['Supplier']+ai['Soft']+ai['Version']
-            
             if DiagVersion == ai['DiagVersion'] and Supplier == ai['Supplier'] and Soft.startswith(ai['Soft']) and Version.startswith(ai['Version']):
                 xml[0][k] = h
             elif Supplier == ai['Supplier'] and Soft == ai['Soft'] and Version == ai['Version']:
                 cand[k+h] = [k, h]
-            elif Supplier == ai['Supplier'] and Soft == ai['Soft']:
+            elif Supplier == ai['Supplier'] and Soft == ai['Soft'] and len(Version) == len(ai['Version']):
                 cand[k+h] = [k, h]
-            elif DiagVersion == ai['DiagVersion'] and Supplier == ai['Supplier']:
+            elif DiagVersion == ai['DiagVersion'] and Supplier == ai['Supplier'] and len(Soft) == len(ai['Soft']):
                 cand[k+h] = [k, h]
+            elif DiagVersion == ai['DiagVersion'] and len(Supplier)==len(ai['Supplier']):
+                xml[5][h+k] = [h, k]
+            elif len(Supplier)==len(ai['Supplier']):
+                xml[6][h+k] = [h, k]
     if len(xml[0]) == 1: return xml[0].keys()[0]
     if len(xml[0]) > 1:
         xmls = {}
         for v in xml[0]:
             xmls[v.rsplit('_', 1)[1]] = v
         return xmls[sorted(xmls, reverse=True)[0]]
+    
     if len(cand) > 0:
         for values, key in cand.items():
             values = key[0]
@@ -927,36 +935,61 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, in
                 xml[3][key+values] = [key,values]
             elif key.startswith(DiagVersion+Supplier):
                 xml[4][key+values] = [key,values]
-        
-        for n in range(5):
+        for n in range(7):
             if n == 0: continue
+            if xml[n]:
+                if len([n]) == 1:
+                    return xml[n].values()[0][1]
+                else:
+                    S = minD(Soft, [x[0][-len(Soft)-len(Version):-len(Version)] for x in xml[n].values()])
+
+                    for v, k in xml[n].items():
+                        if n == 1:
+                            V = minD(Version, [x[0][-len(Version):] for x in xml[n].values()])
+                            if k[0][-len(Version):] == V:
+                                return k[1]
+                        elif n == 2:
+                            D = minD(DiagVersion, [x[0][:len(DiagVersion)] for x in xml[n].values()])
+                            if k[0][:len(DiagVersion)] == D:
+                                return k[1]
+                        elif n == 3:
+                            D = minD(DiagVersion, [x[0][:len(DiagVersion)] for x in xml[n].values()])
+                            V = minD(Version, [x[0][-len(Version):] for x in xml[n].values()])
+                            if k[0][-len(Version):] == V and k[0][:len(DiagVersion)] == D:
+                                return k[1]
+                            elif k[0][-len(Version):] == V:
+                                return k[1]
+                        elif n == 4:
+                            if k[0][-len(Soft)-len(Version):-len(Version)] == S:
+                                return k[1]
+                        else:
+                            S = minD(Soft, [x[0][len(DiagVersion):-len(Version)] for x in xml[n].values()])
+                            if k[0][len(DiagVersion):-len(Version)] == S:
+                                xmls = {}
+                                for v in xml[n]:
+                                    try:
+                                        xmls[v.rsplit('_', 1)[1]] = k[1]
+                                    except:
+                                        return 'Not ident'
+                                return xmls[sorted(xmls, reverse=True)[0]]
+    else:
+        for n in [5,6]:
             if xml[n]:
                 if len(xml[n]) == 1:
                     return xml[n].values()[0][1]
                 else:
-                    D = minD(DiagVersion, [x[0][:len(DiagVersion)] for x in xml[n].values()])
-                    if not Version :
-                        Version = ''
-                    else:
-                        V = minD(Version, [x[0][-len(Version):] for x in xml[n].values()])
-                    S = minD(Soft, [x[0][len(DiagVersion)+len(Supplier):len(DiagVersion)+len(Supplier)+len(Soft)] for x in xml[n].values()])
-
+                    S = minD(Soft, [x[0][len(DiagVersion):-len(Version)] for x in xml[n].values()])
                     for v, k in xml[n].items():
-                        if n == 1:
-                            if k[0][-len(Version):] == V:
-                                return k[1]
-                        elif n == 2:
-                            if k[0][:len(DiagVersion)] == D:
-                                return k[1]
-                        elif n == 3:
-                            if k[0][-len(Version):] == V and k[0][:len(DiagVersion)] == D:
-                                return k[1]
-                            if k[0][-len(Version):] == V:
-                                return k[1]
-                        elif n == 4:
-                            if k[0][len(DiagVersion)+len(Supplier):len(DiagVersion)+len(Supplier)+len(Soft)] == S:
-                                return k[1]
-
+                        if k[0][len(DiagVersion):-len(Version)] == S:
+                            xmls = {}
+                            for v in xml[n]:
+                                try:
+                                    xmls[v.rsplit('_', 1)[1]] = k[1]
+                                except:
+                                    return 'Not ident'
+                            return xmls[sorted(xmls, reverse=True)[0]]
+    return 'Not ident'
+    
 def minD(value, iterable):
     try:
         return min(iterable, key=lambda x: abs(int(value, 16) - int(x, 16)))
@@ -975,5 +1008,6 @@ def minD(value, iterable):
             val = ''
             for i in range(0, len(m), 2):
                 val = val + str(chr(int(m[i:i+2])))
+            return val
         else:
             return min(iterable, key=lambda x: abs(ord(value) - ord(x)))
