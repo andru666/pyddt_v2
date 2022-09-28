@@ -72,12 +72,15 @@ class decu_data:
             self.BitsCount = self.BytesCount * 8
             self.BytesASCII = False
             if "ascii" in by.attrib.keys():
-                self.BytesASCII = True        
+                self.BytesASCII = True
         Bits = dt.findall("ns0:Bits", ns)
         if Bits:
             bi = Bits[0]
             self.Bits = True
             self.BitsCount = 8
+            self.BytesASCII = False
+            if "ascii" in bi.attrib.keys():
+                self.BytesASCII = True
             if "count" in bi.attrib.keys():
                 self.BitsCount = int(bi.attrib["count"])
             self.BytesCount = int(math.ceil(self.BitsCount / 8.0))

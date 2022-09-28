@@ -18,13 +18,15 @@ def get_value(n, decu, elm, auto=True, request=None, responce=None, resp=None):
     hv = getHexVal(r, d, resp)
     if hv == mod_globals.none_val:
         return mod_globals.none_val
-    if len(d.List):
-        listIndex = int(hv,16)
-        if listIndex in d.List.keys():
-            hv = hex(listIndex)[2:]
-            return hv+':'+d.List[listIndex]
-        else:
-            return hv
+
+    if d.BytesASCII:
+        res = hv.decode('hex')
+        if not all(c in string.printable for c in res):
+            if len(res) > 17:
+                res = hv[:-4].decode('hex')
+            if not all(c in string.printable for c in res):
+                res = hv
+        return res
     if d.Scaled:
         p = int(hv,16)
         if d.signed and p>(2**(d.BitsCount-1)-1):
@@ -35,12 +37,13 @@ def get_value(n, decu, elm, auto=True, request=None, responce=None, resp=None):
             fmt = '%.'+str(acc)+'f'
             res = fmt%(res)
         res = str(res)
-        if res.endswith('.0'): res = res[:-2]
-        return res+' '+d.Unit
-    if d.BytesASCII:
-        res = hv.decode('hex')
-        if not all(c in string.printable for c in res): 
-            res = hv
+        if res.endswith('.0'): 
+            res = res[:-2]
+        if 'e-' in res:
+            exp = int(res[-2:])
+            if exp < 10:
+                exp = 10
+            res = "{:.{exp}f}".format(float(res), exp=exp)
         return res
     return hv
 

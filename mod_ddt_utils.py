@@ -180,7 +180,6 @@ class ddtProjects():
                         else:
                             cartype['addr'] = defaddrsheme
 
-
                         if 'code' in pr.attrib:
                             cartype['code'] = pr.attrib['code']
                         else:
@@ -204,15 +203,23 @@ class ddtAddressing():
     def __init__(self, filename, data):
         self.alist = {}
         fun = self.iso_can_select(filename)
+        try:
+            v_pcan =  int(fun['00']['baudRate'])
+        except:
+            v_pcan = 0
         for f in data:
             if filename.lower() in str(data[f]).lower():
                 self.alist[f] = {}
                 self.alist[f]['xml'] = {}
+                try:
+                    self.alist[f]['XId'] = hex(int(fun[f]['XId']))[2:].upper()
+                except:
+                    self.alist[f]['XId'] = ''
                 for t in data[f]['targets']:
-                    if filename.lower() in str(data[f]['targets'][t]['Projects']).lower():
+                    if "'"+filename.lower()+"'" in str(data[f]['targets'][t]['Projects']).lower():
                         self.alist[f]['FuncName'] = data[f]['FuncName']
                         try:
-                            self.alist[f]['iso8'] = fun[int(f, 16)]['iso8']
+                            self.alist[f]['iso8'] = fun[f]['iso8']
                         except:
                             self.alist[f]['iso8'] = ''
                         if data[f]['targets'][t]['Protocol'].startswith('KWP2000 FastInit'):
@@ -222,19 +229,14 @@ class ddtAddressing():
                         elif data[f]['targets'][t]['Protocol'].startswith('ISO8'):
                             self.alist[f]['xml'][t] = 'ISO8'
                         elif data[f]['targets'][t]['Protocol'].startswith('DiagOnCAN'):
-                            if fun:
-                                if f in fun.keys():
-                                    if int(fun[f]['baudRate']) > 250000:
-                                        self.alist[f]['xml'][t] = 'CAN-500'
-                                    else:
-                                        self.alist[f]['xml'][t] = 'CAN-250'
-                                else:
-                                    self.alist[f]['xml'][t] = 'CAN-250'
+                            if v_pcan>250000 :
+                                self.alist[f]['xml'][t] = 'CAN-500'
                             else:
                                 self.alist[f]['xml'][t] = 'CAN-250'
                         else:
                             self.alist[f]['xml'][t] = data[f]['targets'][t]['Protocol']
-
+                if len(self.alist[f]['xml']) == 0:
+                    del self.alist[f]
     def iso_can_select(self, filename):
         addr_path = 'vehicles/' + filename.upper() + '/addressing.xml'
         if not mod_db_manager.file_in_ddt(addr_path) :
@@ -261,6 +263,10 @@ class ddtAddressing():
                     fun[addr]['baudRate'] = baudRate[0].text
                 else:
                     fun[addr]['baudRate'] = '0'
+                XId = fu.findall('ns0:XId',ns)
+                fun[addr]['XId'] = ''
+                if XId:
+                    fun[addr]['XId'] = XId[0].text
                 ISO8 = fu.findall('ns0:ISO8',ns)
                 fun[addr]['ISO8'] = ''
                 if ISO8:

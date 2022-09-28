@@ -164,7 +164,6 @@ class PYDDT(App):
         else:
             import lang_eng as LANG
         self.LANG = LANG
-
         get_zip()
         layout = GridLayout(cols=1, padding=5, spacing=10, size_hint=(1, None))
         layout.bind(minimum_height=layout.setter('height'))
@@ -176,8 +175,8 @@ class PYDDT(App):
         if self.archive == 'None':
             self.archive = 'NOT BASE DDT2000'
             root = GridLayout(cols=1, padding=15, spacing=15, size_hint=(1, 1))
-            linkB = Button(text='Click to download database.\n\nНажмите для скачивания базы.', valign = 'middle', halign = 'center', size_hint=(1, 1), font_size=fs*1.5, on_release=lambda args:webbrowser.open('https://t.me/c/1606228375/25'))
-            exitB = Button(text='Click on the screen to exit and place the base in the folder /pyddt.\n\nНажмите на экран для выхода и поместите базу в папку /pyddt.', valign = 'middle', halign = 'center', size_hint=(1, 1), font_size=fs*1.5, on_press=exit)
+            linkB = MyButton(text='Click to download database.\n\nНажмите для скачивания базы.', valign = 'middle', halign = 'center', size_hint=(1, 1), font_size=fs*1.5, on_release=lambda args:webbrowser.open('https://t.me/c/1606228375/25'))
+            exitB = MyButton(text='Click on the screen to exit and place the base in the folder /pyddt.\n\nНажмите на экран для выхода и поместите базу в папку /pyddt.', valign = 'middle', halign = 'center', size_hint=(1, 1), font_size=fs*1.5, on_press=exit)
             linkB.bind(size=linkB.setter('text_size'))
             exitB.bind(size=exitB.setter('text_size'))
             root.add_widget(linkB)
@@ -185,8 +184,8 @@ class PYDDT(App):
             popup = Popup(title=self.archive, title_size=fs*1.5, title_align='center', content=root, size=(Window.size[0], Window.size[1]), size_hint=(None, None), auto_dismiss=True)
             return popup
         layout.add_widget(MyLabel(text='DB archive : ' + self.archive, font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
-        layout.add_widget(Button(text=self.LANG.b_scan, id='scan', font_size=fs*2, size_hint=(1, None), on_press=self.scanALLecus, height=(fs * 4)))
-        self.but_demo = Button(text=self.LANG.b_open, font_size=fs*2, id='demo', size_hint=(1, None), on_press=lambda bt:self.OpenEcu(bt), height=(fs * 4))
+        layout.add_widget(MyButton(text=self.LANG.b_scan, id='scan', font_size=fs*2, on_press=self.scanALLecus, height=(fs * 4)))
+        self.but_demo = MyButton(text=self.LANG.b_open, font_size=fs*2, id='demo', on_press=lambda bt:self.OpenEcu(bt), height=(fs * 4))
         layout.add_widget(self.but_demo)
         layout.add_widget(self.make_savedEcus())
         layout.add_widget(self.in_car())
@@ -206,7 +205,7 @@ class PYDDT(App):
         self.settings.save()
         label = Label(text=self.LANG.l_n_car, font_size=fs*3, size_hint=(1, 1), halign = 'center', valign = 'middle', text_size=(Window.size[0]*0.7, Window.size[1]*0.7))
         popup = Popup(title=self.LANG.error, title_size=fs*1.5, title_align='center', content=label, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
-        if str(mod_globals.opt_car) != self.LANG.b_all_cars:
+        if mod_globals.opt_car != self.LANG.b_all_cars:
             lbltxt = Label(text=self.LANG.l_scan, font_size=fs)
             popup_init = Popup(title=self.LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
             base.runTouchApp(slave=True)
@@ -253,16 +252,16 @@ class PYDDT(App):
 
     def make_savedEcus(self):
         ecus = sorted(glob.glob(os.path.join(mod_globals.user_data_dir, 'savedCAR_*.csv')))
-        toggle = Button(text=self.LANG.b_savedcar, id='open', size_hint=(0.4, None), height=(fs * 3), on_press=lambda bt:self.OpenEcu(bt))
+        toggle = MyButton(text=self.LANG.b_savedcar, id='open', size_hint=(0.4, None), height=(fs * 3), on_press=lambda bt:self.OpenEcu(bt))
         self.ecus_dropdown = DropDown(size_hint=(1, None), height=(fs))
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
         for s_ecus in ecus:
             if s_ecus == 'savedCAR_prev.csv': continue
             s_ecus = os.path.split(s_ecus)[1]
-            btn= Button(text=s_ecus, size_hint_y=None, height=(fs * 3))
+            btn= MyButton(text=s_ecus, height=(fs * 3))
             btn.bind(on_release=lambda btn: self.ecus_dropdown.select(btn.text))
             self.ecus_dropdown.add_widget(btn)
-        self.ecusbutton = Button(text=self.LANG.b_select, size_hint=(0.7, None), height=(fs * 3))
+        self.ecusbutton = MyButton(text=self.LANG.b_select, size_hint=(0.7, None), height=(fs * 3))
         self.ecusbutton.bind(on_release=self.ecus_dropdown.open)
         self.ecus_dropdown.bind(on_select=lambda instance, x: setattr(self.ecusbutton, 'text', x))
         glay.add_widget(toggle)
@@ -273,6 +272,7 @@ class PYDDT(App):
         if instance == 'lang':mod_globals.opt_lang = self.opt_lang
         mod_globals.opt_car = self.carbutton.text
         mod_globals.savedCAR = self.ecusbutton.text
+        #mod_globals.opt_car = 'x81 : Esp'
         if instance == 'scan' and  mod_globals.opt_car != self.LANG.b_all_cars:
             mod_globals.opt_demo = False
             mod_globals.opt_scan = True
@@ -284,12 +284,14 @@ class PYDDT(App):
         mod_globals.windows_size = Window.size
         mod_globals.opt_dump = self.button[self.LANG.l_dump].active
         mod_globals.opt_can2 = self.button['CAN2'].active
-        #mod_globals.savedCAR = 'savedCAR_x81.csv'
+        #mod_globals.savedCAR = 'savedCAR_xGF.csv'
         if self.button[self.LANG.b_log].state == 'down':
             mod_globals.opt_log = 'log.txt' if self.textInput[self.LANG.b_log].text == '' else self.textInput[self.LANG.b_log].text
         else:
             mod_globals.opt_log = ''
-        if 'wifi' in self.mainbutton.text.lower():
+        if 'com1' in self.mainbutton.text.lower() or 'com6' in self.mainbutton.text.lower():
+            mod_globals.opt_port = '127.0.0.1:35000'
+        elif 'wifi' in self.mainbutton.text.lower():
             mod_globals.opt_port = '192.168.0.10:35000'
         else:
             bt_device = self.mainbutton.text.rsplit('>', 1)
@@ -335,7 +337,7 @@ class PYDDT(App):
         glay = GridLayout(cols=1, spadding=10, size_hint=(1, 1))
         self.find = TextInput(text='', size_hint=(1, None), font_size=fs*1.5, multiline=False, height=(fs * 3), padding=[fs/2, fs/2])
         glay.add_widget(self.find)
-        glay.add_widget(Button(text='FIND', size_hint=(1, None), height=(fs * 3), on_release=lambda btn:self.popup_in_car(btn.text)))
+        glay.add_widget(MyButton(text='FIND', height=(fs * 3), on_release=lambda btn:self.popup_in_car(btn.text)))
         self.popup = Popup(title='FIND CAR', title_size=fs*1.5, title_align='center', content=glay, size=(Window.size[0]*0.8, fs*12), size_hint=(None, None), auto_dismiss=True)
         self.popup.open()
 
@@ -346,12 +348,12 @@ class PYDDT(App):
         label1.bind(size=label1.setter('text_size'))
         glay.add_widget(label1)
         self.dropdown = DropDown(size_hint=(1, None), height=(fs * 3))
-        glay.add_widget(Button(text=self.LANG.b_find, size_hint=(0.5, None), height=(fs * 3), on_press=self.find_in_car))
+        glay.add_widget(MyButton(text=self.LANG.b_find, size_hint=(0.5, None), height=(fs * 3), on_press=self.find_in_car))
         for avto in self.avtosd:
-            btn = Button(text=avto['name'], size_hint_y=None, height=(fs * 3))
+            btn = MyButton(text=avto['name'], height=(fs * 3))
             btn.bind(on_release=lambda bt, a=avto: self.popup_in_car(bt.text, a))
             self.dropdown.add_widget(btn)
-        self.carbutton = Button(text=self.LANG.b_all_cars, size_hint=(1, None), height=(fs * 3))
+        self.carbutton = MyButton(text=self.LANG.b_all_cars, height=(fs * 3))
         self.carbutton.bind(on_release=self.dropdown.open)
         self.dropdown.bind(on_select=lambda instance, x: setattr(self.carbutton, 'text', x))
         glay.add_widget(self.carbutton)
@@ -368,7 +370,7 @@ class PYDDT(App):
             for avto in self.avtosd:
                 for car in avto['list']:
                     if self.find.text.lower() in str(car).lower():
-                        btn = Button(text=car['code']+' : '+car['name'], font_size=fs*1.5, height=(fs * 3), size_hint_y=None)
+                        btn = MyButton(text=car['code']+' : '+car['name'], font_size=fs*1.5, height=(fs * 3))
                         layout.add_widget(btn)
                         btn.bind(on_release=lambda btn: self.press_car(btn.text))
         else:
@@ -379,7 +381,7 @@ class PYDDT(App):
                         c = c.split('(')[0]
                 except:
                     pass
-                btn = Button(text=car['code']+' : '+c, font_size=fs*1.5, height=(fs * 3), size_hint_y=None)
+                btn = MyButton(text=car['code']+' : '+c, font_size=fs*1.5, height=(fs * 3))
                 layout.add_widget(btn)
                 btn.bind(on_release=lambda btn: self.press_car(btn.text))
         root = ScrollView(size_hint=(1, 1), do_scroll_x=False, pos_hint={'center_x': 0.5,'center_y': 0.5})
@@ -405,11 +407,11 @@ class PYDDT(App):
 
     def make_bt_device_entry(self):
         ports = mod_ddt_utils.getPortList()
-        label1 = MyLabel(text='ELM port', halign='left', size_hint=(1, None), height=(fs*3))
+        label1 = MyLabel(text='ELM port', halign='left', size_hint=(0.7, None))
         self.bt_dropdown = DropDown(size_hint=(1, None), height=(fs * 2))
         label1.bind(size=label1.setter('text_size'))
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
-        btn = Button(text='WiFi (192.168.0.10:35000)', size_hint_y=None, height=(fs * 3))
+        btn = MyButton(text='WiFi (192.168.0.10:35000)')
         btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
         self.bt_dropdown.add_widget(btn)
         try:
@@ -419,10 +421,10 @@ class PYDDT(App):
         for name, address in porte:
             if mod_globals.opt_port == name:
                 mod_globals.opt_dev_address = address
-            btn = Button(text=name + '>' + address, size_hint_y=None, height=(fs * 3))
+            btn = MyButton(text=name + '>' + address, font_size=fs)
             btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
             self.bt_dropdown.add_widget(btn)
-        self.mainbutton = Button(text='', size_hint=(1, None), height=(fs * 3))
+        self.mainbutton = MyButton(text='')
         self.mainbutton.bind(on_release=self.bt_dropdown.open)
         self.bt_dropdown.bind(on_select=lambda instance, x: setattr(self.mainbutton, 'text', x))
         self.bt_dropdown.select(mod_globals.opt_port)
@@ -442,9 +444,8 @@ class PYDDT(App):
 
     def lang_app(self):
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
-        label = MyLabel(text=self.LANG.l_lang, font_size=fs*2, halign='left', size_hint=(1.2, None), height=(fs * 3))
-        
-        button = Button(text=self.LANG.b_lang, id='lang', font_size=fs*2, on_press=self.select_lang)
+        label = MyLabel(text=self.LANG.l_lang, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
+        button = MyButton(text=self.LANG.b_lang, id='lang', font_size=fs*2, on_press=self.select_lang)
         glay.add_widget(label)
         glay.add_widget(button)
         return glay
@@ -470,6 +471,29 @@ class PYDDT(App):
         glay.add_widget(ti)
         return glay
 
+
+class MyButton(Button):
+    def __init__(self, **kwargs):
+        global fs
+        super(MyButton, self).__init__(**kwargs)
+        self.bind(size=self.setter('text_size'))
+        if 'halign' not in kwargs:
+            self.halign = 'center'
+        if 'size_hint' not in kwargs:
+            self.size_hint = (1, None)
+        if 'valign' not in kwargs:
+            self.valign = 'middle'
+        if 'height' not in kwargs:
+            fmn = 1.7
+            lines = len(self.text.split('\n'))
+            simb = len(self.text) * 2.0 / self.width
+            if 1 > simb: simb = 1
+            if lines < simb: lines = simb
+            if lines < 2: lines = 2
+            if lines > 20: lines = 20
+            if fs > 20: 
+                lines = lines * 1.05
+            self.height = fmn * lines * fs * simb
 def destroy():
     exit()
 
