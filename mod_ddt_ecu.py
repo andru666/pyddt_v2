@@ -66,22 +66,21 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
             else:
                 if DiagVersion == ai['DiagVersion'] and Supplier == ai['Supplier'] and Soft.startswith(ai['Soft']) and Version.startswith(ai['Version']):
                     xml[0].append([h, k])
-                elif len(xml[0]) > 0:
+                elif len(xml[0]) == 0:
                     if Supplier == ai['Supplier'] and Soft == ai['Soft'] and Version == ai['Version']:
                         xml[1].append([h, k])
-                    elif len(xml[1]) > 0:
+                    elif len(xml[1]) == 0:
                         if DiagVersion == ai['DiagVersion'] and Supplier == ai['Supplier'] and Soft == ai['Soft']:
                             xml[2].append([h, k])
-                        elif len(xml[2]) > 0:
+                        elif len(xml[2]) == 0:
                             if DiagVersion == ai['DiagVersion'] and Supplier == ai['Supplier'] and len(Soft) == len(ai['Soft']):
                                 xml[3].append([h, k])
-                            elif len(xml[3]) > 0:
+                            elif len(xml[3]) == 0:
                                 if Supplier == ai['Supplier'] and Soft == ai['Soft'] and len(Version) == len(ai['Version']):
                                     xml[4].append([h, k])
-                                elif len(xml[4]) > 0:
+                                elif len(xml[4]) == 0:
                                     if Supplier == ai['Supplier'] and len(Soft) == len(ai['Soft']) and len(Version) == len(ai['Version']):
                                         xml[5].append([h, k])
-
     if len(xml[0]) > 0:
         xmls = {}
         for v in xml[0]:
