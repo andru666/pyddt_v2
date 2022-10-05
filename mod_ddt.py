@@ -45,27 +45,33 @@ class MyScatterLayout(ScatterLayout):
             Rectangle(pos=self.pos, size=self.size)
 
 class DDTLauncher(App):
-    def __init__(self, opt_car=None, elm=None, savedCAR=None):
-        
+    def __init__(self, opt_car=None, elm=None):
         global LANG
         if mod_globals.opt_lang == 'ru':
-            import lang_rus as LANG
+            import lang_ru as LANG
+        elif mod_globals.opt_lang == 'en':
+            import lang_en as LANG
         else:
-            import lang_eng as LANG
+            import lang_fr as LANG
         self.eculist = mod_ddt_utils.loadECUlist()
         self.Window_size = mod_globals.windows_size
         self.filterText = opt_car
         global fs
         fs = mod_globals.fontSize
         self.carecus = []
-        self.v_xmlList = []
         self.v_dumpList = []
         self.dv_addr = []
         self.ecutree = {}
         self.elm = elm
         self.clock_event = None
         self.scf = 10.0
-        self.v_proj = self.filterText.split(':')[0].strip()
+        try:
+            self.v_proj = self.filterText.split(':')[0].strip()
+        except:
+            self.v_proj = 'ALL_CARS'
+        if self.v_proj == LANG.b_all_cars:
+            self.v_proj = 'ALL_CARS'
+            self.filterText = 'ALL_CARS'
         self.labels = TextInput(text=self.v_proj, size_hint=(0.6, None), padding=[0, fs/1.5], font_size=fs, height=3*fs)
         self.v_addr = ''
         self.v_vin = ''
@@ -82,6 +88,7 @@ class DDTLauncher(App):
         self.pl = mod_ddt_utils.ddtProjects()
         if mod_globals.savedCAR != LANG.b_select:
             self.LoadCarFile(mod_globals.savedCAR)
+        
         else:
             self.CarDoubleClick()
         if mod_globals.opt_scan:
@@ -723,7 +730,7 @@ class DDTLauncher(App):
         if can_response[0].upper() == "7F":
             self.MyPopup(content=LANG.l_cont5)
             return
-        if len(can_response) <= 2:
+        if len(can_response) < 2:
             self.MyPopup(content=LANG.l_cont6)
             return
         maxcount = 50
@@ -848,7 +855,6 @@ class DDTLauncher(App):
             self.elm.lf.write("#load: "+self.filterText+"\n")
             self.elm.lf.flush()  
         self.addr = mod_ddt_utils.ddtAddressing(self.v_proj, self.eculist)
-        
         vins = {}
         self.scantxt = Label(text='Init', title_size=fs, width=self.Window_size[0]*0.95)
         popup_scan = Popup(title=LANG.l_title1, title_size=fs*1.5, title_align='center', content=self.scantxt, size=(self.Window_size[0], 400), size_hint=(None, None))
@@ -1187,16 +1193,20 @@ class DDTLauncher(App):
 
     def make_savedECU(self):
         glay = GridLayout(cols=4, size_hint=(1, None), height=3*fs)
-        label1 = MyLabel(text=LANG.l_name+' savedCAR:', size_hint=(0.5, 1), bgcolor=(0,0.5,0,1))
-        if label1.height > self.Window_size[1] * 0.8:
+        #label1 = MyLabel(text=LANG.l_name+' savedCAR:', size_hint=(0.5, 1), bgcolor=(0,0.5,0,1))
+        """if label1.height > self.Window_size[1] * 0.8:
             label1.height = self.Window_size[1] *0.6
         if self.v_vin.isalnum():
             self.labels.text = self.v_vin
         elif mod_globals.savedCAR[9:-4] != '' and mod_globals.savedCAR[9:-4].isalnum():
-            self.labels.text = mod_globals.savedCAR[9:-4]
-        self.savedECU = MyButton(text=LANG.b_saved, size_hint=(0.5, 1), on_press=lambda args: self.SaveBtnClick(self.labels.text))
-        glay.add_widget(label1)
-        glay.add_widget(MyLabel(text='savedCAR_', size_hint=(0.34, 1), halign='right', bgcolor=(0.5,0,0,1)))
+            self.labels.text = mod_globals.savedCAR.split('_', 1)[1]"""
+        try:
+            self.labels.text = mod_globals.savedCAR.split('_', 1)[1][:-4]
+        except:
+            self.labels.text = self.v_vin
+        self.savedECU = MyButton(text=LANG.b_saved, size_hint=(0.3, 1), on_press=lambda args: self.SaveBtnClick(self.labels.text))
+        #glay.add_widget(label1)
+        glay.add_widget(MyLabel(text='savedCAR_', size_hint=(0.2, 1), halign='right', bgcolor=(0.5,0,0,1)))
         glay.add_widget(self.labels)
         glay.add_widget(self.savedECU)
         return glay
@@ -1221,8 +1231,13 @@ class DDTLauncher(App):
             if self.decu.requests[req].SentBytes[:2] in ['21','22']:
                 self.screens['ddt_all_commands'].append(req)
 
+    def all_cars(self):
+        self.addr = mod_ddt_utils.ddtAddressing('ALL_CARS', self.eculist)
+        
+        print self.addr.alist.keys()
+
     def CarDoubleClick(self):
-        self.addr = mod_ddt_utils.ddtAddressing(self.filterText.split(':')[0].strip(), self.eculist)
+        self.addr = mod_ddt_utils.ddtAddressing(self.v_proj, self.eculist)
         for e in self.addr.alist:
             if len(self.addr.alist[e]['xml']) > 0:
                 v_prot = ''
@@ -1245,15 +1260,6 @@ class DDTLauncher(App):
                 self.carecus.append(ecu)
         self.renewEcuList()
 
-    def getXmlListByProj(self):
-        self.v_xmlList = []
-        try:
-            for t in self.eculist[self.dv_addr]['targets']:
-                if self.v_proj.upper() in self.eculist[self.dv_addr]['targets'][t]['Projects']:
-                    self.v_xmlList.append(t)
-        except:
-            pass
-
     def renewEcuList(self):
         self.ecutree = []
         for ecu in mod_ddt_utils.multikeysort(self.carecus, ['undef','addr']):
@@ -1264,7 +1270,8 @@ class DDTLauncher(App):
                 self.ecutree.append(dict(text=ecu['addr'], values=columns, tag=''))
 
     def SaveBtnClick(self, name, pop=True):
-        if not name or not name.isalnum(): name = self.v_proj
+        if not name:
+            name = self.v_proj
         filename = os.path.join(mod_globals.user_data_dir, './savedCAR_'+str(name)+'.csv')
         with open(filename, 'w') as fout:
             car = ['car',self.v_proj, self.v_addr, self.v_pcan, self.v_mcan, self.v_vin]

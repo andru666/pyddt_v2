@@ -160,10 +160,12 @@ class PYDDT(App):
     def build(self):
         self.settings = mod_globals.Settings()
         if mod_globals.opt_lang == 'ru':
-            import lang_rus as LANG
+            import lang_ru as LANG
+        elif mod_globals.opt_lang == 'en':
+            import lang_en as LANG
         else:
-            import lang_eng as LANG
-        self.LANG = LANG
+            import lang_fr as LANG
+        global LANG
         get_zip()
         layout = GridLayout(cols=1, padding=5, spacing=10, size_hint=(1, None))
         layout.bind(minimum_height=layout.setter('height'))
@@ -184,15 +186,15 @@ class PYDDT(App):
             popup = Popup(title=self.archive, title_size=fs*1.5, title_align='center', content=root, size=(Window.size[0], Window.size[1]), size_hint=(None, None), auto_dismiss=True)
             return popup
         layout.add_widget(MyLabel(text='DB archive : ' + self.archive, font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
-        layout.add_widget(MyButton(text=self.LANG.b_scan, id='scan', font_size=fs*2, on_press=self.scanALLecus, height=(fs * 4)))
-        self.but_demo = MyButton(text=self.LANG.b_open, font_size=fs*2, id='demo', on_press=lambda bt:self.OpenEcu(bt), height=(fs * 4))
+        layout.add_widget(MyButton(text=LANG.b_scan, id='scan', font_size=fs*2, on_press=self.scanALLecus, height=(fs * 4)))
+        self.but_demo = MyButton(text=LANG.b_open, font_size=fs*2, id='demo', on_press=lambda bt:self.OpenEcu(bt), height=(fs * 4))
         layout.add_widget(self.but_demo)
         layout.add_widget(self.make_savedEcus())
         layout.add_widget(self.in_car())
         layout.add_widget(self.make_bt_device_entry())
-        layout.add_widget(self.make_input_toggle(self.LANG.b_log, mod_globals.opt_log, 'down' if len(mod_globals.opt_log) > 0 else  'normal'))
-        layout.add_widget(self.make_input(self.LANG.l_font_size, str(mod_globals.fontSize)))
-        layout.add_widget(self.make_box_switch(self.LANG.l_dump, mod_globals.opt_dump))
+        layout.add_widget(self.make_input_toggle(LANG.b_log, mod_globals.opt_log, 'down' if len(mod_globals.opt_log) > 0 else  'normal'))
+        layout.add_widget(self.make_input(LANG.l_font_size, str(mod_globals.fontSize)))
+        layout.add_widget(self.make_box_switch(LANG.l_dump, mod_globals.opt_dump))
         layout.add_widget(self.make_box_switch('CAN2', mod_globals.opt_can2))
         layout.add_widget(self.lang_app())
         root = ScrollView(size_hint=(1, 1))
@@ -203,11 +205,11 @@ class PYDDT(App):
         mod_globals.opt_scan = True 
         self.finish(instance.id)
         self.settings.save()
-        label = Label(text=self.LANG.l_n_car, font_size=fs*3, size_hint=(1, 1), halign = 'center', valign = 'middle', text_size=(Window.size[0]*0.7, Window.size[1]*0.7))
-        popup = Popup(title=self.LANG.error, title_size=fs*1.5, title_align='center', content=label, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
-        if mod_globals.opt_car != self.LANG.b_all_cars:
-            lbltxt = Label(text=self.LANG.l_scan, font_size=fs)
-            popup_init = Popup(title=self.LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
+        label = Label(text=LANG.l_n_car1, font_size=fs*3, size_hint=(1, 1), halign = 'center', valign = 'middle', text_size=(Window.size[0]*0.7, Window.size[1]*0.7))
+        popup = Popup(title=LANG.error, title_size=fs*1.5, title_align='center', content=label, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
+        if mod_globals.opt_car != LANG.b_select:
+            lbltxt = Label(text=LANG.l_scan, font_size=fs)
+            popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
             base.runTouchApp(slave=True)
             popup_init.open()
             base.EventLoop.idle()
@@ -226,17 +228,17 @@ class PYDDT(App):
             mod_globals.opt_demo = True
         self.finish(instance.id)
         self.settings.save()
-        label = Label(text=self.LANG.l_n_car, font_size=fs*3, size_hint=(1, 1), halign = 'center', valign = 'middle', text_size=(Window.size[0]*0.7, Window.size[1]*0.7))
-        popup = Popup(title=self.LANG.error, title_size=fs*1.5, title_align='center', content=label, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
-        if mod_globals.opt_car != self.LANG.b_all_cars or mod_globals.savedCAR != self.LANG.b_select:
+        label = Label(text=LANG.l_n_car2, font_size=fs*3, size_hint=(1, 1), halign = 'center', valign = 'middle', text_size=(Window.size[0]*0.7, Window.size[1]*0.7))
+        popup = Popup(title=LANG.error, title_size=fs*1.5, title_align='center', content=label, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
+        if mod_globals.opt_car !=LANG.b_select or mod_globals.savedCAR != LANG.b_select:
             instance.background_color= (0,1,0,1)
             if mod_globals.opt_demo:
-                lbltxt = Label(text=self.LANG.l_demo, title_size=fs)
-            elif mod_globals.savedCAR != self.LANG.b_select:
-                lbltxt = Label(text=self.LANG.l_savedcar, title_size=fs)
+                lbltxt = Label(text=LANG.l_demo, title_size=fs)
+            elif mod_globals.savedCAR != LANG.b_select:
+                lbltxt = Label(text=LANG.l_savedcar, title_size=fs)
             else:
-                lbltxt = Label(text=self.LANG.l_scan, title_size=fs)
-            popup_init = Popup(title=self.LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
+                lbltxt = Label(text=LANG.l_scan, title_size=fs)
+            popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
             base.runTouchApp(slave=True)
             popup_init.open()
             base.EventLoop.idle()
@@ -252,7 +254,7 @@ class PYDDT(App):
 
     def make_savedEcus(self):
         ecus = sorted(glob.glob(os.path.join(mod_globals.user_data_dir, 'savedCAR_*.csv')))
-        toggle = MyButton(text=self.LANG.b_savedcar, id='open', size_hint=(0.4, None), height=(fs * 3), on_press=lambda bt:self.OpenEcu(bt))
+        toggle = MyButton(text=LANG.b_savedcar, id='open', size_hint=(0.4, None), height=(fs * 3), on_press=lambda bt:self.OpenEcu(bt))
         self.ecus_dropdown = DropDown(size_hint=(1, None), height=(fs))
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
         for s_ecus in ecus:
@@ -261,7 +263,7 @@ class PYDDT(App):
             btn= MyButton(text=s_ecus, height=(fs * 3))
             btn.bind(on_release=lambda btn: self.ecus_dropdown.select(btn.text))
             self.ecus_dropdown.add_widget(btn)
-        self.ecusbutton = MyButton(text=self.LANG.b_select, size_hint=(0.7, None), height=(fs * 3))
+        self.ecusbutton = MyButton(text=LANG.b_select, size_hint=(0.7, None), height=(fs * 3))
         self.ecusbutton.bind(on_release=self.ecus_dropdown.open)
         self.ecus_dropdown.bind(on_select=lambda instance, x: setattr(self.ecusbutton, 'text', x))
         glay.add_widget(toggle)
@@ -269,24 +271,23 @@ class PYDDT(App):
         return glay
 
     def finish(self, instance):
-        if instance == 'lang':mod_globals.opt_lang = self.opt_lang
         mod_globals.opt_car = self.carbutton.text
         mod_globals.savedCAR = self.ecusbutton.text
         #mod_globals.opt_car = 'x81 : Esp'
-        if instance == 'scan' and  mod_globals.opt_car != self.LANG.b_all_cars:
+        if instance == 'scan':
             mod_globals.opt_demo = False
             mod_globals.opt_scan = True
-        if instance == 'demo' and mod_globals.savedCAR != self.LANG.b_select:
+        elif instance == 'demo' and mod_globals.savedCAR != LANG.b_select:
             mod_globals.opt_scan = False
             mod_globals.opt_demo = True
-        if instance == 'open' or mod_globals.opt_car == self.LANG.b_all_cars:
+        elif instance == 'open' or mod_globals.opt_car == LANG.b_all_cars:
             mod_globals.opt_scan = False
         mod_globals.windows_size = Window.size
-        mod_globals.opt_dump = self.button[self.LANG.l_dump].active
+        mod_globals.opt_dump = self.button[LANG.l_dump].active
         mod_globals.opt_can2 = self.button['CAN2'].active
         #mod_globals.savedCAR = 'savedCAR_xGF.csv'
-        if self.button[self.LANG.b_log].state == 'down':
-            mod_globals.opt_log = 'log.txt' if self.textInput[self.LANG.b_log].text == '' else self.textInput[self.LANG.b_log].text
+        if self.button[LANG.b_log].state == 'down':
+            mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
         else:
             mod_globals.opt_log = ''
         if 'com1' in self.mainbutton.text.lower() or 'com6' in self.mainbutton.text.lower():
@@ -306,10 +307,10 @@ class PYDDT(App):
                 mod_globals.opt_dev_address = bt_device[-1]
             mod_globals.bt_dev = self.mainbutton.text
         try:
-            mod_globals.fontSize = int(self.textInput[self.LANG.l_font_size].text)
+            mod_globals.fontSize = int(self.textInput[LANG.l_font_size].text)
         except:
             mod_globals.fontSize = 20
-        if mod_globals.opt_car != self.LANG.b_all_cars or (mod_globals.savedCAR != self.LANG.b_select and not mod_globals.opt_scan):
+        if mod_globals.opt_car != LANG.b_select or (mod_globals.savedCAR != LANG.b_select and not mod_globals.opt_scan):
             self.stop()
             try:
                 self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
@@ -344,16 +345,19 @@ class PYDDT(App):
     def in_car(self):
         self.avtosd = mod_ddt_utils.ddtProjects().plist
         glay = MyGridLayout(cols=3, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
-        label1 = MyLabel(text=self.LANG.l_car, halign='left', size_hint=(0.6, None), height=(fs * 3))
+        label1 = MyLabel(text=LANG.l_car, halign='left', size_hint=(0.6, None), height=(fs * 3))
         label1.bind(size=label1.setter('text_size'))
         glay.add_widget(label1)
         self.dropdown = DropDown(size_hint=(1, None), height=(fs * 3))
-        glay.add_widget(MyButton(text=self.LANG.b_find, size_hint=(0.5, None), height=(fs * 3), on_press=self.find_in_car))
+        glay.add_widget(MyButton(text=LANG.b_find, size_hint=(0.5, None), height=(fs * 3), on_press=self.find_in_car))
+        btn = MyButton(text=LANG.b_all_cars, height=(fs * 3))
+        btn.bind(on_release=lambda btn: self.dropdown.select(btn.text))
+        self.dropdown.add_widget(btn)
         for avto in self.avtosd:
             btn = MyButton(text=avto['name'], height=(fs * 3))
             btn.bind(on_release=lambda bt, a=avto: self.popup_in_car(bt.text, a))
             self.dropdown.add_widget(btn)
-        self.carbutton = MyButton(text=self.LANG.b_all_cars, height=(fs * 3))
+        self.carbutton = MyButton(text=LANG.b_select, height=(fs * 3))
         self.carbutton.bind(on_release=self.dropdown.open)
         self.dropdown.bind(on_select=lambda instance, x: setattr(self.carbutton, 'text', x))
         glay.add_widget(self.carbutton)
@@ -432,6 +436,31 @@ class PYDDT(App):
         glay.add_widget(self.mainbutton)
         return glay
 
+    def lang_app(self):
+        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
+        label = MyLabel(text=LANG.l_lang, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
+        self.bt_lang = DropDown(size_hint=(1, None), height=(fs * 2))
+        lang = {'English':'en','France':'fr','Русский':'ru',}
+        for v, k in lang.items():
+            but = MyButton(text=v, id=k, font_size=fs*2)
+            but.bind(on_release=self.select_lang)
+            self.bt_lang.add_widget(but)
+        self.button_app = MyButton(text=LANG.b_lang, font_size=fs*2)
+        self.button_app.bind(on_release=self.bt_lang.open)
+        self.bt_lang.bind(on_select=lambda instance, x: setattr(self.button_app, 'text', x))
+        glay.add_widget(label)
+        glay.add_widget(self.button_app)
+        return glay
+
+    def select_lang(self, dt=None):
+        mod_globals.opt_lang = dt.id
+        #self.finish(dt.id)
+        self.settings.save()
+        try:
+            self.stop()
+        except:
+            pass
+    
     def make_input_toggle(self, str1, iText, state):
         toggle = ToggleButton(state=state, text=str1, font_size=fs*1.5, size_hint=(1, None), height=(fs * 3))
         self.button[str1] = toggle
@@ -441,27 +470,7 @@ class PYDDT(App):
         glay.add_widget(toggle)
         glay.add_widget(ti)
         return glay
-
-    def lang_app(self):
-        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
-        label = MyLabel(text=self.LANG.l_lang, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
-        button = MyButton(text=self.LANG.b_lang, id='lang', font_size=fs*2, on_press=self.select_lang)
-        glay.add_widget(label)
-        glay.add_widget(button)
-        return glay
-
-    def select_lang(self, dt=None):
-        if mod_globals.opt_lang == 'en':
-            self.opt_lang = 'ru'
-        else:
-            self.opt_lang = 'en'
-        self.finish(dt.id)
-        self.settings.save()
-        try:
-            self.stop()
-        except:
-            pass
-        
+    
     def make_input(self, str1, iText):
         label1 = MyLabel(text=str1, halign='left', size_hint=(1.5, None), height=(fs * 3))
         ti = TextInput(text=iText, multiline=False, font_size=(fs*1.5), padding=[fs/2, fs/2])

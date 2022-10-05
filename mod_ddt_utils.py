@@ -208,7 +208,35 @@ class ddtAddressing():
         except:
             v_pcan = 0
         for f in data:
-            if filename.lower() in str(data[f]).lower():
+            if filename == 'ALL_CARS':
+                self.alist[f] = {}
+                self.alist[f]['xml'] = {}
+                try:
+                    self.alist[f]['XId'] = hex(int(fun[f]['XId']))[2:].upper()
+                except:
+                    self.alist[f]['XId'] = ''
+                for t in data[f]['targets']:
+                    self.alist[f]['FuncName'] = data[f]['FuncName']
+                    try:
+                        self.alist[f]['iso8'] = fun[f]['iso8']
+                    except:
+                        self.alist[f]['iso8'] = ''
+                    if data[f]['targets'][t]['Protocol'].startswith('KWP2000 FastInit'):
+                        self.alist[f]['xml'][t] = 'KWP-FAST'
+                    elif data[f]['targets'][t]['Protocol'].startswith('KWP2000 Init'):
+                        self.alist[f]['xml'][t] = 'KWP-SLOW'
+                    elif data[f]['targets'][t]['Protocol'].startswith('ISO8'):
+                        self.alist[f]['xml'][t] = 'ISO8'
+                    elif data[f]['targets'][t]['Protocol'].startswith('DiagOnCAN'):
+                        if v_pcan == 250000 :
+                            self.alist[f]['xml'][t] = 'CAN-250'
+                        else:
+                            self.alist[f]['xml'][t] = 'CAN-500'
+                    else:
+                        self.alist[f]['xml'][t] = data[f]['targets'][t]['Protocol']
+                if len(self.alist[f]['xml']) == 0:
+                    del self.alist[f]
+            if "'"+filename.lower()+"'" in str(data[f]).lower():
                 self.alist[f] = {}
                 self.alist[f]['xml'] = {}
                 try:
@@ -229,24 +257,27 @@ class ddtAddressing():
                         elif data[f]['targets'][t]['Protocol'].startswith('ISO8'):
                             self.alist[f]['xml'][t] = 'ISO8'
                         elif data[f]['targets'][t]['Protocol'].startswith('DiagOnCAN'):
-                            if v_pcan>250000 :
-                                self.alist[f]['xml'][t] = 'CAN-500'
-                            else:
+                            if v_pcan == 250000 :
                                 self.alist[f]['xml'][t] = 'CAN-250'
+                            else:
+                                self.alist[f]['xml'][t] = 'CAN-500'
                         else:
                             self.alist[f]['xml'][t] = data[f]['targets'][t]['Protocol']
                 if len(self.alist[f]['xml']) == 0:
                     del self.alist[f]
     def iso_can_select(self, filename):
-        addr_path = 'vehicles/' + filename.upper() + '/addressing.xml'
-        if not mod_db_manager.file_in_ddt(addr_path) :
-            addr_path = 'vehicles/' + filename.upper() + '/Addressing.xml'
+        if filename == 'ALL_CARS':
+            addr_path = 'vehicles/GenericAddressing.xml'
+        else:
+            addr_path = 'vehicles/' + filename.upper() + '/addressing.xml'
             if not mod_db_manager.file_in_ddt(addr_path) :
-                addr_path = 'vehicles/' + filename + '/addressing.xml'
+                addr_path = 'vehicles/' + filename.upper() + '/Addressing.xml'
                 if not mod_db_manager.file_in_ddt(addr_path) :
-                    addr_path = 'vehicles/' + filename + '/Addressing.xml'
+                    addr_path = 'vehicles/' + filename + '/addressing.xml'
                     if not mod_db_manager.file_in_ddt(addr_path) :
-                        return False
+                        addr_path = 'vehicles/' + filename + '/Addressing.xml'
+                        if not mod_db_manager.file_in_ddt(addr_path) :
+                            return False
         tree = et.parse(mod_db_manager.get_file_from_ddt(addr_path))
         root = tree.getroot()
         ns = {'ns0': 'DiagnosticAddressingSchema.xml',
@@ -256,7 +287,6 @@ class ddtAddressing():
         if Function:
             for fu in Function:
                 addr = hex(int(fu.attrib['Address'])).replace("0x", "").zfill(2).upper()
-                
                 fun[addr] = {}
                 baudRate = fu.findall('ns0:baudRate',ns)
                 if baudRate:
@@ -266,7 +296,8 @@ class ddtAddressing():
                 XId = fu.findall('ns0:XId',ns)
                 fun[addr]['XId'] = ''
                 if XId:
-                    fun[addr]['XId'] = XId[0].text
+                    if not XId[0].text.startswith('-'):
+                        fun[addr]['XId'] = XId[0].text
                 ISO8 = fu.findall('ns0:ISO8',ns)
                 fun[addr]['ISO8'] = ''
                 if ISO8:

@@ -104,7 +104,6 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
                                 xmls[v[1].rsplit('_', 1)[1]] = v[1]
                         elif n == 3:
                             So = minD(Soft, [x[0][len(DiagVersion)+len(Supplier):-len(Version)] for x in xml[n]])
-                            xmls = {}
                             if v[0][len(DiagVersion)+len(Supplier):-len(Version)] == So:
                                 xmls[v[1].rsplit('_', 1)[1]] = v[1]
                         elif n == 4:
