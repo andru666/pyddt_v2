@@ -202,7 +202,7 @@ class ddtProjects():
 class ddtAddressing():
     def __init__(self, filename, data):
         self.alist = {}
-        fun = self.iso_can_select(filename)
+        fun, self.list_name = self.iso_can_select(filename)
         try:
             v_pcan =  int(fun['00']['baudRate'])
         except:
@@ -278,17 +278,26 @@ class ddtAddressing():
                         addr_path = 'vehicles/' + filename + '/Addressing.xml'
                         if not mod_db_manager.file_in_ddt(addr_path) :
                             return False
+        
         tree = et.parse(mod_db_manager.get_file_from_ddt(addr_path))
         root = tree.getroot()
         ns = {'ns0': 'DiagnosticAddressingSchema.xml',
               'ns1': 'http://www.w3.org/XML/1998/namespace'}
         fun = {}
+        alist = {'en':{}, 'fr':{}}
         Function = root.findall('ns0:Function', ns)
         if Function:
             for fu in Function:
                 addr = hex(int(fu.attrib['Address'])).replace("0x", "").zfill(2).upper()
                 fun[addr] = {}
+                name = fu.attrib['Name']
                 baudRate = fu.findall('ns0:baudRate',ns)
+                Names = fu.findall('ns0:Name',ns)
+                if Names:
+                    for Name in Names:
+                        if not Name.text:
+                            Name.text = name
+                        alist[Name.attrib.values()[0]][name] = Name.text
                 if baudRate:
                     fun[addr]['baudRate'] = baudRate[0].text
                 else:
@@ -296,10 +305,19 @@ class ddtAddressing():
                 XId = fu.findall('ns0:XId',ns)
                 fun[addr]['XId'] = ''
                 if XId:
-                    if not XId[0].text.startswith('-'):
-                        fun[addr]['XId'] = XId[0].text
+                    if XId[0].text:
+                        if not XId[0].text.startswith('-'):
+                            fun[addr]['XId'] = XId[0].text
+                else:
+                    tree1 = et.parse(mod_db_manager.get_file_from_ddt('vehicles/GenericAddressing.xml'))
+                    root1 = tree1.getroot()
+                    Function_all = root1.findall("ns0:Function[@Name='"+name+"']", ns)
+                    try:
+                        fun[addr]['XId'] = Function_all[0].findall('ns0:XId',ns)[0].text
+                    except:
+                        pass
                 ISO8 = fu.findall('ns0:ISO8',ns)
                 fun[addr]['ISO8'] = ''
                 if ISO8:
                     fun[addr]['ISO8'] = ISO8[0].text
-        return fun
+        return fun, alist

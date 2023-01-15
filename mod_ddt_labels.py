@@ -38,8 +38,8 @@ class ecu_labels:
                 if xText == 'New label': continue
                 if xrLeft < 0: xrLeft = 0
                 if xrTop < 0: xrTop = 0
-                xfBold = True if xfBold == '0' else False
-                xfItalic = True if xfItalic == '0' else False
+                xfBold = True if xfBold == '1' else False
+                xfItalic = True if xfItalic == '1' else False
                 if xAlignment == '1':
                     xAlignment = 'middle'
                     halign = 'center'

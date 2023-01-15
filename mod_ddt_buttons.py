@@ -37,8 +37,8 @@ class ecu_buttons:
                     dBtnSend[str(slist)] = slist
                 if xrLeft < 0: xrLeft = 0
                 if xrTop < 0: xrTop = 0
-                xfBold = True if xfBold == '0' else False
-                xfItalic = True if xfItalic == '0' else False
+                xfBold = True if xfBold == '1' else False
+                xfItalic = True if xfItalic == '1' else False
                 xAlignment = 'middle'
                 halign = 'center'
-                BValue[str(slist)] = [xText, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign]
+                BValue.append([xText, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign, str(slist)])

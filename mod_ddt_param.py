@@ -15,9 +15,10 @@ def get_value(n, decu, elm, auto=True, request=None, responce=None, resp=None):
     resp = ' '.join((a + b for a, b in zip(resp[::2], resp[1::2])))
     if not r.FirstByte:
         r.FirstByte = 1
-    hv = getHexVal(r, d, resp)
+    hv = getHexVal(r, d, resp=resp)
     if hv == mod_globals.none_val:
-        return mod_globals.none_val
+        n['value'] = mod_globals.none_val
+        return n
 
     if d.BytesASCII:
         res = hv.decode('hex')
@@ -26,7 +27,8 @@ def get_value(n, decu, elm, auto=True, request=None, responce=None, resp=None):
                 res = hv[:-4].decode('hex')
             if not all(c in string.printable for c in res):
                 res = hv
-        return res
+        n['value'] = res
+        return n
     if d.Scaled:
         p = int(hv,16)
         if d.signed and p>(2**(d.BitsCount-1)-1):
@@ -44,10 +46,12 @@ def get_value(n, decu, elm, auto=True, request=None, responce=None, resp=None):
             if exp < 10:
                 exp = 10
             res = "{:.{exp}f}".format(float(res), exp=exp)
-        return res
-    return hv
+        n['value'] = res
+        return n
+    n['value'] = hv
+    return n
 
-def getHexVal(r, d, resp=None, auto=True, request=None, responce=None):
+def getHexVal(r, d, auto=True, request=None, responce=None, resp=None):
     if resp==None:
         resp = self.elm.request(r.SentBytes, '', True, serviceDelay=1000)
     else:

@@ -100,7 +100,7 @@ sys.argv = sys.argv[0:1]
 
 def my_excepthook(excType, excValue, tb):
     message = traceback.format_exception(excType, excValue, tb)
-    string = ''
+    string = str(time.ctime())+'\n'
     for m in message:
         string += m
     error = TextInput(text=str(string))
@@ -285,7 +285,8 @@ class PYDDT(App):
         mod_globals.windows_size = Window.size
         mod_globals.opt_dump = self.button[LANG.l_dump].active
         mod_globals.opt_can2 = self.button['CAN2'].active
-        #mod_globals.savedCAR = 'savedCAR_xGF.csv'
+        #mod_globals.savedCAR = 'savedCAR_x81.csv'
+        #mod_globals.savedCAR = 'savedCAR_XTAGFL110LY351920VESTA.csv'
         if self.button[LANG.b_log].state == 'down':
             mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
         else:
