@@ -36,11 +36,12 @@ os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 fs = mod_globals.fontSize
 class MyScatterLayout(ScatterLayout):
     def __init__(self, **kwargs):
-        super(MyScatterLayout, self).__init__(**kwargs)
         if 'bgcolor' in kwargs:
             self.bgcolor = kwargs['bgcolor']
+            del kwargs ['bgcolor']
         else:
             self.bgcolor =(0, 0, 0, 0)
+        super(MyScatterLayout, self).__init__(**kwargs)
         with self.canvas.before:
             Color(self.bgcolor[0], self.bgcolor[1], self.bgcolor[2], self.bgcolor[3])
             Rectangle(pos=self.pos, size=self.size)
@@ -167,7 +168,7 @@ class DDTLauncher(App):
         return self.Layout
 
     def popup_xml(self, inst):
-        lbltxt = Label(text=LANG.l_cont10, title_size=fs)
+        lbltxt = Label(text=LANG.l_cont10)
         popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size_hint=(1, 1))
         popup_init.open()
         EventLoop.idle()
@@ -176,7 +177,7 @@ class DDTLauncher(App):
         layout = GridLayout(cols=1, spacing=5, size_hint=(1, None))
         layout.bind(minimum_height=layout.setter('height'))
         layout.add_widget(MyButton(text=LANG.b_clear1, size_hint=(1, None), id=inst.id, height=fs*4, on_press=lambda i,k='',v='': self.select_xml(i,k,v)))
-        for k, v in sorted(self.addr.alist[inst.id]['xml'].iteritems()):
+        for k, v in sorted(self.addr.alist[inst.id]['xml'].items()):
             btn = MyButton(text=k, size_hint=(1, None), id=inst.id, height=fs*4, on_press=lambda i,k=k,v=v: self.select_xml(i,k,v))
             layout.add_widget(btn)
         btn_close = MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*4)
@@ -184,7 +185,7 @@ class DDTLauncher(App):
         self.root_xml = ScrollView(size_hint=(1, 1))
         self.root_xml.add_widget(layout)
         popup_init.dismiss()
-        self.popup = Popup(title=LANG.l_title4+'\n'+inst.text.decode('utf-8'), title_size=fs*1.5, title_align='center', content=self.root_xml, size_hint=(None, None), size=(self.Window_size[0], self.Window_size[1]*0.9))
+        self.popup = Popup(title=LANG.l_title4+'\n'+inst.text, title_size=fs*1.5, title_align='center', content=self.root_xml, size_hint=(None, None), size=(self.Window_size[0], self.Window_size[1]*0.9))
         self.popup.open()        
         btn_close.bind(on_press=self.popup.dismiss)
 
@@ -197,7 +198,7 @@ class DDTLauncher(App):
         if self.xml == LANG.not_ident:
             self.not_ecu()
             return
-        self.lbltxt = Label(text=LANG.l_op_scr, title_size=fs)
+        self.lbltxt = Label(text=LANG.l_op_scr)
         popup_init = Popup(title=LANG.l_load, content=self.lbltxt, size=(self.Window_size[0]*0.7, 400), size_hint=(None, None))
         popup_init.open()
         EventLoop.idle()
@@ -256,20 +257,20 @@ class DDTLauncher(App):
                     break
         if mod_globals.opt_demo:            
             if len(ce['dump'])==0:
-                self.lbltxt = Label(text=LANG.l_text1, title_size=fs)
+                self.lbltxt = Label(text=LANG.l_text1)
                 popup_init = Popup(title=LANG.l_load, content=self.lbltxt, size=(self.Window_size[0]*0.7, 400), size_hint=(None, None))
                 popup_init.open()
                 EventLoop.idle()
                 self.decu.loadDump()
                 popup_init.dismiss()
             else:
-                self.lbltxt = Label(text=LANG.l_text1, title_size=fs)
+                self.lbltxt = Label(text=LANG.l_text1)
                 popup_init = Popup(title=LANG.l_load, content=self.lbltxt, size=(400, 400), size_hint=(None, None))
                 popup_init.open()
                 self.decu.loadDump(os.path.join(mod_globals.dumps_dir, ce['dump']))
                 popup_init.dismiss()
         elif mod_globals.opt_dump:
-            self.lbltxt = Label(text=LANG.l_text2, title_size=fs)
+            self.lbltxt = Label(text=LANG.l_text2)
             popup_init = Popup(title=LANG.l_load, content=self.lbltxt, size=(400, 400), size_hint=(None, None))
             popup_init.open()
             EventLoop.idle()
@@ -374,7 +375,7 @@ class DDTLauncher(App):
             params = self.get_ecu_values()
         except:
             return
-        for key, v in params.iteritems():
+        for key, v in params.items():
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
             if key in self.dLabels.keys():
@@ -461,7 +462,7 @@ class DDTLauncher(App):
         self.currentscreen = scr
         if scr in self.Screens.keys():
             scr = self.Screens[scr]
-        if type(scr) is str or type(scr) is unicode:
+        if type(scr) is str or type(scr) is str:
             self.loadSyntheticScreen(scr)
             return
         scr_w = int(scr.attrib["Width"])
@@ -655,7 +656,7 @@ class DDTLauncher(App):
                         self.flayout.add_widget(self.triggers[i+xReq])
                     else:
                         self.iValue[i+xReq] = {'value':LANG.l_enter_here, 'name':i, 'request':xReq}
-                        label_IT = TextInput(text=self.iValue[i+xReq]['value'], valign=xAlignment, color=xfColor, bgcolor=xColor, bold=xfBold, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        label_IT = TextInput(text=self.iValue[i+xReq]['value'], font_size=xfSize*src, size_hint=(None, None), size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
                         self.iLabels[i] = label_IT
                         self.flayout.add_widget(label_IT)
             box2.add_widget(self.flayout)
@@ -778,16 +779,16 @@ class DDTLauncher(App):
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
 
     def airbag_reset(self):
-        print self.decu.requests.keys()
+        print(self.decu.requests.keys())
         if "Reset crash ou accès au mode fournisseur" in self.decu.requests.keys():
             requests = self.decu.requests["Reset crash ou accès au mode fournisseur"]
         elif "Reset Crash" in self.decu.requests.keys():
             requests = self.decu.requests["Reset Crash"]
         else:
-            print 'not Reset crash ou accès au mode fournisseur'
+            print('not Reset crash ou accès au mode fournisseur')
             self.MyPopup(content=LANG.l_cont3)
             return False
-        print requests
+        print(requests)
         
 
     def readDTC(self):
@@ -940,7 +941,7 @@ class DDTLauncher(App):
             self.elm.lf.flush()  
         self.addr = mod_ddt_utils.ddtAddressing(self.v_proj, self.eculist)
         vins = {}
-        self.scantxt = Label(text='Init', title_size=fs, width=self.Window_size[0]*0.95)
+        self.scantxt = Label(text='Init', width=self.Window_size[0]*0.95)
         popup_scan = Popup(title=LANG.l_title1, title_size=fs*1.5, title_align='center', content=self.scantxt, size=(self.Window_size[0], 400), size_hint=(None, None))
         base.runTouchApp(slave=True)
         popup_scan.open()
@@ -1000,7 +1001,7 @@ class DDTLauncher(App):
                 ce['prot'] = self.detectedEcus[ce['addr']]['prot']
         self.renewEcuList()
         if self.v_vin=='' and len(vins.keys()):
-            self.v_vin = (max(vins.iteritems(), key=operator.itemgetter(1))[0])
+            self.v_vin = (max(vins.items(), key=operator.itemgetter(1))[0])
         if len(self.v_vin) > 0 and self.v_vin.isalnum():
             try:
                 mod_globals.savedCAR = 'savedCAR_'+self.v_vin+'.csv'
@@ -1126,7 +1127,7 @@ class DDTLauncher(App):
 
     def buttonPressed(self, btn, key):
         self.start = False
-        for i, v in self.iValue.iteritems():
+        for i, v in self.iValue.items():
             if i[:-len(v['request'])] in self.iLabels:
                 self.iValue[i]['value'] = self.iLabels[i[:-len(v['request'])]].text
             elif i in self.oLabels:
@@ -1213,7 +1214,11 @@ class DDTLauncher(App):
                 ecu = ast.literal_eval(line[4])
             except:
                 import json
-                ecu = ast.literal_eval(json.dumps(line[4], ensure_ascii=False).encode('utf8'))
+                print(line[4])
+                print(json.dumps(line[4]))
+                ecu = ast.literal_eval(str(json.dumps(line[4], ensure_ascii=False).encode('utf8')))
+                print(ecu)
+                ecu = line[4]
             return ecu
 
     def popup_dump(self, bt):
@@ -1223,7 +1228,7 @@ class DDTLauncher(App):
             pass
         if bt.endswith('dump'): self.getDumpListByXml(self.label[bt[:-5]+'_xml'].text)
         else: self.getDumpListByXml(self.label[bt].text)
-        lbltxt = Label(text=LANG.l_cont9, title_size=fs)
+        lbltxt = Label(text=LANG.l_cont9)
         popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size_hint=(1, 1))
         popup_init.open()
         EventLoop.idle()
@@ -1594,11 +1599,16 @@ def DDT_START(filterText, elm=None):
 
 class MyLabel_scr(Label):
     def __init__(self, **kwargs):
-        super(MyLabel_scr, self).__init__(**kwargs)
         if 'bgcolor' in kwargs:
             self.bgcolor = kwargs['bgcolor']
+            del kwargs ['bgcolor']
         else:
             self.bgcolor =(0, 0, 0, 0)
+        if 'id' in kwargs:
+            self.id = kwargs['id']
+            del kwargs ['id']
+        super(MyLabel_scr, self).__init__(**kwargs)
+        
         self.bind(size=self.setter('text_size'))
         if 'halign' not in kwargs:
             self.halign = 'center'
@@ -1623,12 +1633,19 @@ class MyLabel_scr(Label):
             
 class MyLabel(Label):
     global fs
+    id = ''
     def __init__(self, **kwargs):
         fs = mod_globals.fontSize
         if 'bgcolor' in kwargs:
             self.bgcolor = kwargs['bgcolor']
+            del kwargs ['bgcolor']
         else:
             self.bgcolor =(0, 0, 0, 0)
+        
+        if 'id' in kwargs:
+            self.id = kwargs['id']
+            del kwargs ['id']
+
         super(MyLabel, self).__init__(**kwargs)
         self.bind(size=self.setter('text_size'))
         if 'halign' not in kwargs:
@@ -1713,7 +1730,11 @@ class MyLabelBlue(Label):
 
 class MyButton(Button):
     global fs
+    id = ''
     def __init__(self, **kwargs):
+        if 'id' in kwargs:
+            self.id = kwargs['id']
+            del kwargs ['id']
         super(MyButton, self).__init__(**kwargs)
         self.bind(size=self.setter('text_size'))
         if 'halign' not in kwargs:

@@ -63,7 +63,7 @@ def multikeysort(items, columns):
                 return mult * result
         else:
             return 0
-    return sorted(items, cmp=comparer)
+    return items#sorted(items, cmp=comparer)
 
 def getPortList():
     devs = {}
@@ -202,7 +202,9 @@ class ddtProjects():
 class ddtAddressing():
     def __init__(self, filename, data):
         self.alist = {}
+        
         fun, self.list_name = self.iso_can_select(filename)
+
         try:
             v_pcan =  int(fun['00']['baudRate'])
         except:
@@ -297,7 +299,7 @@ class ddtAddressing():
                     for Name in Names:
                         if not Name.text:
                             Name.text = name
-                        alist[Name.attrib.values()[0]][name] = Name.text
+                        alist[list(Name.attrib.values())[0]][name] = Name.text
                 if baudRate:
                     fun[addr]['baudRate'] = baudRate[0].text
                 else:

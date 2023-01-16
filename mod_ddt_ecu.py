@@ -4,7 +4,7 @@ import sys, os
 import pickle
 import string
 import time
-import Queue
+import queue
 import threading
 from datetime import datetime
 from string import printable
@@ -25,7 +25,7 @@ import mod_db_manager
 eculist = None 
 ecudump = {}
 
-class CommandQueue(Queue.Queue):
+class CommandQueue(queue.Queue):
     def _init(self, maxsize):
         self.queue = set()
     def _put(self, item):
@@ -200,7 +200,7 @@ def minD(value, iterable):
             return min(iterable, key=lambda x: abs(ord(value) - ord(x)))
             
 def ecuIdent(Address, DiagVersion, Supplier, Soft, Version, el, xml_f = False):
-    print DiagVersion, Supplier, Soft, Version
+    print(DiagVersion, Supplier, Soft, Version)
     if Address not in el.keys():
         return []
     t = el[Address]['targets']
@@ -274,4 +274,4 @@ def ecuIdent(Address, DiagVersion, Supplier, Soft, Version, el, xml_f = False):
             for v in xml[4]:
                 if v[0].replace('#', '')[len(DiagVersion)+len(Supplier):-len(Version)] == So:
                     xmls[4].append(v)
-    print xmls
+    print(xmls)
