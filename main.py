@@ -233,13 +233,13 @@ class PYDDT(App):
         if mod_globals.opt_car !=LANG.b_select or mod_globals.savedCAR != LANG.b_select:
             instance.background_color= (0,1,0,1)
             if mod_globals.opt_demo:
-                lbltxt = Label(text=LANG.l_demo, title_size=fs)
+                lbltxt = Label(text=LANG.l_demo)
             elif mod_globals.savedCAR != LANG.b_select:
                 lbltxt = Label(text=LANG.l_savedcar, title_size=fs)
             else:
                 lbltxt = Label(text=LANG.l_scan, title_size=fs)
             popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
-            base.runTouchApp(slave=True)
+            base.runTouchApp(embedded=True)
             popup_init.open()
             base.EventLoop.idle()
             sys.stdout.flush()
@@ -485,6 +485,10 @@ class PYDDT(App):
 class MyButton(Button):
     def __init__(self, **kwargs):
         global fs
+        id = ''
+        if 'id' in kwargs:
+            self.id = kwargs['id']
+            del kwargs ['id']
         super(MyButton, self).__init__(**kwargs)
         self.bind(size=self.setter('text_size'))
         if 'halign' not in kwargs:
@@ -528,6 +532,8 @@ def main():
 
 class MyGridLayout(GridLayout):
     def __init__(self, **kwargs):
+        if 'spadding' in kwargs:
+            del kwargs ['spadding']
         super(MyGridLayout, self).__init__(**kwargs)
         self.pos_hint={"top": 1, "left": 1}
         
@@ -550,6 +556,11 @@ class MyLabel(Label):
             self.bgcolor = kwargs['bgcolor']
         else:
             self.bgcolor = (0.5, 0.5, 0, 1)
+        
+        print(kwargs)
+        if 'multiline' in kwargs:
+            del kwargs ['multiline']
+        
         super(MyLabel, self).__init__(**kwargs)
         self.bind(size=self.setter('text_size'))
         if 'halign' not in kwargs:

@@ -1,0 +1,9 @@
+__pycache__/
+sdkconfig.old
+.vscode/
+.devcontainer/
+cache/
+dumps/
+logs/
+*.zip
+*.p
