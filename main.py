@@ -557,7 +557,6 @@ class MyLabel(Label):
         else:
             self.bgcolor = (0.5, 0.5, 0, 1)
         
-        print(kwargs)
         if 'multiline' in kwargs:
             del kwargs ['multiline']
         

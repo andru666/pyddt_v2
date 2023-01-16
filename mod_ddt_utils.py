@@ -202,10 +202,9 @@ class ddtProjects():
 class ddtAddressing():
     def __init__(self, filename, data):
         self.alist = {}
-        try:
-            fun, self.list_name = self.iso_can_select(filename)
-        except:
-            print ('no addressing file')
+        
+        fun, self.list_name = self.iso_can_select(filename)
+
         try:
             v_pcan =  int(fun['00']['baudRate'])
         except:
