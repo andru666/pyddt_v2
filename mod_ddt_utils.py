@@ -277,7 +277,7 @@ class ddtAddressing():
                     if not mod_db_manager.file_in_ddt(addr_path) :
                         addr_path = 'vehicles/' + filename + '/Addressing.xml'
                         if not mod_db_manager.file_in_ddt(addr_path) :
-                            return False
+                            addr_path = 'vehicles/GenericAddressing.xml'
         
         tree = et.parse(mod_db_manager.get_file_from_ddt(addr_path))
         root = tree.getroot()
