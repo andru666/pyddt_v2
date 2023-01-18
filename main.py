@@ -21,6 +21,7 @@ if platform != 'android':
         fs = Window.size[0]*8.0/Window.size[1]
         Window.size = Window.size[1]*0.6, Window.size[1]*0.9
 else:
+    from android.permissions import Permission, request_permissions
     from kivy.core.window import Window
     if Window.size[1] > Window.size[0]:
         fs = Window.size[1]*8.0/Window.size[0]
@@ -49,22 +50,57 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
+__version__ = '0.10.27'
 
 if mod_globals.os == 'android':
     fs = fs*2
     try:
-        from jnius import autoclass
+        from jnius import cast, autoclass
+        from android import mActivity, api_version
         import glob
-        AndroidPythonActivity = autoclass('org.renpy.android.PythonActivity')
-        PythonActivity = autoclass('org.renpy.android.PythonActivity')
-        AndroidActivityInfo = autoclass('android.content.pm.ActivityInfo')
+
         Environment = autoclass('android.os.Environment')
-        Params = autoclass('android.view.WindowManager$LayoutParams')
+        Intent = autoclass("android.content.Intent")
+        Settings = autoclass("android.provider.Settings")
+        PythonActivity = autoclass('org.kivy.android.PythonActivity')
+        Uri = autoclass("android.net.Uri")
+        
+        from android.permissions import request_permissions, Permission
+        request_permissions([Permission.READ_EXTERNAL_STORAGE])
+
+        if api_version > 29:
+            # If you have access to the external storage, do whatever you need
+            if Environment.isExternalStorageManager():
+
+                # If you don't have access, launch a new activity to show the user the system's dialog
+                # to allow access to the external storage
+                pass
+            else:
+                try:
+                    activity = mActivity.getApplicationContext()
+                    uri = Uri.parse("package:" + activity.getPackageName())
+                    intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
+                    currentActivity = cast(
+                    "android.app.Activity", PythonActivity.mActivity
+                    )
+                    currentActivity.startActivityForResult(intent, 101)
+                except:
+                    intent = Intent()
+                    intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                    currentActivity = cast(
+                    "android.app.Activity", PythonActivity.mActivity
+                    )
+                    currentActivity.startActivityForResult(intent, 101)
+        
         user_datadir = Environment.getExternalStorageDirectory().getAbsolutePath() + '/pyddt/'
         mod_globals.user_data_dir = user_datadir
         mod_globals.cache_dir = user_datadir + '/cache/'
         mod_globals.log_dir = user_datadir + '/logs/'
         mod_globals.dumps_dir = user_datadir + '/dumps/'
+
+        AndroidPythonActivity = autoclass('org.kivy.android.PythonActivity')
+        AndroidActivityInfo = autoclass('android.content.pm.ActivityInfo')
+        Params = autoclass('android.view.WindowManager$LayoutParams')
     except:
         mod_globals.ecu_root = '../'
         try:
