@@ -1,7 +1,7 @@
 import os, re
 import xml.etree.ElementTree as et
 import mod_globals, mod_db_manager
-
+from functools import cmp_to_key
 from operator import itemgetter
 from copy import deepcopy
 from kivy.utils import platform
@@ -56,14 +56,17 @@ class settings():
 
 def multikeysort(items, columns):
     comparers = [ ((itemgetter(col[1:].strip()), -1) if col.startswith('-') else (itemgetter(col.strip()), 1)) for col in columns]
+    
     def comparer(left, right):
+        def cmp(a, b):
+            return (a > b) - (a < b) 
         for fn, mult in comparers:
             result = cmp(fn(left), fn(right))
             if result:
                 return mult * result
         else:
             return 0
-    return items#sorted(items, cmp=comparer)
+    return sorted(items, key=cmp_to_key(comparer))
 
 def getPortList():
     devs = {}

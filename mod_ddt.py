@@ -943,7 +943,7 @@ class DDTLauncher(App):
         vins = {}
         self.scantxt = Label(text='Init', width=self.Window_size[0]*0.95)
         popup_scan = Popup(title=LANG.l_title1, title_size=fs*1.5, title_align='center', content=self.scantxt, size=(self.Window_size[0], 400), size_hint=(None, None))
-        base.runTouchApp(slave=True)
+        base.runTouchApp()
         popup_scan.open()
         EventLoop.idle()
         i = 0

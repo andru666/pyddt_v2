@@ -195,6 +195,7 @@ class PYDDT(App):
         return False
 
     def build(self):
+        global LANG
         self.settings = mod_globals.Settings()
         if mod_globals.opt_lang == 'ru':
             import lang_ru as LANG
@@ -202,7 +203,6 @@ class PYDDT(App):
             import lang_en as LANG
         else:
             import lang_fr as LANG
-        global LANG
         get_zip()
         layout = GridLayout(cols=1, padding=5, spacing=10, size_hint=(1, None))
         layout.bind(minimum_height=layout.setter('height'))
@@ -247,7 +247,7 @@ class PYDDT(App):
         if mod_globals.opt_car != LANG.b_select:
             lbltxt = Label(text=LANG.l_scan, font_size=fs)
             popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
-            base.runTouchApp(slave=True)
+            base.runTouchApp()
             popup_init.open()
             base.EventLoop.idle()
             sys.stdout.flush()
@@ -272,9 +272,9 @@ class PYDDT(App):
             if mod_globals.opt_demo:
                 lbltxt = Label(text=LANG.l_demo)
             elif mod_globals.savedCAR != LANG.b_select:
-                lbltxt = Label(text=LANG.l_savedcar, title_size=fs)
+                lbltxt = Label(text=LANG.l_savedcar, font_size=fs)
             else:
-                lbltxt = Label(text=LANG.l_scan, title_size=fs)
+                lbltxt = Label(text=LANG.l_scan, font_size=fs)
             popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
             base.runTouchApp(embedded=True)
             popup_init.open()
@@ -293,7 +293,7 @@ class PYDDT(App):
         ecus = sorted(glob.glob(os.path.join(mod_globals.user_data_dir, 'savedCAR_*.csv')))
         toggle = MyButton(text=LANG.b_savedcar, id='open', size_hint=(0.4, None), height=(fs * 3), on_press=lambda bt:self.OpenEcu(bt))
         self.ecus_dropdown = DropDown(size_hint=(1, None), height=(fs))
-        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
+        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         for s_ecus in ecus:
             if s_ecus == 'savedCAR_prev.csv': continue
             s_ecus = os.path.split(s_ecus)[1]
@@ -373,7 +373,7 @@ class PYDDT(App):
                 return
 
     def find_in_car(self, ins):
-        glay = GridLayout(cols=1, spadding=10, size_hint=(1, 1))
+        glay = GridLayout(cols=1, size_hint=(1, 1))
         self.find = TextInput(text='', size_hint=(1, None), font_size=fs*1.5, multiline=False, height=(fs * 3), padding=[fs/2, fs/2])
         glay.add_widget(self.find)
         glay.add_widget(MyButton(text='FIND', height=(fs * 3), on_release=lambda btn:self.popup_in_car(btn.text)))
@@ -382,7 +382,7 @@ class PYDDT(App):
 
     def in_car(self):
         self.avtosd = mod_ddt_utils.ddtProjects().plist
-        glay = MyGridLayout(cols=3, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
+        glay = MyGridLayout(cols=3, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         label1 = MyLabel(text=LANG.l_car, halign='left', size_hint=(0.6, None), height=(fs * 3))
         label1.bind(size=label1.setter('text_size'))
         glay.add_widget(label1)
@@ -406,7 +406,7 @@ class PYDDT(App):
             self.popup.dismiss()
         except:
             pass
-        layout = MyGridLayout(cols=1, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1.0, None))
+        layout = MyGridLayout(cols=1, padding=(fs/3), height=(fs * 4), size_hint=(1.0, None))
         layout.bind(minimum_height=layout.setter('height'))
         if text == 'FIND':
             for avto in self.avtosd:
@@ -442,7 +442,7 @@ class PYDDT(App):
             sw.bind(active=callback)
         self.button[str1] = sw
         label1.bind(size=label1.setter('text_size'))
-        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
+        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         glay.add_widget(label1)
         glay.add_widget(sw)
         return glay
@@ -452,7 +452,7 @@ class PYDDT(App):
         label1 = MyLabel(text='ELM port', halign='left', size_hint=(0.7, None))
         self.bt_dropdown = DropDown(size_hint=(1, None), height=(fs * 2))
         label1.bind(size=label1.setter('text_size'))
-        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
+        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         btn = MyButton(text='WiFi (192.168.0.10:35000)')
         btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
         self.bt_dropdown.add_widget(btn)
@@ -475,7 +475,7 @@ class PYDDT(App):
         return glay
 
     def lang_app(self):
-        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
+        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         label = MyLabel(text=LANG.l_lang, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
         self.bt_lang = DropDown(size_hint=(1, None), height=(fs * 2))
         lang = {'English':'en','France':'fr','Русский':'ru',}
@@ -504,7 +504,7 @@ class PYDDT(App):
         self.button[str1] = toggle
         ti = TextInput(text=iText, multiline=False, font_size=(fs*1.5), padding=[fs/2, fs/2])
         self.textInput[str1] = ti
-        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
+        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         glay.add_widget(toggle)
         glay.add_widget(ti)
         return glay
@@ -513,7 +513,7 @@ class PYDDT(App):
         label1 = MyLabel(text=str1, halign='left', size_hint=(1.5, None), height=(fs * 3))
         ti = TextInput(text=iText, multiline=False, font_size=(fs*1.5), padding=[fs/2, fs/2])
         self.textInput[str1] = ti
-        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), spadding=10, size_hint=(1, None))
+        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         glay.add_widget(label1)
         glay.add_widget(ti)
         return glay
