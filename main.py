@@ -292,7 +292,7 @@ class PYDDT(App):
     def make_savedEcus(self):
         ecus = sorted(glob.glob(os.path.join(mod_globals.user_data_dir, 'savedCAR_*.csv')))
         toggle = MyButton(text=LANG.b_savedcar, id='open', size_hint=(0.4, None), height=(fs * 3), on_press=lambda bt:self.OpenEcu(bt))
-        self.ecus_dropdown = DropDown(size_hint=(1, None), height=(fs))
+        self.ecus_dropdown = DropDown(height=(fs))
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         for s_ecus in ecus:
             if s_ecus == 'savedCAR_prev.csv': continue
@@ -386,7 +386,7 @@ class PYDDT(App):
         label1 = MyLabel(text=LANG.l_car, halign='left', size_hint=(0.6, None), height=(fs * 3))
         label1.bind(size=label1.setter('text_size'))
         glay.add_widget(label1)
-        self.dropdown = DropDown(size_hint=(1, None), height=(fs * 3))
+        self.dropdown = DropDown(height=(fs * 3))
         glay.add_widget(MyButton(text=LANG.b_find, size_hint=(0.5, None), height=(fs * 3), on_press=self.find_in_car))
         btn = MyButton(text=LANG.b_all_cars, height=(fs * 3))
         btn.bind(on_release=lambda btn: self.dropdown.select(btn.text))
@@ -450,7 +450,7 @@ class PYDDT(App):
     def make_bt_device_entry(self):
         ports = mod_ddt_utils.getPortList()
         label1 = MyLabel(text='ELM port', halign='left', size_hint=(0.7, None))
-        self.bt_dropdown = DropDown(size_hint=(1, None), height=(fs * 2))
+        self.bt_dropdown = DropDown(height=(fs * 2))
         label1.bind(size=label1.setter('text_size'))
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         btn = MyButton(text='WiFi (192.168.0.10:35000)')
@@ -477,7 +477,7 @@ class PYDDT(App):
     def lang_app(self):
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         label = MyLabel(text=LANG.l_lang, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
-        self.bt_lang = DropDown(size_hint=(1, None), height=(fs * 2))
+        self.bt_lang = DropDown(height=(fs * 2))
         lang = {'English':'en','France':'fr','Русский':'ru',}
         for v, k in lang.items():
             but = MyButton(text=v, id=k, font_size=fs*2)
