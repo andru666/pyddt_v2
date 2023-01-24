@@ -200,7 +200,6 @@ def minD(value, iterable):
             return min(iterable, key=lambda x: abs(ord(value) - ord(x)))
             
 def ecuIdent(Address, DiagVersion, Supplier, Soft, Version, el, xml_f = False):
-    print(DiagVersion, Supplier, Soft, Version)
     if Address not in el.keys():
         return []
     t = el[Address]['targets']
@@ -274,4 +273,3 @@ def ecuIdent(Address, DiagVersion, Supplier, Soft, Version, el, xml_f = False):
             for v in xml[4]:
                 if v[0].replace('#', '')[len(DiagVersion)+len(Supplier):-len(Version)] == So:
                     xmls[4].append(v)
-    print(xmls)

@@ -3,7 +3,6 @@ try:
     from kivy_deps import sdl2, glew
 except:
     pass
-#test 
 from kivy.utils import platform
 from kivy.config import Config
 Config.set('kivy', 'exit_on_escape', '0')

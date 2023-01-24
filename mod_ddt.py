@@ -1214,10 +1214,7 @@ class DDTLauncher(App):
                 ecu = ast.literal_eval(line[4])
             except:
                 import json
-                print(line[4])
-                print(json.dumps(line[4]))
                 ecu = ast.literal_eval(str(json.dumps(line[4], ensure_ascii=False).encode('utf8')))
-                print(ecu)
                 ecu = line[4]
             return ecu
 
@@ -1376,7 +1373,7 @@ class DDTLauncher(App):
                      ecu['xml'],
                      ecu['dump'],
                      ecu['ses']]
-                fout.write(unicode(';'.join(e)).encode("ascii", "ignore") + '\n')
+                fout.write(';'.join(e).encode('utf-8').decode('utf-8') + '\n')
         self.renewEcuList()
         mod_globals.savedCAR = 'savedCAR_'+str(name)+'.csv'
         copyfile(filename, os.path.join(mod_globals.user_data_dir, "./savedCAR_prev.csv"))

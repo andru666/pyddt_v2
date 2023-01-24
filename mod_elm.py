@@ -499,15 +499,16 @@ class ELM:
         cmd_len = len(command) / 2
         if cmd_len < 8:
             if command in self.l1_cache.keys():
-                raw_command.append('%0.2X' % cmd_len + command + self.l1_cache[command])
+                raw_command.append('%0.2X' % int(cmd_len) + command + self.l1_cache[command])
             else:
-                raw_command.append('%0.2X' % cmd_len + command)
+
+                raw_command.append('%0.2X' % int(cmd_len) + command)
         else:
-            raw_command.append('1' + ('%0.3X' % cmd_len)[-3:] + command[:12])
+            raw_command.append('1' + ('%0.3X' % int(cmd_len))[-3:] + command[:12])
             command = command[12:]
             frame_number = 1
             while len(command):
-                raw_command.append('2' + ('%X' % frame_number)[-1:] + command[:14])
+                raw_command.append('2' + ('%X' % int(frame_number))[-1:] + command[:14])
                 frame_number = frame_number + 1
                 command = command[14:]
 
@@ -591,13 +592,13 @@ class ELM:
         raw_command = []
         cmd_len = len(command) / 2
         if cmd_len < 8:
-            raw_command.append('%0.2X' % cmd_len + command)
+            raw_command.append('%0.2X' % int(cmd_len) + command)
         else:
-            raw_command.append('1' + ('%0.3X' % cmd_len)[-3:] + command[:12])
+            raw_command.append('1' + ('%0.3X' % int(cmd_len))[-3:] + command[:12])
             command = command[12:]
             frame_number = 1
             while len(command):
-                raw_command.append('2' + ('%X' % frame_number)[-1:] + command[:14])
+                raw_command.append('2' + ('%X' % int(frame_number))[-1:] + command[:14])
                 frame_number = frame_number + 1
                 command = command[14:]
 
@@ -730,13 +731,13 @@ class ELM:
         raw_command = []
         cmd_len = len(command) / 2
         if cmd_len < 8:
-            raw_command.append('%0.2X' % cmd_len + command)
+            raw_command.append('%0.2X' % int(cmd_len) + command)
         else:
-            raw_command.append('1' + ('%0.3X' % cmd_len)[-3:] + command[:12])
+            raw_command.append('1' + ('%0.3X' % int(cmd_len))[-3:] + command[:12])
             command = command[12:]
             frame_number = 1
             while len(command):
-                raw_command.append('2' + ('%X' % frame_number)[-1:] + command[:14])
+                raw_command.append('2' + ('%X' % int(frame_number))[-1:] + command[:14])
                 frame_number = frame_number + 1
                 command = command[14:]
 
