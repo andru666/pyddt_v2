@@ -101,7 +101,6 @@ class Port:
         self.hdr.setsockopt (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.hdr.connect ((self.ipaddr, self.tcpprt))
         self.hdr.setblocking (True)
-        
         self.write('AT\r')
         self.expect('>',1)
 
@@ -114,8 +113,8 @@ class Port:
         self.socket, self.recv_stream, self.send_stream = get_bt_socket_stream()
 
     def read(self):
-        try:
-            byte = ''
+        byte = ''
+        if True:
             if self.portType == 1:
                 try:
                     byte = self.hdr.recv(1)
@@ -127,14 +126,18 @@ class Port:
                     byte = chr(self.recv_stream.read())
             elif self.hdr.inWaiting():
                 byte = self.hdr.read()
-        except:
+        else:
             exit(2)
-
-        return byte
+        if type(byte) == str:
+            byte = byte.encode()
+        return byte.decode('utf-8','ignore')
 
     def write(self, data):
+        if type(data) == str:
+            data = data.encode()
         try:
             if self.portType == 1:
+                rcv_bytes = self.hdr.sendall(data)
                 try:
                     rcv_bytes = self.hdr.sendall(data)
                 except:
@@ -152,14 +155,14 @@ class Port:
     def expect(self, pattern, time_out = 1):
         tb = time.time()
         self.buff = ''
-        try:
+        if True:
             while True:
                 if not mod_globals.opt_demo:
                     byte = self.read()
                 else:
                     byte = '>'
                 if byte == '\r':
-                    byte = '\n'
+                    byte = byte.replace('\r', '\n')
                 self.buff += byte
                 tc = time.time()
                 if pattern in self.buff:
@@ -167,7 +170,7 @@ class Port:
                 if tc - tb > time_out:
                     return self.buff + 'TIMEOUT'
 
-        except:
+        else:
             pass
 
         return ''
@@ -424,7 +427,6 @@ class ELM:
             no_negative_wait_response = True
             self.lastCMDtime = tc = time.time()
             cmdrsp = self.send_cmd(command)
-
             self.checkIfCommandUnsupported(command, cmdrsp)
             for line in cmdrsp.split('\n'):
                 line = line.strip().upper()
@@ -496,7 +498,7 @@ class ELM:
         elif not all((c in string.hexdigits for c in command)):
             return 'HEX ERROR'
         raw_command = []
-        cmd_len = len(command) / 2
+        cmd_len = len(command) // 2
         if cmd_len < 8:
             if command in self.l1_cache.keys():
                 raw_command.append('%0.2X' % int(cmd_len) + command + self.l1_cache[command])
@@ -547,7 +549,7 @@ class ELM:
         else:
             if responses[0][:1] == '1':
                 nbytes = int(responses[0][1:4], 16)
-                nframes = nbytes / 7 + 1
+                nframes = nbytes // 7 + 1
                 cframe = 1
                 result = responses[0][4:16]
             else:
@@ -568,8 +570,9 @@ class ELM:
         if result[:2] == '7F':
             noerrors = False
         if noerrors and nframes < 16 and command[:1] == '2' and not mod_globals.opt_n1c:
+            print (nframes)
             self.l1_cache[command] = str(hex(nframes))[2:].upper()
-        if len(result) / 2 >= nbytes and noerrors:
+        if len(result) // 2 >= nbytes and noerrors:
             result = ' '.join((a + b for a, b in zip(result[::2], result[1::2])))
             return result
         elif result[:2] == '7F' and result[4:6] in negrsp.keys():
@@ -590,7 +593,7 @@ class ELM:
         elif not all((c in string.hexdigits for c in command)):
             return 'HEX ERROR'
         raw_command = []
-        cmd_len = len(command) / 2
+        cmd_len = len(command) // 2
         if cmd_len < 8:
             raw_command.append('%0.2X' % int(cmd_len) + command)
         else:
@@ -674,7 +677,7 @@ class ELM:
         elif responses[0][:1] == '1':
             nBytes = int(responses[0][1:4], 16)
             nBytes = nBytes - 6
-            nFrames = 1 + nBytes / 7 + bool(nBytes % 7)
+            nFrames = 1 + nBytes // 7 + bool(nBytes % 7)
             cFrame = 1
             result = responses[0][4:16]
             while cFrame < nFrames:
@@ -708,7 +711,7 @@ class ELM:
         else:
             self.error_frame += 1
             noErrors = False
-        if len(result) / 2 >= nBytes and noErrors and result[:2] != '7F':
+        if len(result) // 2 >= nBytes and noErrors and result[:2] != '7F':
             result = ' '.join((a + b for a, b in zip(result[::2], result[1::2])))
             return result
         elif result[:2] == '7F' and result[4:6] in negrsp.keys():
@@ -729,7 +732,7 @@ class ELM:
         elif not all((c in string.hexdigits for c in command)):
             return 'HEX ERROR'
         raw_command = []
-        cmd_len = len(command) / 2
+        cmd_len = len(command) // 2
         if cmd_len < 8:
             raw_command.append('%0.2X' % int(cmd_len) + command)
         else:
@@ -828,7 +831,7 @@ class ELM:
         elif responses[0][:1] == '1':
             nBytes = int(responses[0][1:4], 16)
             nBytes = nBytes - 6
-            nFrames = 1 + nBytes / 7 + bool(nBytes % 7)
+            nFrames = 1 + nBytes // 7 + bool(nBytes % 7)
             cFrame = 1
             result = responses[0][4:16]
             while cFrame < nFrames:
@@ -862,7 +865,7 @@ class ELM:
         else:
             self.error_frame += 1
             noErrors = False
-        if len(result) / 2 >= nBytes and noErrors and result[:2] != '7F':
+        if len(result) // 2 >= nBytes and noErrors and result[:2] != '7F':
             result = ' '.join((a + b for a, b in zip(result[::2], result[1::2])))
             return result
         elif result[:2] == '7F' and result[4:6] in negrsp.keys():
@@ -900,7 +903,6 @@ class ELM:
                 tmstr = datetime.now().strftime('%H:%M:%S.%f')[:-3]
                 self.lf.write('<[' + tmstr + ']' + self.buff + '<shifted>' + command + '\n')
                 self.lf.flush()
-
         if '?' in self.buff:
             self.error_question += 1
         if 'BUFFER FULL' in self.buff:

@@ -47,6 +47,7 @@ class MyScatterLayout(ScatterLayout):
             Rectangle(pos=self.pos, size=self.size)
 
 class DDTLauncher(App):
+    
     def __init__(self, opt_car=None, elm=None):
         global LANG
         if mod_globals.opt_lang == 'ru':
@@ -936,6 +937,7 @@ class DDTLauncher(App):
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(x, self.screens)))
 
     def ScanAllBtnClick(self):
+        print('scan')
         if self.elm.lf!=0:
             self.elm.lf.write("#load: "+self.filterText+"\n")
             self.elm.lf.flush()  
@@ -943,7 +945,7 @@ class DDTLauncher(App):
         vins = {}
         self.scantxt = Label(text='Init', width=self.Window_size[0]*0.95)
         popup_scan = Popup(title=LANG.l_title1, title_size=fs*1.5, title_align='center', content=self.scantxt, size=(self.Window_size[0], 400), size_hint=(None, None))
-        base.runTouchApp()
+        #base.runTouchApp()
         popup_scan.open()
         EventLoop.idle()
         i = 0
@@ -954,6 +956,7 @@ class DDTLauncher(App):
         p_xml = {}
         self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
         EventLoop.idle()
+        
         if self.v_proj == 'ALL_CARS':
             for p in ['KWP','CAN-500','CAN-250']:
                 if p == 'KWP':
@@ -973,14 +976,17 @@ class DDTLauncher(App):
                         p_xml[Addr]['CAN'].append(x)
                     else:
                         p_xml[Addr]['KWP'].append(x)
-
             for Addr, pro in p_xml.items():
                 if len(pro['KWP']):
                     self.elm.init_iso()
                     self.cheks(Addr, pro['KWP'], 'KWP', pro['iso8'], i, len(p_xml), vins)
                 if len(pro['CAN']):
+                    print(1)
                     self.elm.init_can()
+                    print(2)
                     self.cheks(Addr, pro['CAN'], 'CAN', pro['iso8'], i, len(p_xml), vins)
+                    print(3)
+                print(22)
                 i += 1
         self.elm.close_protocol()
         for ce in self.carecus:
@@ -1019,10 +1025,14 @@ class DDTLauncher(App):
         mod_globals.opt_scan = False
 
     def cheks(self, Addr, xml, pro, iso, i=None, x=None, vins=None):
+        print('cheks')
         self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(x) + LANG.l_cont8 + str(len(self.detectedEcus))
         EventLoop.idle()
+        print(111)
         self.setEcuAddress({'addr':Addr, 'xml':Addr, 'prot':pro, 'iso8':iso})
+        print(222)
         StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN = mod_scan_ecus.readECUIds(self.elm)
+        print(StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN)
         if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': return
         xml = mod_ddt_ecu.ecuSearch(self.v_proj, Addr, DiagVersion, Supplier, Soft, Version, self.eculist, xml)
         if xml:
