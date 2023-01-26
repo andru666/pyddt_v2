@@ -163,6 +163,7 @@ class Port:
                     byte = '>'
                 if byte == '\r':
                     byte = byte.replace('\r', '\n')
+                print(byte)
                 self.buff += byte
                 tc = time.time()
                 if pattern in self.buff:
@@ -891,7 +892,7 @@ class ELM:
                 break
             self.buff = self.port.expect('>', self.portTimeout)
             tc = time.time()
-            if tc - tb > self.portTimeout and 'TIMEOUT' not in self.buff:
+            if (tc - tb) > self.portTimeout and 'TIMEOUT' not in self.buff:
                 self.buff += 'TIMEOUT'
             if 'TIMEOUT' in self.buff:
                 self.error_timeout += 1
@@ -913,7 +914,8 @@ class ELM:
         if 'CAN ERROR' in self.buff:
             self.error_can += 1
         roundtrip = tc - tb
-        self.response_time = (self.response_time * 9 + roundtrip) / 10
+        if command[0].isdigit():
+            self.response_time = (self.response_time * 9 + roundtrip) / 10
         if self.lf != 0:
             self.lf.write('<[' + str(round(roundtrip, 3)) + ']' + self.buff + '\n')
             self.lf.flush()
@@ -1010,10 +1012,8 @@ class ELM:
         self.tmpNotSupportedCommands = {}
         if self.currentprotocol == 'can' and self.currentaddress == addr:
             return
-        if len(ecu['idTx']):
-            dnat[addr] = ecu['idTx']
-        if len(ecu['idRx']):
-            snat[addr] = ecu['idRx']
+        if len(ecu['idTx']): dnat[addr] = ecu['idTx']
+        if len(ecu['idRx']): snat[addr] = ecu['idRx']
         if self.lf != 0:
             self.lf.write('#' * 60 + '\n#connect to: ' + ecu['ecuname'] + ' Addr:' + addr + '\n' + '#' * 60 + '\n')
             self.lf.flush()
@@ -1023,14 +1023,14 @@ class ELM:
         self.lastCMDtime = 0
         self.l1_cache = {}
         self.clear_cache()
-        if addr in dnat.keys():
+        if addr in list(dnat.keys()):
             TXa = dnat[addr]
         else:
-            TXa = 'undefined'
-        if addr in snat.keys():
+            TXa = addr
+        if addr in list(snat.keys()):
             RXa = snat[addr]
         else:
-            RXa = 'undefined'
+            RXa = addr
         if len(TXa) == 8:
             self.check_answer(self.cmd('at cp ' + TXa[:2]))
             self.check_answer(self.cmd('at sh ' + TXa[2:]))
@@ -1041,7 +1041,7 @@ class ELM:
         self.check_answer(self.cmd('at fc sm 1'))
         self.check_answer(self.cmd('at st ff'))
         self.check_answer(self.cmd('at at 0'))
-        if 'brp' in ecu.keys() and '1' in ecu['brp'] and '0' in ecu['brp']:
+        if 'brp' in list(ecu.keys ()) and '1' in ecu['brp'] and '0' in ecu['brp']:
             if self.lf != 0:
                 self.lf.write('#' * 60 + '\n#    Double BRP, try CAN250 and then CAN500\n' + '#' * 60 + '\n')
                 self.lf.flush()
