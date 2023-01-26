@@ -9,5 +9,4 @@ dumps/
 logs/
 *.zip
 *.p
-log.txt
-1log.txt
+*.csv
