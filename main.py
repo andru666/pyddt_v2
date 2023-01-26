@@ -455,10 +455,7 @@ class PYDDT(App):
         btn = MyButton(text='WiFi (192.168.0.10:35000)')
         btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
         self.bt_dropdown.add_widget(btn)
-        try:
-            porte = ports.iteritems()
-        except:
-            porte = ports.items()
+        porte = ports.items()
         for name, address in porte:
             if mod_globals.opt_port == name:
                 mod_globals.opt_dev_address = address

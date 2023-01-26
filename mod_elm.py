@@ -84,9 +84,9 @@ class Port:
         else:
             self.portName = portName
             self.portType = 0
-            try:
+            if True:
                 self.hdr = serial.Serial(self.portName, baudrate=speed, timeout=portTimeout)
-            except:
+            else:
                 iterator = sorted(list(list_ports.comports()))
                 exit(2)
 
@@ -116,9 +116,9 @@ class Port:
         byte = ''
         if True:
             if self.portType == 1:
-                try:
+                if True:
                     byte = self.hdr.recv(1)
-                except:
+                else:
                     pass
 
             elif self.portType == 2:
@@ -135,12 +135,12 @@ class Port:
     def write(self, data):
         if type(data) == str:
             data = data.encode()
-        try:
+        if True:
             if self.portType == 1:
                 rcv_bytes = self.hdr.sendall(data)
-                try:
+                if True:
                     rcv_bytes = self.hdr.sendall(data)
-                except:
+                else:
                     self.reinit()
                     rcv_bytes = self.hdr.sendall(data)
                 return rcv_bytes
@@ -149,7 +149,7 @@ class Port:
                 self.send_stream.flush()
                 return len(data)
             return self.hdr.write(data)
-        except:
+        else:
             exit(2)
 
     def expect(self, pattern, time_out = 1):
@@ -570,7 +570,6 @@ class ELM:
         if result[:2] == '7F':
             noerrors = False
         if noerrors and nframes < 16 and command[:1] == '2' and not mod_globals.opt_n1c:
-            print (nframes)
             self.l1_cache[command] = str(hex(nframes))[2:].upper()
         if len(result) // 2 >= nbytes and noerrors:
             result = ' '.join((a + b for a, b in zip(result[::2], result[1::2])))

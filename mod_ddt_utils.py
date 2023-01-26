@@ -15,10 +15,7 @@ else:
     BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
     BluetoothSocket = autoclass('android.bluetooth.BluetoothSocket')
     UUID = autoclass('java.util.UUID')
-try:
-    import cPickle as pickle
-except:
-    import pickle
+import pickle
 
 class settings():
     path = ''
@@ -208,24 +205,23 @@ class ddtAddressing():
         
         fun, self.list_name = self.iso_can_select(filename)
 
-        try:
+        if True:
             v_pcan =  int(fun['00']['baudRate'])
-        except:
+        else:
             v_pcan = 0
         for f in data:
             if filename == 'ALL_CARS':
                 self.alist[f] = {}
                 self.alist[f]['xml'] = {}
-                try:
-                    self.alist[f]['XId'] = hex(int(fun[f]['XId']))[2:].upper()
-                except:
-                    self.alist[f]['XId'] = ''
+                self.alist[f]['XId'] = ''
+                if f in fun.keys():
+                    if fun[f]['XId']:
+                        self.alist[f]['XId'] = hex(int(fun[f]['XId']))[2:].upper()
                 for t in data[f]['targets']:
                     self.alist[f]['FuncName'] = data[f]['FuncName']
-                    try:
+                    self.alist[f]['iso8'] = ''
+                    if f in fun.keys():
                         self.alist[f]['iso8'] = fun[f]['iso8']
-                    except:
-                        self.alist[f]['iso8'] = ''
                     if data[f]['targets'][t]['Protocol'].startswith('KWP2000 FastInit'):
                         self.alist[f]['xml'][t] = 'KWP-FAST'
                     elif data[f]['targets'][t]['Protocol'].startswith('KWP2000 Init'):
@@ -244,17 +240,16 @@ class ddtAddressing():
             if "'"+filename.lower()+"'" in str(data[f]).lower():
                 self.alist[f] = {}
                 self.alist[f]['xml'] = {}
-                try:
-                    self.alist[f]['XId'] = hex(int(fun[f]['XId']))[2:].upper()
-                except:
-                    self.alist[f]['XId'] = ''
+                self.alist[f]['XId'] = ''
+                if f in fun.keys():
+                    if fun[f]['XId']:
+                        self.alist[f]['XId'] = hex(int(fun[f]['XId']))[2:].upper()
                 for t in data[f]['targets']:
                     if "'"+filename.lower()+"'" in str(data[f]['targets'][t]['Projects']).lower():
                         self.alist[f]['FuncName'] = data[f]['FuncName']
-                        try:
+                        self.alist[f]['iso8'] = ''
+                        if f in fun.keys():
                             self.alist[f]['iso8'] = fun[f]['iso8']
-                        except:
-                            self.alist[f]['iso8'] = ''
                         if data[f]['targets'][t]['Protocol'].startswith('KWP2000 FastInit'):
                             self.alist[f]['xml'][t] = 'KWP-FAST'
                         elif data[f]['targets'][t]['Protocol'].startswith('KWP2000 Init'):
@@ -317,12 +312,10 @@ class ddtAddressing():
                     tree1 = et.parse(mod_db_manager.get_file_from_ddt('vehicles/GenericAddressing.xml'))
                     root1 = tree1.getroot()
                     Function_all = root1.findall("ns0:Function[@Name='"+name+"']", ns)
-                    try:
+                    if len(Function_all) > 1:
                         fun[addr]['XId'] = Function_all[0].findall('ns0:XId',ns)[0].text
-                    except:
-                        pass
                 ISO8 = fu.findall('ns0:ISO8',ns)
-                fun[addr]['ISO8'] = ''
+                fun[addr]['iso8'] = ''
                 if ISO8:
-                    fun[addr]['ISO8'] = ISO8[0].text
+                    fun[addr]['iso8'] = ISO8[0].text
         return fun, alist
