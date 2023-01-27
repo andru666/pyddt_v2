@@ -312,8 +312,10 @@ class ddtAddressing():
                     tree1 = et.parse(mod_db_manager.get_file_from_ddt('vehicles/GenericAddressing.xml'))
                     root1 = tree1.getroot()
                     Function_all = root1.findall("ns0:Function[@Name='"+name+"']", ns)
-                    if len(Function_all) > 1:
+                    try:
                         fun[addr]['XId'] = Function_all[0].findall('ns0:XId',ns)[0].text
+                    except:
+                        pass
                 ISO8 = fu.findall('ns0:ISO8',ns)
                 fun[addr]['iso8'] = ''
                 if ISO8:
