@@ -1301,7 +1301,7 @@ class DDTLauncher(App):
 
     def make_savedECU(self):
         glay = GridLayout(cols=4, size_hint=(1, None), height=3*fs)
-        if True:
+        if '_' in mod_globals.savedCAR:
             self.labels.text = mod_globals.savedCAR.split('_', 1)[1][:-4]
         else:
             self.labels.text = self.v_vin
