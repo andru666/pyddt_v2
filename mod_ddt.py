@@ -429,7 +429,7 @@ class DDTLauncher(App):
         if len(self.dValue):
             for d in self.dValue.keys():
                 if self.dValue[d]['request'] not in self.REQ: continue
-                EventLoop.window._mainloop()
+                EventLoop.window.mainloop()
                 val = get_value(self.dValue[d], self.decu, self.elm)
                 if ':' in val['value']:
                     val['value'] = val['value'].split(':')[1]
@@ -1215,23 +1215,23 @@ class DDTLauncher(App):
             Clock.schedule_once(lambda args:self.MyPopup(content=pop), 0.1)
             return None
         else:
-            if True:
+            try:
                 line = [self.ecutree[v]['values'] for v in range(len(self.ecutree)) if xml in self.ecutree[v]['values']][0]
-            else:
+            except:
                 self.MyPopup(content=pop)
                 return None
-            if True:
+            try:
                 ecu = ast.literal_eval(line[4])
-            else:
+            except:
                 import json
                 ecu = ast.literal_eval(str(json.dumps(line[4], ensure_ascii=False).encode('utf8')))
                 ecu = line[4]
             return ecu
 
     def popup_dump(self, bt):
-        if True:
+        try:
             bt = bt.id
-        else:
+        except:
             pass
         if bt.endswith('dump'): self.getDumpListByXml(self.label[bt[:-5]+'_xml'].text)
         else: self.getDumpListByXml(self.label[bt].text)
