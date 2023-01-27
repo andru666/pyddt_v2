@@ -35,8 +35,6 @@ def readECUIds( elm ):
     if not res.startswith('50'):
         pass
     IdRsp = elm.request(req='2180', positive='61', cache=False)
-    print('IdRsp')
-    print(IdRsp)
     if len(IdRsp) > 59 and '7F' not in IdRsp:
         DiagVersion = str(int(IdRsp[21:23], 16))
         Supplier = IdRsp[24:32].replace('00', '30').replace(' ', '').strip()
@@ -50,8 +48,6 @@ def readECUIds( elm ):
             bytes.fromhex(VIN).decode('utf-8')
     else:
         IdRsp_F1A0 = elm.request(req='22F1A0', positive='62', cache=False)
-        print(IdRsp_F1A0)
-        print(IdRsp_F1A0[9:11])
         if len(IdRsp_F1A0) > 9 and 'NR' not in IdRsp_F1A0 and 'BUS' not in IdRsp_F1A0 and '7F' not in IdRsp_F1A0:
             if True:
                 DiagVersion = str(int(IdRsp_F1A0[9:11], 16))

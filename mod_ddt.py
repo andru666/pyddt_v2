@@ -947,8 +947,8 @@ class DDTLauncher(App):
         vins = {}
         self.scantxt = Label(text='Init', width=self.Window_size[0]*0.95)
         popup_scan = Popup(title=LANG.l_title1, title_size=fs*1.5, title_align='center', content=self.scantxt, size=(self.Window_size[0], 400), size_hint=(None, None))
-        #base.runTouchApp()
         popup_scan.open()
+        
         EventLoop.idle()
         i = 0
         self.detectedEcus = {}
@@ -1016,7 +1016,6 @@ class DDTLauncher(App):
         else:
             mod_globals.savedCAR = 'savedCAR_'+self.v_proj+'.csv'
             self.SaveBtnClick(self.v_proj, None)
-        EventLoop.window.remove_widget(popup_scan)
         popup_scan.dismiss()
         base.stopTouchApp()
         EventLoop.window.canvas.clear()
@@ -1024,7 +1023,6 @@ class DDTLauncher(App):
 
     def cheks(self, Addr, xml, pro, iso, i=None, x=None, vins=None):
         self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(x) + LANG.l_cont8 + str(len(self.detectedEcus))
-        EventLoop.idle()
         self.setEcuAddress({'addr':Addr, 'xml':Addr, 'prot':pro, 'iso8':iso})
         StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN = mod_scan_ecus.readECUIds(self.elm)
         if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': return

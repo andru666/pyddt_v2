@@ -238,7 +238,7 @@ class PYDDT(App):
         return root
 
     def scanALLecus(self, instance):
-        mod_globals.opt_scan = True 
+        mod_globals.opt_scan = True
         self.finish(instance.id)
         self.settings.save()
         label = Label(text=LANG.l_n_car1, font_size=fs*3, size_hint=(1, 1), halign = 'center', valign = 'middle', text_size=(Window.size[0]*0.7, Window.size[1]*0.7))
@@ -246,15 +246,12 @@ class PYDDT(App):
         if mod_globals.opt_car != LANG.b_select:
             lbltxt = Label(text=LANG.l_scan, font_size=fs)
             popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
-            #base.runTouchApp()
             popup_init.open()
             base.EventLoop.idle()
-            sys.stdout.flush()
-            base.EventLoop.window.remove_widget(popup_init)
             popup_init.dismiss()
-            base.stopTouchApp()
             base.EventLoop.window.canvas.clear()
             mod_ddt.DDT_START(mod_globals.opt_car, self.elm)
+            base.EventLoop.idle()
         else:
             popup.open()
             return
@@ -350,7 +347,7 @@ class PYDDT(App):
         if mod_globals.opt_car != LANG.b_select or (mod_globals.savedCAR != LANG.b_select and not mod_globals.opt_scan):
             try:
                 self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
-                self.stop()
+                #self.stop()
             except:
                 labelText = '''
                     Could not connect to the ELM.
