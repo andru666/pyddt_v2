@@ -379,8 +379,8 @@ class DDTLauncher(App):
         for key, v in params.items():
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
-            if key in self.dLabels.keys():
-                if True:
+            if val != 'None':
+                if key in self.dLabels.keys():
                     if len(d.List.keys()):
                         listIndex = int(val,16)
                         if listIndex in d.List.keys():
@@ -408,19 +408,19 @@ class DDTLauncher(App):
                     else:
                         for iD in self.dLabels[key]:
                             iD.text = val
-            if key in self.iLabels.keys():
-                if self.iValueNeedUpdate[key]:
-                    self.iLabels[key].text = val
-                    self.iValueNeedUpdate[key] = False
-            if key+v['request'] in self.oLabels.keys():
-                if self.iValueNeedUpdate[key]:
-                    if True:
-                        self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                    else:
-                        self.oLabels[key+v['request']].text = val
-                    self.iValueNeedUpdate[key] = False
-            if key in self.Labels.keys():
-                self.Labels[key].text = val
+                if key in self.iLabels.keys():
+                    if self.iValueNeedUpdate[key]:
+                        self.iLabels[key].text = val
+                        self.iValueNeedUpdate[key] = False
+                if key+v['request'] in self.oLabels.keys():
+                    if self.iValueNeedUpdate[key]:
+                        if listIndex:
+                            self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                        else:
+                            self.oLabels[key+v['request']].text = val
+                        self.iValueNeedUpdate[key] = False
+                if key in self.Labels.keys():
+                    self.Labels[key].text = val
         if self.start:
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
 
@@ -434,10 +434,11 @@ class DDTLauncher(App):
                 if ':' in val['value']:
                     val['value'] = val['value'].split(':')[1]
                 if val['value'].isalnum() and len(val['value'])>30 and 'vin'.upper() in d.upper():
-                    val['value'] = str(val['value'].decode('HEX'))
+                    val['value'] = bytes.fromhex(val['value'])
                     while not val['value'].isalnum():
                         val['value'] = val['value'][:-1]
                         if len(val['value'])==0:break
+                    val['value'] = val['value'].decode()
                 self.dValue[d]['value'] = val['value'].strip()
                 dct[d] = self.dValue[d]
         return dct
@@ -869,7 +870,7 @@ class DDTLauncher(App):
         for k in requests.ReceivedDI.keys():
             if k == "NDTC" or k == "FirstDTC": continue
             value_hex = get_value({'request':requests.Name,'name':k}, self.decu, self.elm, resp=self.data_dtc[dt.id]['resp'])
-            if value_hex['value'] is None or value_hex['value'] is 'None': continue
+            if value_hex['value'] == None or value_hex['value'] == 'None': continue
             glay = GridLayout(cols=2, size_hint=(1, None))
             glay.height = fs*2*math.ceil(len(k)*1.0/(glay.width*0.7/2))
             label1 = MyLabelBlue(text=k, halign='left', valign='middle', size_hint=(0.6, 1), font_size=fs)
@@ -1883,7 +1884,7 @@ class DDTECU():
             sb = sdi.FirstByte - 1 
             bits = d.BitsCount
             sbit = sdi.BitOffset
-            bytes =(bits+sbit-1)/8 + 1
+            bytes =(bits+sbit-1)//8 + 1
             if littleEndian:
                 lshift = sbit
             else:
@@ -1893,6 +1894,7 @@ class DDTECU():
                 val = int(value,16)
             else:
                 return 'ERROR: Wrong HEX value in parametr(%s) : "%s"' %(d.Name, value)
+            print(val)
             val =(val&(2**bits-1))<<lshift
             value = hex(val)[2:]
             if value[-1:].upper()=='L':
@@ -1938,8 +1940,8 @@ class DDTECU():
                 
         if d.BytesASCII:
             hst = ''
-            if len(value)<(d.BitsCount/8):
-                value += ' '*(d.BitsCount/8 - len(value))
+            if len(value)<(d.BitsCount//8):
+                value += ' '*(d.BitsCount//8 - len(value))
             for c in value:
                 hst = hst + hex(ord(c))[2:].zfill(2)
             value = hst

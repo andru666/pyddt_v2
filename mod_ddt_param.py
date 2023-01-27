@@ -21,10 +21,10 @@ def get_value(n, decu, elm, auto=True, request=None, responce=None, resp=None):
         return n
 
     if d.BytesASCII:
-        res = hv.decode('hex')
+        res = bytes.fromhex(hv).decode('utf-8','replace')
         if not all(c in string.printable for c in res):
             if len(res) > 17:
-                res = hv[:-4].decode('hex')
+                res = bytes.fromhex(hv[:-4]).decode('utf-8','replace')
             if not all(c in string.printable for c in res):
                 res = hv
         n['value'] = res
@@ -59,24 +59,23 @@ def getHexVal(r, d, auto=True, request=None, responce=None, resp=None):
     sb = int(r.FirstByte) - 1
     bits = int(d.BitsCount)
     sbit = int(r.BitOffset)
-    bytes = (bits + sbit - 1) / 8 + 1
+    bytes = int((bits + sbit - 1) // 8 + 1)
     if r.Endian == 'Little':
         rshift = sbit
     else:
         rshift = ((bytes + 1) * 8 - (bits + sbit)) % 8
-    if sb * 3 + bytes * 3 - 1 > len(resp):
+    if (sb * 3 + bytes * 3 - 1) > len(resp):
         return mod_globals.none_val
-    
     hexval = resp[sb * 3:(sb + bytes) * 3 - 1]
     hexval = hexval.replace(' ', '')
-    val = int(hexval, 16) >> rshift & 2 ** bits - 1
+    val = (int(hexval, 16) >> int(rshift)) & (2 ** bits - 1)
     hexval = hex(val)[2:]
     if hexval[-1:].upper() == 'L':
         hexval = hexval[:-1]
     if len(hexval) % 2:
         hexval = '0' + hexval
     if (len(hexval)/2)%bytes:
-        hexval = '00' * (bytes - len(hexval)/2) + hexval
+        hexval = '00' * (bytes - len(hexval)//2) + hexval
     if r.Endian == 'Little':
         a = hexval
         b = ''

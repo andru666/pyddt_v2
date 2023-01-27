@@ -307,7 +307,6 @@ class PYDDT(App):
         return glay
 
     def finish(self, instance):
-        print (instance)
         mod_globals.opt_car = self.carbutton.text
         mod_globals.savedCAR = self.ecusbutton.text
         #mod_globals.opt_car = 'x81 : Esp'
