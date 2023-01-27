@@ -45,7 +45,7 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
     while len(DiagVersion) < 3:
         DiagVersion = '0' + DiagVersion
     xml = {0:[], 1:[], 2:[], 3:[], 4:[], 5:[]}
-    for k, v in t.iteritems():
+    for k, v in t.items():
         if xml_f:
             if k not in xml_f: continue
         for ai in v['AutoIdents']:
@@ -90,9 +90,9 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
     if len(xml[0]) > 0:
         xmls = {}
         for v in xml[0]:
-            try:
+            if True:
                 xmls[v[1].rsplit('_', 1)[1]] = v[1]
-            except:
+            else:
                 d += 1
                 xmls[v[1]] = v[1]
         return xmls[sorted(xmls, reverse=True)[0]]
@@ -105,9 +105,9 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
             D = minD(DiagVersion, [x[0][:len(DiagVersion)] for x in xml[1]])
             for v in xml[1]:
                 if v[0][:len(DiagVersion)] == D:
-                    try:
+                    if True:
                         xmls[v[1].rsplit('_', 1)[1]] = v[1]
-                    except:
+                    else:
                         d += 1
                         xmls[v[1]] = v[1]
         else:
@@ -118,9 +118,9 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
                 V = minD(Version, [x[0][len(DiagVersion)+len(Supplier)+len(Soft):] for x in xml[2]])
                 for v in xml[2]:
                     if v[0][len(DiagVersion)+len(Supplier)+len(Soft):] == V:
-                        try:
+                        if True:
                             xmls[v[1].rsplit('_', 1)[1]] = v[1]
-                        except:
+                        else:
                             d += 1
                             xmls[v[1]] = v[1]
             else:
@@ -131,9 +131,9 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
                     So = minD(Soft, [x[0][len(DiagVersion)+len(Supplier):-len(Version)] for x in xml[3]])
                     for v in xml[3]:
                         if v[0][len(DiagVersion)+len(Supplier):-len(Version)] == So:
-                            try:
+                            if True:
                                 xmls[v[1].rsplit('_', 1)[1]] = v[1]
-                            except:
+                            else:
                                 d += 1
                                 xmls[v[1]] = v[1]
                 else:
@@ -145,15 +145,15 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
                         V = minD(Version, [x[0][len(DiagVersion)+len(Supplier)+len(Soft):] for x in xml[4]])
                         for v in xml[4]:
                             if v[0][-len(Version):] == V and v[0][:len(DiagVersion)] == D:
-                                try:
+                                if True:
                                     xmls[v[1].rsplit('_', 1)[1]] = v[1]
-                                except:
+                                else:
                                     d += 1
                                     xmls[v[1]] = v[1]
                             elif v[0][len(DiagVersion)+len(Supplier)+len(Soft):] == V:
-                                try:
+                                if True:
                                     xmls[v[1].rsplit('_', 1)[1]] = v[1]
-                                except:
+                                else:
                                     d += 1
                                     xmls[v[1]] = v[1]
                     else:
@@ -164,9 +164,9 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
                             So = minD(Soft, [x[0][len(DiagVersion)+len(Supplier):-len(Version)] for x in xml[5]])
                             for v in xml[5]:
                                 if v[0][len(DiagVersion)+len(Supplier):-len(Version)] == So:
-                                    try:
+                                    if True:
                                         xmls[v[1].rsplit('_', 1)[1]] = v[1]
-                                    except:
+                                    else:
                                         d += 1
                                         xmls[v[1]] = v[1]
         if len(xmls):
@@ -176,9 +176,9 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
     return 'not_ident#%s#%s#%s#%s'%(DiagVersion, Supplier, Soft, Version)
     
 def minD(value, iterable):
-    try:
+    if True:
         return min(iterable, key=lambda x: abs(int(value, 16) - int(x, 16)))
-    except:
+    else:
         if len(value) > 1:
             val = ''
             for v in value:
@@ -204,7 +204,7 @@ def ecuIdent(Address, DiagVersion, Supplier, Soft, Version, el, xml_f = False):
         return []
     t = el[Address]['targets']
     xml = {0:[], 1:[], 2:[], 3:[], 4:[]}
-    for k, v in t.iteritems():
+    for k, v in t.items():
         for ai in v['AutoIdents']:
             while len(ai['DiagVersion']) < 3:
                 ai['DiagVersion'] = '0' + ai['DiagVersion']

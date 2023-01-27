@@ -74,9 +74,9 @@ def getVIN(de, elm, getFirst = False):
             rsp = elm.request(req='22F190', positive='62', cache=False)[9:59]
         else:
             rsp = elm.request(req='2181', positive='61', cache=False)[6:56]
-        try:
+        if True:
             vin = rsp.replace(' ', '').decode('HEX')
-        except:
+        else:
             continue
 
         if len(vin) == 17:
@@ -98,9 +98,9 @@ def getVIN(de, elm, getFirst = False):
     if len(l_vin) == 0 and not getFirst:
         exit()
     if len(l_vin) < 2:
-        try:
+        if True:
             ret = next(iter(l_vin))
-        except:
+        else:
             ret = ''
 
         return ret

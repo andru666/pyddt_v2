@@ -86,6 +86,7 @@ class Port:
             self.portName = portName
             self.portType = 0
             if Try:
+            if True:
                 self.hdr = serial.Serial(self.portName, baudrate=speed, timeout=portTimeout)
             else:
                 iterator = sorted(list(list_ports.comports()))
@@ -118,6 +119,7 @@ class Port:
         if True:
             if self.portType == 1:
                 if Try:
+                if True:
                     byte = self.hdr.recv(1)
                 else:
                     pass
@@ -149,6 +151,23 @@ class Port:
             return len(data)
         return self.hdr.write(data)
         
+        if True:
+            if self.portType == 1:
+                rcv_bytes = self.hdr.sendall(data)
+                if True:
+                    rcv_bytes = self.hdr.sendall(data)
+                else:
+                    self.reinit()
+                    rcv_bytes = self.hdr.sendall(data)
+                return rcv_bytes
+            if self.portType == 2:
+                self.send_stream.write(data)
+                self.send_stream.flush()
+                return len(data)
+            return self.hdr.write(data)
+        else:
+            exit(2)
+
     def expect(self, pattern, time_out = 1):
         tb = time.time()
         self.buff = ''
@@ -160,6 +179,7 @@ class Port:
                     byte = '>'
                 if byte == '\r':
                     byte = byte.replace('\r', '\n')
+                print(byte)
                 self.buff += byte
                 tc = time.time()
                 if pattern in self.buff:
@@ -496,6 +516,7 @@ class ELM:
             return 'HEX ERROR'
         raw_command = []
         cmd_len = int(len(command) // 2)
+        cmd_len = len(command) // 2
         if cmd_len < 8:
             if command in self.l1_cache.keys():
                 raw_command.append('%0.2X' % cmd_len + command + self.l1_cache[command])
@@ -913,7 +934,8 @@ class ELM:
         if 'CAN ERROR' in self.buff:
             self.error_can += 1
         roundtrip = tc - tb
-        self.response_time = (self.response_time * 9 + roundtrip) / 10
+        if command[0].isdigit():
+            self.response_time = (self.response_time * 9 + roundtrip) / 10
         if self.lf != 0:
             self.lf.write('<[' + str(round(roundtrip, 3)) + ']' + self.buff + '\n')
             self.lf.flush()
@@ -1010,10 +1032,8 @@ class ELM:
         self.tmpNotSupportedCommands = {}
         if self.currentprotocol == 'can' and self.currentaddress == addr:
             return
-        if len(ecu['idTx']):
-            dnat[addr] = ecu['idTx']
-        if len(ecu['idRx']):
-            snat[addr] = ecu['idRx']
+        if len(ecu['idTx']): dnat[addr] = ecu['idTx']
+        if len(ecu['idRx']): snat[addr] = ecu['idRx']
         if self.lf != 0:
             self.lf.write('#' * 60 + '\n#connect to: ' + ecu['ecuname'] + ' Addr:' + addr + '\n' + '#' * 60 + '\n')
             self.lf.flush()
@@ -1027,10 +1047,11 @@ class ELM:
             TXa = dnat[addr]
         else:
             TXa = 'undefined'
+            TXa = addr
         if addr in list(snat.keys()):
             RXa = snat[addr]
         else:
-            RXa = 'undefined'
+            RXa = addr
         if len(TXa) == 8:
             self.check_answer(self.cmd('at cp ' + TXa[:2]))
             self.check_answer(self.cmd('at sh ' + TXa[2:]))

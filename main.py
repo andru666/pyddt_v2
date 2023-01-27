@@ -310,7 +310,7 @@ class PYDDT(App):
         print (instance)
         mod_globals.opt_car = self.carbutton.text
         mod_globals.savedCAR = self.ecusbutton.text
-        #mod_globals.opt_car = 'x81 : Esp'
+        mod_globals.opt_car = 'x81 : Esp'
         if instance == 'scan':
             mod_globals.opt_demo = False
             mod_globals.opt_scan = True
@@ -455,10 +455,7 @@ class PYDDT(App):
         btn = MyButton(text='WiFi (192.168.0.10:35000)')
         btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
         self.bt_dropdown.add_widget(btn)
-        try:
-            porte = ports.iteritems()
-        except:
-            porte = ports.items()
+        porte = ports.items()
         for name, address in porte:
             if mod_globals.opt_port == name:
                 mod_globals.opt_dev_address = address

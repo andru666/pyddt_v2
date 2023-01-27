@@ -35,51 +35,63 @@ def readECUIds( elm ):
     if not res.startswith('50'):
         pass
     IdRsp = elm.request(req='2180', positive='61', cache=False)
+    print('IdRsp')
+    print(IdRsp)
     if len(IdRsp) > 59 and '7F' not in IdRsp:
         DiagVersion = str(int(IdRsp[21:23], 16))
-        Supplier = IdRsp[24:32].replace('00', '20').replace(' ', '').strip().decode('hex').decode('ASCII', errors='ignore')
+        Supplier = IdRsp[24:32].replace('00', '30').replace(' ', '').strip()
+        Supplier = bytes.fromhex(Supplier).decode('utf-8')
         Soft = IdRsp[48:53].strip().replace(' ', '')
         Version = IdRsp[54:59].strip().replace(' ', '')
         Std = 'STD_A'
         vinRsp = elm.request(req='2181', positive='61', cache=False)
         if len(vinRsp)>55 and 'NR' not in vinRsp and '7F' not in vinRsp:
-            VIN = vinRsp[6:56].replace('00', '20').strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
+            VIN = vinRsp[6:56].replace('00', '30').strip().replace(' ', '')
+            bytes.fromhex(VIN).decode('utf-8')
     else:
         IdRsp_F1A0 = elm.request(req='22F1A0', positive='62', cache=False)
-        if len(IdRsp_F1A0) > 8 and 'NR' not in IdRsp_F1A0 and 'BUS' not in IdRsp_F1A0 and '7F' not in IdRsp_F1A0:
-            try:
+        print(IdRsp_F1A0)
+        print(IdRsp_F1A0[9:11])
+        if len(IdRsp_F1A0) > 9 and 'NR' not in IdRsp_F1A0 and 'BUS' not in IdRsp_F1A0 and '7F' not in IdRsp_F1A0:
+            if True:
                 DiagVersion = str(int(IdRsp_F1A0[9:11], 16))
                 IdRsp_F18A = elm.request(req='22F18A', positive='62', cache=False)
                 if len(IdRsp_F18A) > 8 and 'NR' not in IdRsp_F18A and 'BUS' not in IdRsp_F18A and '7F' not in IdRsp_F18A:
-                    Supplier = IdRsp_F18A[9:].replace('00', '20').strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore').strip()
+                    Supplier = IdRsp_F18A[9:].replace('00', '30').strip().replace(' ', '').strip()
+                    Supplier = bytes.fromhex(Supplier).decode('utf-8')
                 IdRsp_F194 = elm.request(req='22F194', positive='62', cache=False)
                 if len(IdRsp_F194) > 8 and 'NR' not in IdRsp_F194 and 'BUS' not in IdRsp_F194 and '7F' not in IdRsp_F194:
-                    Soft = IdRsp_F194[9:].replace('00', '20').strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore').strip()
+                    Soft = IdRsp_F194[9:].replace('00', '30').strip().replace(' ', '').strip()
+                    Soft = bytes.fromhex(Soft).decode('utf-8')
                 IdRsp_F195 = elm.request(req='22F195', positive='62', cache=False)
                 if len(IdRsp_F195) > 8 and 'NR' not in IdRsp_F195 and 'BUS' not in IdRsp_F195 and '7F' not in IdRsp_F195:
-                    Version = IdRsp_F195[9:].replace('00', '20').strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore').strip()
+                    Version = IdRsp_F195[9:].replace('00', '30').strip().replace(' ', '').strip()
+                    Version = bytes.fromhex(Version).decode('utf-8')
                 elif Soft:
                     Version = Soft
                 Std = 'STD_B'
                 vinRsp = elm.request(req='22F190', positive='62', cache=False)
                 if len(vinRsp) > 58:
-                    VIN = vinRsp[9:59].replace('00', '20').strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
-            except:
+                    VIN = vinRsp[9:59].replace('00', '30').strip().replace(' ', '')
+                    VIN = bytes.fromhex(VIN).decode('utf-8')
+            else:
                 pass
         else:
             IdRsp_0122 = elm.request(req='220122', positive='62', cache=False)
             if len(IdRsp_0122) > 8 and 'NR' not in IdRsp_0122 and 'BUS' not in IdRsp_0122 and '7F' not in IdRsp_0122:
-                try:
+                if True:
                     DiagVersion = '04'
-                    Supplier = IdRsp_0122[9:].replace('00', '20').strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore').strip()
+                    Supplier = IdRsp_0122[9:].replace('00', '30').strip().replace(' ', '').strip()
+                    Supplier = bytes.fromhex(Supplier).decode('utf-8')
                     Version = Supplier
                     IdRsp_0125 = elm.request(req='220125', positive='62', cache=False)
                     if len(IdRsp_0125) > 8 and 'NR' not in IdRsp_0125 and 'BUS' not in IdRsp_0125 and '7F' not in IdRsp_0125:
-                        Soft = IdRsp_0125[9:].replace('00', '20').strip().replace(' ', '').strip()
+                        Soft = IdRsp_0125[9:].replace('00', '30').strip().replace(' ', '').strip()
                     Std = 'STD_B'
                     vinRsp = elm.request(req='220120', positive='62', cache=False)
                     if len(vinRsp) > 58:
-                        VIN = vinRsp[9:59].replace('00', '20').strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
-                except:
+                        VIN = vinRsp[9:59].replace('00', '30').strip().replace(' ', '')
+                        VIN = bytes.fromhex(VIN).decode('utf-8')
+                else:
                     pass
     return StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN
