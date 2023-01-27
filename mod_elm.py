@@ -76,6 +76,7 @@ class Port:
             self.portType = 1
             self.hdr = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.hdr.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            self.hdr.settimeout(3)
             self.hdr.connect((self.ipaddr, self.tcpprt))
             self.hdr.setblocking(True)
         elif mod_globals.os == 'android':
@@ -84,9 +85,9 @@ class Port:
         else:
             self.portName = portName
             self.portType = 0
-            try:
+            if Try:
                 self.hdr = serial.Serial(self.portName, baudrate=speed, timeout=portTimeout)
-            except:
+            else:
                 iterator = sorted(list(list_ports.comports()))
                 exit(2)
 
@@ -101,7 +102,6 @@ class Port:
         self.hdr.setsockopt (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.hdr.connect ((self.ipaddr, self.tcpprt))
         self.hdr.setblocking (True)
-        
         self.write('AT\r')
         self.expect('>',1)
 
@@ -114,12 +114,12 @@ class Port:
         self.socket, self.recv_stream, self.send_stream = get_bt_socket_stream()
 
     def read(self):
-        try:
-            byte = ''
+        byte = ''
+        if True:
             if self.portType == 1:
-                try:
+                if Try:
                     byte = self.hdr.recv(1)
-                except:
+                else:
                     pass
 
             elif self.portType == 2:
@@ -127,47 +127,47 @@ class Port:
                     byte = chr(self.recv_stream.read())
             elif self.hdr.inWaiting():
                 byte = self.hdr.read()
-        except:
+        else:
             exit(2)
-
-        return byte
+        if type(byte) == str:
+            byte = byte.encode()
+        return byte.decode('utf-8','ignore')
 
     def write(self, data):
-        try:
-            if self.portType == 1:
-                try:
-                    rcv_bytes = self.hdr.sendall(data)
-                except:
-                    self.reinit()
-                    rcv_bytes = self.hdr.sendall(data)
-                return rcv_bytes
-            if self.portType == 2:
-                self.send_stream.write(data)
-                self.send_stream.flush()
-                return len(data)
-            return self.hdr.write(data)
-        except:
-            exit(2)
-
+        if type(data) == str:
+            data = data.encode()
+        if self.portType == 1:
+            if Try:
+                rcv_bytes = self.hdr.sendall(data)
+            else:
+                self.reinit()
+                rcv_bytes = self.hdr.sendall(data)
+            return rcv_bytes
+        elif self.portType == 2:
+            self.send_stream.write(data)
+            self.send_stream.flush()
+            return len(data)
+        return self.hdr.write(data)
+        
     def expect(self, pattern, time_out = 1):
         tb = time.time()
         self.buff = ''
-        try:
+        if True:
             while True:
                 if not mod_globals.opt_demo:
                     byte = self.read()
                 else:
                     byte = '>'
                 if byte == '\r':
-                    byte = '\n'
+                    byte = byte.replace('\r', '\n')
                 self.buff += byte
                 tc = time.time()
                 if pattern in self.buff:
                     return self.buff
-                if tc - tb > time_out:
+                if (tc - tb) > time_out:
                     return self.buff + 'TIMEOUT'
 
-        except:
+        else:
             pass
 
         return ''
@@ -197,7 +197,7 @@ class Port:
                     mod_globals.opt_speed = s
                     self.hdr.timeout = self.portTimeout
                     return
-                if tc - tb > 1:
+                if (tc - tb) > 1:
                     break
         sys.exit()
 
@@ -230,7 +230,7 @@ class Port:
             tc = time.time()
             if 'OK' in self.buff:
                 break
-            if tc - tb > 1:
+            if (tc - tb) > 1:
                 sys.exit()
 
         self.hdr.timeout = 1
@@ -278,7 +278,7 @@ class Port:
             tc = time.time()
             if '>' in self.buff:
                 break
-            if tc - tb > 1:
+            if (tc - tb) > 1:
                 self.hdr.timeout = self.portTimeout
                 self.hdr.baudrate = mod_globals.opt_speed
                 return
@@ -349,19 +349,19 @@ class ELM:
                 if mod_globals.opt_csv_only:
                     self.notSupportedCommands[req] = res
                 else:
-                    if req in self.tmpNotSupportedCommands.keys():
+                    if req in list(self.tmpNotSupportedCommands.keys()):
                         del self.tmpNotSupportedCommands[req]
                         self.notSupportedCommands[req] = res
                     else:
                         self.tmpNotSupportedCommands[req] = res
         else:
-            if req in self.tmpNotSupportedCommands.keys():
+            if req in list(self.tmpNotSupportedCommands.keys()):
                 del self.tmpNotSupportedCommands[req]
 
     def request(self, req, positive = '', cache = True, serviceDelay = '0'):
-        if mod_globals.opt_demo and req in self.ecudump.keys():
+        if mod_globals.opt_demo and req in list(self.ecudump.keys ()):
             return self.ecudump[req]
-        if cache and req in self.rsp_cache.keys():
+        if cache and req in list(self.rsp_cache.keys ()):
             return self.rsp_cache[req]
         
         rsp = self.cmd(req, int(serviceDelay))
@@ -384,7 +384,7 @@ class ELM:
         if self.vf != 0 and 'NR' not in rsp:
             tmstr = datetime.now().strftime('%H:%M:%S.%f')[:-3]
             tmp_addr = self.currentaddress
-            if self.currentaddress in dnat.keys():
+            if self.currentaddress in list(dnat.keys()):
                 tmp_addr = dnat[self.currentaddress]
             self.vf.write(tmstr + ';' + tmp_addr + ';' + req + ';' + rsp + '\n')
             self.vf.flush()
@@ -392,11 +392,11 @@ class ELM:
 
     def cmd(self, command, serviceDelay = 0):
         command = command.upper()
-        if command in self.notSupportedCommands.keys():
+        if command in list(self.notSupportedCommands.keys()):
             return self.notSupportedCommands[command]
         tb = time.time()
         devmode = False
-        if tb - self.lastCMDtime < self.busLoad + self.srvsDelay and command.upper()[:2] not in ('AT', 'ST'):
+        if ((tb - self.lastCMDtime) < (self.busLoad + self.srvsDelay)) and command.upper()[:2] not in ('AT', 'ST'):
             time.sleep(self.busLoad + self.srvsDelay - tb + self.lastCMDtime)
         tb = time.time()
         saveSession = self.startSession
@@ -408,7 +408,7 @@ class ELM:
                 tmstr = datetime.now().strftime('%H:%M:%S.%f')[:-3]
                 self.lf.write('#[' + tmstr + ']' + 'Switch to dev mode\n')
                 self.lf.flush()
-        if tb - self.lastCMDtime > self.keepAlive and len(self.startSession) > 0:
+        if (tb - self.lastCMDtime) > self.keepAlive and len(self.startSession) > 0:
             if self.lf != 0:
                 tmstr = datetime.now().strftime('%H:%M:%S.%f')[:-3]
                 self.lf.write('#[' + tmstr + ']' + 'KeepAlive\n')
@@ -424,12 +424,11 @@ class ELM:
             no_negative_wait_response = True
             self.lastCMDtime = tc = time.time()
             cmdrsp = self.send_cmd(command)
-
             self.checkIfCommandUnsupported(command, cmdrsp)
             for line in cmdrsp.split('\n'):
                 line = line.strip().upper()
                 nr = ''
-                if line.startswith('7F') and len(line) == 8 and line[6:8] in negrsp.keys():
+                if line.startswith('7F') and len(line) == 8 and line[6:8] in list(negrsp.keys ()):
                     nr = line[6:8]
                 if line.startswith('NR'):
                     nr = line.split(':')[1]
@@ -457,14 +456,14 @@ class ELM:
         self.srvsDelay = float(serviceDelay) / 1000.0
         for line in cmdrsp.split('\n'):
             line = line.strip().upper()
-            if line.startswith('7F') and len(line) == 8 and line[6:8] in negrsp.keys() and self.currentprotocol != 'can':
+            if line.startswith('7F') and len(line) == 8 and line[6:8] in list(negrsp.keys ()) and self.currentprotocol != 'can':
                 if self.lf != 0:
                     self.lf.write('#[' + str(tc - tb) + '] rsp:' + line + ':' + negrsp[line[6:8]] + '\n')
                     self.lf.flush()
                 if self.vf != 0:
                     tmstr = datetime.now().strftime('%H:%M:%S.%f')[:-3]
                     tmp_addr = self.currentaddress
-                    if self.currentaddress in dnat.keys():
+                    if self.currentaddress in list(dnat.keys()):
                         tmp_addr = dnat[self.currentaddress]
                     self.vf.write(tmstr + ';' + tmp_addr + ';' + command + ';' + line + ';' + negrsp[line[6:8]] + '\n')
                     self.vf.flush()
@@ -496,15 +495,15 @@ class ELM:
         elif not all((c in string.hexdigits for c in command)):
             return 'HEX ERROR'
         raw_command = []
-        cmd_len = len(command) / 2
+        cmd_len = int(len(command) // 2)
         if cmd_len < 8:
             if command in self.l1_cache.keys():
-                raw_command.append('%0.2X' % int(cmd_len) + command + self.l1_cache[command])
+                raw_command.append('%0.2X' % cmd_len + command + self.l1_cache[command])
             else:
 
-                raw_command.append('%0.2X' % int(cmd_len) + command)
+                raw_command.append('%0.2X' % cmd_len + command)
         else:
-            raw_command.append('1' + ('%0.3X' % int(cmd_len))[-3:] + command[:12])
+            raw_command.append('1' + ('%0.3X' % cmd_len)[-3:] + command[:12])
             command = command[12:]
             frame_number = 1
             while len(command):
@@ -547,7 +546,7 @@ class ELM:
         else:
             if responses[0][:1] == '1':
                 nbytes = int(responses[0][1:4], 16)
-                nframes = nbytes / 7 + 1
+                nframes = nbytes // 7 + 1
                 cframe = 1
                 result = responses[0][4:16]
             else:
@@ -556,7 +555,7 @@ class ELM:
             for fr in responses[1:]:
                 if fr[:1] == '2':
                     tmp_fn = int(fr[1:2], 16)
-                    if tmp_fn != cframe % 16:
+                    if tmp_fn != (cframe % 16):
                         self.error_frame += 1
                         noerrors = False
                         continue
@@ -568,11 +567,12 @@ class ELM:
         if result[:2] == '7F':
             noerrors = False
         if noerrors and nframes < 16 and command[:1] == '2' and not mod_globals.opt_n1c:
+            print (nframes)
             self.l1_cache[command] = str(hex(nframes))[2:].upper()
-        if len(result) / 2 >= nbytes and noerrors:
+        if len(result) // 2 >= nbytes and noerrors:
             result = ' '.join((a + b for a, b in zip(result[::2], result[1::2])))
             return result
-        elif result[:2] == '7F' and result[4:6] in negrsp.keys():
+        elif result[:2] == '7F' and result[4:6] in list(negrsp.keys ()):
             if self.vf != 0:
                 tmstr = datetime.now().strftime('%H:%M:%S.%f')[:-3]
                 self.vf.write(tmstr + ';' + dnat[self.currentaddress] + ';' + command + ';' + result + ';' + negrsp[result[4:6]] + '\n')
@@ -590,11 +590,11 @@ class ELM:
         elif not all((c in string.hexdigits for c in command)):
             return 'HEX ERROR'
         raw_command = []
-        cmd_len = len(command) / 2
+        cmd_len = len(command) // 2
         if cmd_len < 8:
-            raw_command.append('%0.2X' % int(cmd_len) + command)
+            raw_command.append('%0.2X' % cmd_len + command)
         else:
-            raw_command.append('1' + ('%0.3X' % int(cmd_len))[-3:] + command[:12])
+            raw_command.append('1' + ('%0.3X' % cmd_len)[-3:] + command[:12])
             command = command[12:]
             frame_number = 1
             while len(command):
@@ -667,6 +667,8 @@ class ELM:
         cFrame = 0
         nBytes = 0
         nFrames = 0
+        if len (responses) > 1 and responses[0].startswith('037F') and responses[0][6:8] == '78':
+            responses = responses[1:]
         if responses[0][:1] == '0':
             nBytes = int(responses[0][1:2], 16)
             nFrames = 1
@@ -674,7 +676,7 @@ class ELM:
         elif responses[0][:1] == '1':
             nBytes = int(responses[0][1:4], 16)
             nBytes = nBytes - 6
-            nFrames = 1 + nBytes / 7 + bool(nBytes % 7)
+            nFrames = 1 + nBytes // 7 + bool(nBytes % 7)
             cFrame = 1
             result = responses[0][4:16]
             while cFrame < nFrames:
@@ -708,7 +710,7 @@ class ELM:
         else:
             self.error_frame += 1
             noErrors = False
-        if len(result) / 2 >= nBytes and noErrors and result[:2] != '7F':
+        if len(result) // 2 >= nBytes and noErrors and result[:2] != '7F':
             result = ' '.join((a + b for a, b in zip(result[::2], result[1::2])))
             return result
         elif result[:2] == '7F' and result[4:6] in negrsp.keys():
@@ -729,11 +731,11 @@ class ELM:
         elif not all((c in string.hexdigits for c in command)):
             return 'HEX ERROR'
         raw_command = []
-        cmd_len = len(command) / 2
+        cmd_len = len(command) // 2
         if cmd_len < 8:
-            raw_command.append('%0.2X' % int(cmd_len) + command)
+            raw_command.append('%0.2X' % cmd_len + command)
         else:
-            raw_command.append('1' + ('%0.3X' % int(cmd_len))[-3:] + command[:12])
+            raw_command.append('1' + ('%0.3X' % cmd_len)[-3:] + command[:12])
             command = command[12:]
             frame_number = 1
             while len(command):
@@ -759,10 +761,10 @@ class ELM:
                 frsp = self.send_raw('at r1')
                 self.ATR1 = True
             tb = time.time()
-            if Fn > 1 and Fc == Fn - 1:
+            if Fn > 1 and Fc == (Fn - 1):
                 self.send_raw('ATSTFF')
                 self.send_raw('ATAT1')
-            if (Fc == 0 or Fc == Fn - 1) and len(raw_command[Fc]) < 16:
+            if (Fc == 0 or Fc == (Fn - 1)) and len(raw_command[Fc]) < 16:
                 frsp = self.send_raw(raw_command[Fc] + '1')
             else:
                 frsp = self.send_raw(raw_command[Fc])
@@ -828,7 +830,7 @@ class ELM:
         elif responses[0][:1] == '1':
             nBytes = int(responses[0][1:4], 16)
             nBytes = nBytes - 6
-            nFrames = 1 + nBytes / 7 + bool(nBytes % 7)
+            nFrames = 1 + nBytes // 7 + bool(nBytes % 7)
             cFrame = 1
             result = responses[0][4:16]
             while cFrame < nFrames:
@@ -862,10 +864,10 @@ class ELM:
         else:
             self.error_frame += 1
             noErrors = False
-        if len(result) / 2 >= nBytes and noErrors and result[:2] != '7F':
+        if len(result) // 2 >= nBytes and noErrors and result[:2] != '7F':
             result = ' '.join((a + b for a, b in zip(result[::2], result[1::2])))
             return result
-        elif result[:2] == '7F' and result[4:6] in negrsp.keys():
+        elif result[:2] == '7F' and result[4:6] in list(negrsp.keys ()):
             if self.vf != 0:
                 tmstr = datetime.now().strftime('%H:%M:%S.%f')[:-3]
                 self.vf.write(tmstr + ';' + dnat[self.currentaddress] + ';' + command + ';' + result + ';' + negrsp[result[4:6]] + '\n')
@@ -889,7 +891,7 @@ class ELM:
                 break
             self.buff = self.port.expect('>', self.portTimeout)
             tc = time.time()
-            if tc - tb > self.portTimeout and 'TIMEOUT' not in self.buff:
+            if (tc - tb) > self.portTimeout and 'TIMEOUT' not in self.buff:
                 self.buff += 'TIMEOUT'
             if 'TIMEOUT' in self.buff:
                 self.error_timeout += 1
@@ -900,7 +902,6 @@ class ELM:
                 tmstr = datetime.now().strftime('%H:%M:%S.%f')[:-3]
                 self.lf.write('<[' + tmstr + ']' + self.buff + '<shifted>' + command + '\n')
                 self.lf.flush()
-
         if '?' in self.buff:
             self.error_question += 1
         if 'BUFFER FULL' in self.buff:
@@ -1022,11 +1023,11 @@ class ELM:
         self.lastCMDtime = 0
         self.l1_cache = {}
         self.clear_cache()
-        if addr in dnat.keys():
+        if addr in list(dnat.keys()):
             TXa = dnat[addr]
         else:
             TXa = 'undefined'
-        if addr in snat.keys():
+        if addr in list(snat.keys()):
             RXa = snat[addr]
         else:
             RXa = 'undefined'
@@ -1040,7 +1041,7 @@ class ELM:
         self.check_answer(self.cmd('at fc sm 1'))
         self.check_answer(self.cmd('at st ff'))
         self.check_answer(self.cmd('at at 0'))
-        if 'brp' in ecu.keys() and '1' in ecu['brp'] and '0' in ecu['brp']:
+        if 'brp' in list(ecu.keys ()) and '1' in ecu['brp'] and '0' in ecu['brp']:
             if self.lf != 0:
                 self.lf.write('#' * 60 + '\n#    Double BRP, try CAN250 and then CAN500\n' + '#' * 60 + '\n')
                 self.lf.flush()

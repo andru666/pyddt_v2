@@ -246,7 +246,7 @@ class PYDDT(App):
         if mod_globals.opt_car != LANG.b_select:
             lbltxt = Label(text=LANG.l_scan, font_size=fs)
             popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
-            base.runTouchApp()
+            #base.runTouchApp()
             popup_init.open()
             base.EventLoop.idle()
             sys.stdout.flush()
@@ -307,6 +307,7 @@ class PYDDT(App):
         return glay
 
     def finish(self, instance):
+        print (instance)
         mod_globals.opt_car = self.carbutton.text
         mod_globals.savedCAR = self.ecusbutton.text
         #mod_globals.opt_car = 'x81 : Esp'
@@ -348,9 +349,9 @@ class PYDDT(App):
         except:
             mod_globals.fontSize = 20
         if mod_globals.opt_car != LANG.b_select or (mod_globals.savedCAR != LANG.b_select and not mod_globals.opt_scan):
-            self.stop()
             try:
                 self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
+                self.stop()
             except:
                 labelText = '''
                     Could not connect to the ELM.
@@ -370,7 +371,6 @@ class PYDDT(App):
                 base.runTouchApp()
                 exit(2)
                 return
-
     def find_in_car(self, ins):
         glay = GridLayout(cols=1, size_hint=(1, 1))
         self.find = TextInput(text='', size_hint=(1, None), font_size=fs*1.5, multiline=False, height=(fs * 3), padding=[fs/2, fs/2])
