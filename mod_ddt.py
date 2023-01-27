@@ -1062,15 +1062,16 @@ class DDTLauncher(App):
         return b_hex, g_hex, r_hex, 1.0
 
     def startScreen(self, data):
-        for r in data:
-            if True:
-                if data[r]: continue
-            else:
-                pass
-            req = self.decu.requests[r].SentBytes
-            if (req[:2] not in ['10'] + AllowedList) and not mod_globals.opt_exp:
-                continue
-            if r not in self.REQ: self.REQ.append(r)
+        if type(data) == dict:
+            for r in data:
+                if True:
+                    if data[r]: continue
+                else:
+                    pass
+                req = self.decu.requests[r].SentBytes
+                if (req[:2] not in ['10'] + AllowedList) and not mod_globals.opt_exp:
+                    continue
+                if r not in self.REQ: self.REQ.append(r)
 
     def ButtonConfirmation(self, text, data=None):
         layout = GridLayout(cols=1, padding=10, spacing=10, size_hint=(1, 1))
