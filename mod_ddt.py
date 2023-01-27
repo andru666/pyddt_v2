@@ -404,11 +404,12 @@ class DDTLauncher(App):
                             for iD in self.dLabels[key]:
                                 iD.text = val
                 else:
-                    if len(self.dLabels[key]) ==1:
-                        self.dLabels[key][0].text = val
-                    else:
-                        for iD in self.dLabels[key]:
-                            iD.text = val
+                    if key in self.dLabels.keys():
+                        if len(self.dLabels[key]) == 1:
+                            self.dLabels[key][0].text = val
+                        else:
+                            for iD in self.dLabels[key]:
+                                iD.text = val
                 if key in self.iLabels.keys():
                     if self.iValueNeedUpdate[key]:
                         self.iLabels[key].text = val
@@ -528,7 +529,7 @@ class DDTLauncher(App):
             self.Layout.add_widget(MyLabel(text=self.currentscreen, color=(0,0,0,1), bgcolor=self.hex_to_rgb(self.scr_c)))
             if len(self.BValue):
                 for b in self.BValue:
-                    self.bValue[eval(b)[0]['RequestName']] = {'send':b, 'xText':b[0]}
+                    self.bValue[eval(b[12])[0]['RequestName']] = {'send':b[12], 'xText':b[0]}
             if len(self.DValue) > 0:
                 for d in self.DValue:
                     xText, xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = d
@@ -578,12 +579,12 @@ class DDTLauncher(App):
                     dv.append(d['request'])
                 for b in self.BValue:
                     xText = b[0]
-                    button = MyButton(text=xText, size_hint=(1, 1), id=b[13], on_release = lambda btn=xText, key=b[13]: self.buttonPressed(btn.text, btn.id))
+                    button = MyButton(text=xText, size_hint=(1, 1), id=b[12], on_release = lambda btn=xText, key=b[12]: self.buttonPressed(btn.text, btn.id))
                     if len(self.BValue) == 1:
                         box2.height = box2.height + fs*3
                         box2.add_widget(button)
                     else:
-                        if eval(b[13])[0]['RequestName'] not in dv:
+                        if eval(b[12])[0]['RequestName'] not in dv:
                             box2.height = box2.height + fs*3
                             box2.add_widget(button)
             root = ScrollView(size_hint=(1, None), height=self.Window_size[1]-fs*5)
@@ -1026,7 +1027,6 @@ class DDTLauncher(App):
         EventLoop.idle()
         self.setEcuAddress({'addr':Addr, 'xml':Addr, 'prot':pro, 'iso8':iso})
         StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN = mod_scan_ecus.readECUIds(self.elm)
-        print(StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN)
         if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': return
         xml = mod_ddt_ecu.ecuSearch(self.v_proj, Addr, DiagVersion, Supplier, Soft, Version, self.eculist, xml)
         if xml:
