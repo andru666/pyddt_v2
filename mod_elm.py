@@ -177,7 +177,6 @@ class Port:
                     byte = '>'
                 if byte == '\r':
                     byte = byte.replace('\r', '\n')
-                print(byte)
                 self.buff += byte
                 tc = time.time()
                 if pattern in self.buff:
@@ -586,7 +585,6 @@ class ELM:
         if result[:2] == '7F':
             noerrors = False
         if noerrors and nframes < 16 and command[:1] == '2' and not mod_globals.opt_n1c:
-            print (nframes)
             self.l1_cache[command] = str(hex(nframes))[2:].upper()
         if len(result) // 2 >= nbytes and noerrors:
             result = ' '.join((a + b for a, b in zip(result[::2], result[1::2])))

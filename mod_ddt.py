@@ -404,7 +404,8 @@ class DDTLauncher(App):
                             for iD in self.dLabels[key]:
                                 iD.text = val
                 else:
-                    if len(self.dLabels[key]) ==1: self.dLabels[key][0].text = val
+                    if len(self.dLabels[key]) ==1:
+                        self.dLabels[key][0].text = val
                     else:
                         for iD in self.dLabels[key]:
                             iD.text = val
@@ -938,7 +939,6 @@ class DDTLauncher(App):
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(x, self.screens)))
 
     def ScanAllBtnClick(self):
-        print('scan')
         if self.elm.lf!=0:
             self.elm.lf.write("#load: "+self.filterText+"\n")
             self.elm.lf.flush()  
@@ -982,12 +982,8 @@ class DDTLauncher(App):
                     self.elm.init_iso()
                     self.cheks(Addr, pro['KWP'], 'KWP', pro['iso8'], i, len(p_xml), vins)
                 if len(pro['CAN']):
-                    print(1)
                     self.elm.init_can()
-                    print(2)
                     self.cheks(Addr, pro['CAN'], 'CAN', pro['iso8'], i, len(p_xml), vins)
-                    print(3)
-                print(22)
                 i += 1
         self.elm.close_protocol()
         for ce in self.carecus:
@@ -1026,12 +1022,9 @@ class DDTLauncher(App):
         mod_globals.opt_scan = False
 
     def cheks(self, Addr, xml, pro, iso, i=None, x=None, vins=None):
-        print('cheks')
         self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(x) + LANG.l_cont8 + str(len(self.detectedEcus))
         EventLoop.idle()
-        print(111)
         self.setEcuAddress({'addr':Addr, 'xml':Addr, 'prot':pro, 'iso8':iso})
-        print(222)
         StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN = mod_scan_ecus.readECUIds(self.elm)
         print(StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN)
         if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': return
@@ -1894,7 +1887,6 @@ class DDTECU():
                 val = int(value,16)
             else:
                 return 'ERROR: Wrong HEX value in parametr(%s) : "%s"' %(d.Name, value)
-            print(val)
             val =(val&(2**bits-1))<<lshift
             value = hex(val)[2:]
             if value[-1:].upper()=='L':
