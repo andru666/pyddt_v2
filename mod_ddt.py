@@ -1884,9 +1884,9 @@ class DDTECU():
             else:
                 lshift =((bytes+1)*8 -(bits+sbit))%8
                 
-            if True:
+            try:
                 val = int(value,16)
-            else:
+            except:
                 return 'ERROR: Wrong HEX value in parametr(%s) : "%s"' %(d.Name, value)
             val =(val&(2**bits-1))<<lshift
             value = hex(val)[2:]
