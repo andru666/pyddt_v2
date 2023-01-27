@@ -310,7 +310,7 @@ class PYDDT(App):
         print (instance)
         mod_globals.opt_car = self.carbutton.text
         mod_globals.savedCAR = self.ecusbutton.text
-        mod_globals.opt_car = 'x81 : Esp'
+        #mod_globals.opt_car = 'x81 : Esp'
         if instance == 'scan':
             mod_globals.opt_demo = False
             mod_globals.opt_scan = True
