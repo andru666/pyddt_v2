@@ -85,7 +85,6 @@ class Port:
         else:
             self.portName = portName
             self.portType = 0
-            if Try:
             if True:
                 self.hdr = serial.Serial(self.portName, baudrate=speed, timeout=portTimeout)
             else:
@@ -118,7 +117,6 @@ class Port:
         byte = ''
         if True:
             if self.portType == 1:
-                if Try:
                 if True:
                     byte = self.hdr.recv(1)
                 else:
@@ -139,7 +137,7 @@ class Port:
         if type(data) == str:
             data = data.encode()
         if self.portType == 1:
-            if Try:
+            if True:
                 rcv_bytes = self.hdr.sendall(data)
             else:
                 self.reinit()
