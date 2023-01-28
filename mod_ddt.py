@@ -804,7 +804,7 @@ class DDTLauncher(App):
             self.MyPopup(content=LANG.l_cont3)
             return False
         shiftbytecount = requests.ShiftBytesCount
-        bytestosend = map(''.join, zip(*[iter(requests.SentBytes.encode('ascii'))]*2))
+        bytestosend = list(map(''.join, zip(*[iter(requests.SentBytes)]*2)))
         dtcread_command = ''.join(bytestosend)
         can_response = self.elm.request(dtcread_command)
         moredtcread_command = None
@@ -850,7 +850,7 @@ class DDTLauncher(App):
         box = GridLayout(cols=1, size_hint=(1, None), height=fs)
         for dn in range(0, numberofdtc):
             DTC = ''.join(can_response[2:4])
-            ln = MyButton(text='[b]DTC #%i' % dn + '[/b] ' + DTC, id=DTC, bgcolor=(0,0.5,0,1), markup=True)
+            ln = MyButton(text='[b]DTC #%i' % dn + '[/b] ' + DTC, id=DTC, background_color=(0,0.5,0,1), markup=True)
             if DTC in self.data_dtc.keys():
                 self.data_dtc[DTC]['resp'] = ' '.join(can_response)
                 self.data_dtc[DTC]['requests'] = requests
@@ -905,7 +905,9 @@ class DDTLauncher(App):
                 value = get_value({'request':requests_mem.Name,'name':k}, self.decu, self.elm, resp=resp)
                 if ':' in value['value']:
                     value = value['value'].split(':', 1)[1]
-                v_h = fs*2*math.ceil(len(value['value'])*1.0/(glay.width*0.4/2))
+                else:
+                    value = value['value']
+                v_h = fs*2*math.ceil(len(value)*1.0/(glay.width*0.4/2))
                 if v_h > glay.height:
                     glay.height = v_h
                 label2 = MyLabelGreen(text=value, size_hint=(0.4, 1))

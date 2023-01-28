@@ -930,7 +930,7 @@ class ELM:
         if 'CAN ERROR' in self.buff:
             self.error_can += 1
         roundtrip = tc - tb
-        if command[0].isdigit():
+        if str(command[0]).isdigit():
             self.response_time = (self.response_time * 9 + roundtrip) / 10
         if self.lf != 0:
             self.lf.write('<[' + str(round(roundtrip, 3)) + ']' + self.buff + '\n')
