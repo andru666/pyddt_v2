@@ -208,6 +208,7 @@ class DDTLauncher(App):
             self.MyPopup(content=LANG.l_cont1, stop=self.stop)
             return None
         self.OpenECUScreens(ecu)
+        EventLoop.window.remove_widget(popup_init)
         popup_init.dismiss()
 
     def not_ecu(self):
