@@ -272,15 +272,13 @@ class PYDDT(App):
             else:
                 lbltxt = Label(text=LANG.l_scan, font_size=fs)
             popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
-            base.runTouchApp(embedded=True)
             popup_init.open()
             base.EventLoop.idle()
-            sys.stdout.flush()
-            base.EventLoop.window.remove_widget(popup_init)
             popup_init.dismiss()
-            base.stopTouchApp()
             base.EventLoop.window.canvas.clear()
+            self.stop()
             mod_ddt.DDT_START(mod_globals.opt_car, self.elm)
+            base.EventLoop.idle()
         else:
             popup.open()
             return
