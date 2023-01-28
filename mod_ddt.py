@@ -377,6 +377,7 @@ class DDTLauncher(App):
         else:
             return
         for key, v in params.items():
+            listIndex = False
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
             if val != 'None':
@@ -449,11 +450,11 @@ class DDTLauncher(App):
         if self.make_box:
             self.make_box = False
             self.update_dInputs()
-            self.loadScreen(self.currentscreen)
+            self.loadScreen(self.currentscreen, dt)
         else:
             self.update_dInputs()
             self.make_box = True
-            self.loadScreen(self.currentscreen)
+            self.loadScreen(self.currentscreen, dt)
     
     def loadScreen(self, scr, data):
         self.Layout.clear_widgets()
@@ -507,7 +508,7 @@ class DDTLauncher(App):
         box2 = GridLayout(cols=1, spacing=5, padding=5)
         box1.add_widget(self.startStopButton)
         box1.add_widget(MyButton(text=LANG.b_close, size_hint=(1, 1), on_release=lambda x:self.show_screen(self.xml, data)))
-        box1.add_widget(MyButton(text=LANG.b_change_view, size_hint=(1, 1), on_release=self.change_screen))
+        box1.add_widget(MyButton(text=LANG.b_change_view, size_hint=(1, 1), on_release=lambda x:self.change_screen(data)))
         self.Layout.add_widget(box1)
         self.startStopButton.bind(on_release=lambda args:self.startStop())
         if scr_w > scr_h:
