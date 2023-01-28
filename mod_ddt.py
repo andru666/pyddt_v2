@@ -336,7 +336,7 @@ class DDTLauncher(App):
         elif x == (LANG.b_read_dtc): self.readDTC()
         elif x == (LANG.b_back): self.show_screen(x,data)
         elif isinstance(data, dict): self.show_screen(x,data[x])
-        elif isinstance(data, list): self.loadScreen(x)
+        elif isinstance(data, list): self.loadScreen(x, data)
 
     def update_dInputs(self):
         for i in self.iValueNeedUpdate.keys():
@@ -455,7 +455,7 @@ class DDTLauncher(App):
             self.make_box = True
             self.loadScreen(self.currentscreen)
     
-    def loadScreen(self, scr):
+    def loadScreen(self, scr, data):
         self.Layout.clear_widgets()
         self.start = True
         self.startStopButton = MyButton(text='', size_hint=(1, 1))
@@ -506,7 +506,7 @@ class DDTLauncher(App):
         box1 = GridLayout(cols=3, size_hint=(1, None), height=fs*3)
         box2 = GridLayout(cols=1, spacing=5, padding=5)
         box1.add_widget(self.startStopButton)
-        box1.add_widget(MyButton(text=LANG.b_close, size_hint=(1, 1), on_release=lambda x:self.show_screen(self.xml, self.screens)))
+        box1.add_widget(MyButton(text=LANG.b_close, size_hint=(1, 1), on_release=lambda x:self.show_screen(self.xml, data)))
         box1.add_widget(MyButton(text=LANG.b_change_view, size_hint=(1, 1), on_release=self.change_screen))
         self.Layout.add_widget(box1)
         self.startStopButton.bind(on_release=lambda args:self.startStop())
