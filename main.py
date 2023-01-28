@@ -66,7 +66,7 @@ if mod_globals.os == 'android':
         Uri = autoclass("android.net.Uri")
         
         from android.permissions import request_permissions, Permission
-        request_permissions([Permission.READ_EXTERNAL_STORAGE])
+        request_permissions([Permission.READ_EXTERNAL_STORAGE,Permission.BLUETOOTH_CONNECT,Permission.BLUETOOTH_SCAN])
 
         if api_version > 29:
             # If you have access to the external storage, do whatever you need
