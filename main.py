@@ -620,6 +620,7 @@ def main():
             os.makedirs(mod_globals.dumps_dir)
     except:
         print('Dir creation error!')
+
     kivyScreenConfig()
 
 class MyGridLayout(GridLayout):

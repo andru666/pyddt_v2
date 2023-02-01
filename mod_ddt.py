@@ -339,7 +339,9 @@ class DDTLauncher(App):
         elif isinstance(data, list): self.loadScreen(x, data)
 
     def airbag_reset(self):
-        print(self.xml)
+        if self.xml == 'MRSZ_X95_L38_L43_L47_20110505T101858.xml':
+            from p_megane3_ab_reset import Virginizer
+            Virginizer(self.decu)
         
         
 
@@ -1306,7 +1308,7 @@ class DDTLauncher(App):
         self.Screens = {}
         self.screens = {}
         self.screens[LANG.b_read_dtc] = ''
-        #if self.Addr[:-4] == '2C': self.screens['AIRBAG Reset'] = ''
+        if self.Addr[:-4] == '2C': self.screens['AIRBAG Reset'] = ''
         categs = xdoc.findall ("ns0:Target/ns1:Categories/ns1:Category", mod_globals.ns)
         if len(categs):
             for cat in categs:
