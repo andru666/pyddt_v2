@@ -934,7 +934,7 @@ class DDTLauncher(App):
         else:
             self.Layout.add_widget(MyLabel(text=LANG.l_text6, bgcolor=(0,0.5,0,1)))
             requests = "14FF00"
-        self.setEcuAdrequestsdress(self.getSelectedECU(self.xml))
+        self.setEcuAddress(self.getSelectedECU(self.xml))
         response = self.elm.request(requests)
         if 'WRONG' in response:
             self.Layout.add_widget(MyLabel(text=LANG.l_text7, bgcolor=(0,0.5,0,1)))
