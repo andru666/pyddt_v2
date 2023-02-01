@@ -49,7 +49,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.11.35'
+__version__ = '0.11.36'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -103,7 +103,6 @@ if mod_globals.os == 'android':
                     pass
                 else:
                     try:
-                        waitPermissionTimer = waitPermissionTimer + 2
                         activity = mActivity.getApplicationContext()
                         uri = Uri.parse("package:" + activity.getPackageName())
                         intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
@@ -134,8 +133,6 @@ if mod_globals.os == 'android':
             if api_version > 29:
                 if (Environment.isExternalStorageManager() == False):
                     permissionIsGranted = False
-
-        time.sleep(waitPermissionTimer)
         
         user_datadir = Environment.getExternalStorageDirectory().getAbsolutePath() + '/pyddt/'
         mod_globals.user_data_dir = user_datadir
@@ -250,8 +247,12 @@ class PYDDT(App):
                 if (Environment.isExternalStorageManager() == False):
                     permissionErrorLayout.add_widget(MyLabel(text='FILES_ACCESS_PERMISSION : False', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
                     permissionIsGranted = False
+            if api_version == 29:
+                if (Environment.isExternalStorageLegacy() == False):
+                    permissionErrorLayout.add_widget(MyLabel(text='LegacyExternalStorage : False', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+                    permissionIsGranted = False
             
-            permissionErrorLayout.add_widget(MyButton(text='Click to exit and check permissions!!!', valign = 'middle', halign = 'center', size_hint=(1, None), font_size=fs*1.5, on_press=exit))
+            permissionErrorLayout.add_widget(MyButton(text='Click to exit and check permissions!!!', valign = 'middle', halign = 'center', size_hint=(1, 1), font_size=fs*1.5, on_press=exit))
             if (permissionIsGranted == False):
                 return permissionErrorLayout
 
@@ -610,12 +611,15 @@ def kivyScreenConfig():
     resizeFont = False
 
 def main():
-    if not os.path.exists(mod_globals.cache_dir):
-        os.makedirs(mod_globals.cache_dir)
-    if not os.path.exists(mod_globals.log_dir):
-        os.makedirs(mod_globals.log_dir)
-    if not os.path.exists(mod_globals.dumps_dir):
-        os.makedirs(mod_globals.dumps_dir)
+    try:
+        if not os.path.exists(mod_globals.cache_dir):
+            os.makedirs(mod_globals.cache_dir)
+        if not os.path.exists(mod_globals.log_dir):
+            os.makedirs(mod_globals.log_dir)
+        if not os.path.exists(mod_globals.dumps_dir):
+            os.makedirs(mod_globals.dumps_dir)
+    except:
+        print('Dir creation error!')
     kivyScreenConfig()
 
 class MyGridLayout(GridLayout):
