@@ -45,7 +45,7 @@ def readECUIds( elm ):
         vinRsp = elm.request(req='2181', positive='61', cache=False)
         if len(vinRsp)>55 and 'NR' not in vinRsp and '7F' not in vinRsp:
             VIN = vinRsp[6:56].replace('00', '30').strip().replace(' ', '')
-            bytes.fromhex(VIN).decode('utf-8')
+            VIN = bytes.fromhex(VIN).decode('utf-8')
     else:
         IdRsp_F1A0 = elm.request(req='22F1A0', positive='62', cache=False)
         if len(IdRsp_F1A0) > 9 and 'NR' not in IdRsp_F1A0 and 'BUS' not in IdRsp_F1A0 and '7F' not in IdRsp_F1A0:
