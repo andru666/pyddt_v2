@@ -1,10 +1,10 @@
 [app]
 
 # (str) Title of your application
-title = pyddt
+title = PyDDT
 
 # (str) Package name
-package.name = pyddt
+package.name = PyDDT
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.pyddt
@@ -277,7 +277,7 @@ android.wakelock = True
 
 # (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
 # In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
-android.archs = armeabi-v7a
+android.archs = armeabi-v7a,x86
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing
