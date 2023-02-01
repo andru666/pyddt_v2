@@ -338,6 +338,11 @@ class DDTLauncher(App):
         elif isinstance(data, dict): self.show_screen(x,data[x])
         elif isinstance(data, list): self.loadScreen(x, data)
 
+    def airbag_reset(self):
+        print(self.xml)
+        
+        
+
     def update_dInputs(self):
         for i in self.iValueNeedUpdate.keys():
             self.iValueNeedUpdate[i] = True
@@ -782,19 +787,6 @@ class DDTLauncher(App):
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(self.xml, self.screens)))
         if self.start:
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
-
-    def airbag_reset(self):
-        print(self.decu.requests.keys())
-        if "Reset crash ou accès au mode fournisseur" in self.decu.requests.keys():
-            requests = self.decu.requests["Reset crash ou accès au mode fournisseur"]
-        elif "Reset Crash" in self.decu.requests.keys():
-            requests = self.decu.requests["Reset Crash"]
-        else:
-            print('not Reset crash ou accès au mode fournisseur')
-            self.MyPopup(content=LANG.l_cont3)
-            return False
-        print(requests)
-        
 
     def readDTC(self):
         if "ReadDTCInformation.ReportDTC" in self.decu.requests.keys():
