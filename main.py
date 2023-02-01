@@ -21,7 +21,6 @@ if platform != 'android':
         fs = Window.size[0]*8.0/Window.size[1]
         Window.size = Window.size[1]*0.6, Window.size[1]*0.9
 else:
-    from android.permissions import Permission, request_permissions
     from kivy.core.window import Window
     if Window.size[1] > Window.size[0]:
         fs = Window.size[1]*8.0/Window.size[0]
@@ -50,47 +49,93 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.11.32'
+__version__ = '0.11.35'
 
 if mod_globals.os == 'android':
     fs = fs*2
     try:
+
         from jnius import cast, autoclass
         from android import mActivity, api_version
         import glob
-
-        Environment = autoclass('android.os.Environment')
-        Intent = autoclass("android.content.Intent")
-        Settings = autoclass("android.provider.Settings")
-        PythonActivity = autoclass('org.kivy.android.PythonActivity')
-        Uri = autoclass("android.net.Uri")
         
-        from android.permissions import request_permissions, Permission
-        request_permissions([Permission.READ_EXTERNAL_STORAGE,Permission.BLUETOOTH_CONNECT,Permission.BLUETOOTH_SCAN])
+        from android.permissions import request_permissions, check_permission, Permission
 
-        if api_version > 29:
-            # If you have access to the external storage, do whatever you need
-            if Environment.isExternalStorageManager():
-
-                # If you don't have access, launch a new activity to show the user the system's dialog
-                # to allow access to the external storage
+        permissions = []
+        if api_version > 30:
+            try:
+                if (check_permission('android.permission.BLUETOOTH_CONNECT') == False):
+                    permissions.append('android.permission.BLUETOOTH_CONNECT')
+            except:
                 pass
-            else:
-                try:
-                    activity = mActivity.getApplicationContext()
-                    uri = Uri.parse("package:" + activity.getPackageName())
-                    intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
-                    currentActivity = cast(
-                    "android.app.Activity", PythonActivity.mActivity
-                    )
-                    currentActivity.startActivityForResult(intent, 101)
-                except:
-                    intent = Intent()
-                    intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                    currentActivity = cast(
-                    "android.app.Activity", PythonActivity.mActivity
-                    )
-                    currentActivity.startActivityForResult(intent, 101)
+            try:
+                if (check_permission('android.permission.BLUETOOTH_SCAN') == False):
+                    permissions.append('android.permission.BLUETOOTH_SCAN')
+            except:
+                pass
+
+        if api_version <= 29:
+            try:
+                if (check_permission('android.permission.WRITE_EXTERNAL_STORAGE') == False):
+                    permissions.append('android.permission.WRITE_EXTERNAL_STORAGE')
+            except:
+                pass
+            try:
+                if (check_permission('android.permission.READ_EXTERNAL_STORAGE') == False):
+                    permissions.append('android.permission.READ_EXTERNAL_STORAGE')
+            except:
+                pass
+
+        try:
+            request_permissions (permissions)
+        except:
+            print('Permission request error!')
+
+        Environment = autoclass('android.os.Environment')       
+        AndroidPythonActivity = autoclass('org.kivy.android.PythonActivity')
+
+        try:
+            if api_version > 29:
+                Intent = autoclass("android.content.Intent")
+                Settings = autoclass("android.provider.Settings")
+                Uri = autoclass("android.net.Uri")
+                if Environment.isExternalStorageManager():
+                    pass
+                else:
+                    try:
+                        waitPermissionTimer = waitPermissionTimer + 2
+                        activity = mActivity.getApplicationContext()
+                        uri = Uri.parse("package:" + activity.getPackageName())
+                        intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
+                        currentActivity = cast(
+                        "android.app.Activity", AndroidPythonActivity.mActivity
+                        )
+                        currentActivity.startActivityForResult(intent, 101)
+                    except:
+                        intent = Intent()
+                        intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                        currentActivity = cast(
+                        "android.app.Activity", AndroidPythonActivity.mActivity
+                        )
+                        currentActivity.startActivityForResult(intent, 101)
+        except:
+            print('ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION unavailable')
+
+        waitPermissionTimer = 0
+        permissionIsGranted = False
+        while (permissionIsGranted == False) & (waitPermissionTimer < 5):
+            time.sleep(0.5)
+            waitPermissionTimer = waitPermissionTimer + 0.5
+            permissionIsGranted = True
+            for perm in permissions:
+                if (check_permission(perm) == False):
+                    permissionIsGranted = False
+
+            if api_version > 29:
+                if (Environment.isExternalStorageManager() == False):
+                    permissionIsGranted = False
+
+        time.sleep(waitPermissionTimer)
         
         user_datadir = Environment.getExternalStorageDirectory().getAbsolutePath() + '/pyddt/'
         mod_globals.user_data_dir = user_datadir
@@ -98,7 +143,6 @@ if mod_globals.os == 'android':
         mod_globals.log_dir = user_datadir + '/logs/'
         mod_globals.dumps_dir = user_datadir + '/dumps/'
 
-        AndroidPythonActivity = autoclass('org.kivy.android.PythonActivity')
         AndroidActivityInfo = autoclass('android.content.pm.ActivityInfo')
         Params = autoclass('android.view.WindowManager$LayoutParams')
     except:
@@ -164,7 +208,7 @@ def set_orientation_portrait():
         activity.setRequestedOrientation(AndroidActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
 class PYDDT(App):
- 
+
     def __init__(self):
         
         self.button = {}
@@ -194,6 +238,23 @@ class PYDDT(App):
         return False
 
     def build(self):
+        if mod_globals.os == 'android':
+            permissionIsGranted = True
+            permissionErrorLayout = GridLayout(cols=1, padding=15, spacing=15, size_hint=(1, 1))
+            permissionErrorLayout.add_widget(MyLabel(text='Permission not granted', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+            for perm in permissions:
+                if (check_permission(perm) == False):
+                    permissionIsGranted = False
+                    permissionErrorLayout.add_widget(MyLabel(text=perm + ':' +str(check_permission(perm)), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+            if api_version > 29:
+                if (Environment.isExternalStorageManager() == False):
+                    permissionErrorLayout.add_widget(MyLabel(text='FILES_ACCESS_PERMISSION : False', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+                    permissionIsGranted = False
+            
+            permissionErrorLayout.add_widget(MyButton(text='Click to exit and check permissions!!!', valign = 'middle', halign = 'center', size_hint=(1, None), font_size=fs*1.5, on_press=exit))
+            if (permissionIsGranted == False):
+                return permissionErrorLayout
+
         global LANG
         self.settings = mod_globals.Settings()
         if mod_globals.opt_lang == 'ru':
@@ -304,7 +365,7 @@ class PYDDT(App):
     def finish(self, instance):
         mod_globals.opt_car = self.carbutton.text
         mod_globals.savedCAR = self.ecusbutton.text
-        #mod_globals.opt_car = 'x81 : Esp'
+        mod_globals.opt_car = 'ALL_CARS'
         if instance == 'scan':
             mod_globals.opt_demo = False
             mod_globals.opt_scan = True

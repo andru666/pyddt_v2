@@ -44,10 +44,10 @@ requirements = python3==3.8.10,hostpython3==3.8.10,kivy==2.0.0,android,android.p
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-#presplash.filename = %(source.dir)s/data/presplash.png
+presplash.filename = %(source.dir)s/images/presplash.jpg
 
 # (str) Icon of the application
-#icon.filename = %(source.dir)s/data/icon.png
+icon.filename = %(source.dir)s/images/icon.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = portrait
@@ -93,7 +93,7 @@ fullscreen = 1
 #icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
 
 # (list) Permissions
-android.permissions = INTERNET,BLUETOOTH,BLUETOOTH_ADMIN,MANAGE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,BLUETOOTH_CONNECTION,BLUETOOTH_CONNECT,ACCESS_FINE_LOCATION,BLUETOOTH_SCAN
+android.permissions = INTERNET,BLUETOOTH,BLUETOOTH_ADMIN,MANAGE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,BLUETOOTH_CONNECTION,BLUETOOTH_CONNECT,BLUETOOTH_SCAN
 #READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host

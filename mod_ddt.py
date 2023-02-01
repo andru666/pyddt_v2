@@ -934,7 +934,7 @@ class DDTLauncher(App):
         else:
             self.Layout.add_widget(MyLabel(text=LANG.l_text6, bgcolor=(0,0.5,0,1)))
             requests = "14FF00"
-        self.setEcuAdrequestsdress(self.getSelectedECU(self.xml))
+        self.setEcuAddress(self.getSelectedECU(self.xml))
         response = self.elm.request(requests)
         if 'WRONG' in response:
             self.Layout.add_widget(MyLabel(text=LANG.l_text7, bgcolor=(0,0.5,0,1)))
@@ -963,16 +963,18 @@ class DDTLauncher(App):
         EventLoop.idle()
         
         if self.v_proj == 'ALL_CARS':
-            for p in ['KWP','CAN-500','CAN-250']:
-                if p == 'KWP':
-                    p1 = 'KWP'
-                    self.elm.init_iso()
-                else:
-                    p1 = 'CAN'
-                    self.elm.init_can()
-                for Addr, pro in self.addr.alist.items():
+            for Addr, pro in self.addr.alist.items():
+                self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
+                EventLoop.idle()
+                for p in ['KWP','CAN-250','CAN-500']:
+                    if p == 'KWP':
+                        p1 = 'KWP'
+                        self.elm.init_iso()
+                    else:
+                        p1 = 'CAN'
+                        self.elm.init_can()
                     self.cheks(Addr, pro['xml'].keys(), p1, pro['iso8'], i, len(self.addr.alist), vins)
-                    i += 1
+                i += 1
         else:
             for Addr, pro in self.addr.alist.items():
                 p_xml[Addr] = {'CAN':[], 'KWP':[], 'iso8':pro['iso8']}
@@ -982,6 +984,8 @@ class DDTLauncher(App):
                     else:
                         p_xml[Addr]['KWP'].append(x)
             for Addr, pro in p_xml.items():
+                self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
+                EventLoop.idle()
                 if len(pro['KWP']):
                     self.elm.init_iso()
                     self.cheks(Addr, pro['KWP'], 'KWP', pro['iso8'], i, len(p_xml), vins)
@@ -1025,7 +1029,6 @@ class DDTLauncher(App):
         mod_globals.opt_scan = False
 
     def cheks(self, Addr, xml, pro, iso, i=None, x=None, vins=None):
-        self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(x) + LANG.l_cont8 + str(len(self.detectedEcus))
         self.setEcuAddress({'addr':Addr, 'xml':Addr, 'prot':pro, 'iso8':iso})
         StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN = mod_scan_ecus.readECUIds(self.elm)
         if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': return
@@ -1366,7 +1369,7 @@ class DDTLauncher(App):
         if not name:
             name = self.v_proj
         filename = os.path.join(mod_globals.user_data_dir, './savedCAR_'+str(name)+'.csv')
-        with open(filename, 'w') as fout:
+        with open(filename, 'w', encoding="utf-8") as fout:
             car = ['car',self.v_proj, self.v_addr, self.v_pcan, self.v_mcan, self.v_vin]
             fout.write(';'.join(car)+'\n')
             for ecu in self.carecus:
@@ -1379,7 +1382,7 @@ class DDTLauncher(App):
                      ecu['xml'],
                      ecu['dump'],
                      ecu['ses']]
-                fout.write(';'.join(e).encode('utf-8').decode('utf-8') + '\n')
+                fout.write(';'.join(e) + '\n')
         self.renewEcuList()
         mod_globals.savedCAR = 'savedCAR_'+str(name)+'.csv'
         copyfile(filename, os.path.join(mod_globals.user_data_dir, "./savedCAR_prev.csv"))
