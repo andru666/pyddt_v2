@@ -49,7 +49,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.11.33'
+__version__ = '0.11.34'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -62,12 +62,15 @@ if mod_globals.os == 'android':
         from android.permissions import request_permissions, check_permission, Permission
 
         permissions = []
-        waitPermissionTimer = 0
         if api_version > 30:
             try:
                 if (check_permission('android.permission.BLUETOOTH_CONNECT') == False):
                     permissions.append('android.permission.BLUETOOTH_CONNECT')
-                    waitPermissionTimer = waitPermissionTimer + 3
+            except:
+                pass
+            try:
+                if (check_permission('android.permission.BLUETOOTH_SCAN') == False):
+                    permissions.append('android.permission.BLUETOOTH_SCAN')
             except:
                 pass
 
@@ -75,13 +78,11 @@ if mod_globals.os == 'android':
             try:
                 if (check_permission('android.permission.WRITE_EXTERNAL_STORAGE') == False):
                     permissions.append('android.permission.WRITE_EXTERNAL_STORAGE')
-                    waitPermissionTimer = waitPermissionTimer + 2
             except:
                 pass
             try:
                 if (check_permission('android.permission.READ_EXTERNAL_STORAGE') == False):
                     permissions.append('android.permission.READ_EXTERNAL_STORAGE')
-                    waitPermissionTimer = waitPermissionTimer + 2
             except:
                 pass
 
@@ -119,6 +120,20 @@ if mod_globals.os == 'android':
                         currentActivity.startActivityForResult(intent, 101)
         except:
             print('ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION unavailable')
+
+        waitPermissionTimer = 0
+        permissionIsGranted = False
+        while (permissionIsGranted == False) & (waitPermissionTimer < 5):
+            time.sleep(0.5)
+            waitPermissionTimer = waitPermissionTimer + 0.5
+            permissionIsGranted = True
+            for perm in permissions:
+                if (check_permission(perm) == False):
+                    permissionIsGranted = False
+
+            if api_version > 29:
+                if (Environment.isExternalStorageManager() == False):
+                    permissionIsGranted = False
 
         time.sleep(waitPermissionTimer)
         
