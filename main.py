@@ -49,7 +49,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.11.34'
+__version__ = '0.11.35'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -251,7 +251,7 @@ class PYDDT(App):
                     permissionErrorLayout.add_widget(MyLabel(text='FILES_ACCESS_PERMISSION : False', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
                     permissionIsGranted = False
             
-            permissionErrorLayout.add_widget(MyButton(text='Click to exit and check permissions!!!', valign = 'middle', halign = 'center', size_hint=(1, 1), font_size=fs*1.5, on_press=exit))
+            permissionErrorLayout.add_widget(MyButton(text='Click to exit and check permissions!!!', valign = 'middle', halign = 'center', size_hint=(1, None), font_size=fs*1.5, on_press=exit))
             if (permissionIsGranted == False):
                 return permissionErrorLayout
 
