@@ -252,7 +252,7 @@ class PYDDT(App):
                     permissionErrorLayout.add_widget(MyLabel(text='LegacyExternalStorage : False', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
                     permissionIsGranted = False
             permissionErrorLayout.add_widget(MyLabel(text='Android api: ' + str(api_version), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
-            permissionErrorLayout.add_widget(MyLabel(text='Version: ' + str(version), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+            permissionErrorLayout.add_widget(MyLabel(text='Version: ' + str(__version__), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
             permissionErrorLayout.add_widget(MyButton(text='Click to exit and check permissions!!!', valign = 'middle', halign = 'center', size_hint=(1, None), font_size=fs*1.5, height=fs*3, on_press=exit))
             if (permissionIsGranted == False):
                 return permissionErrorLayout
