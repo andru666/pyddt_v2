@@ -49,7 +49,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.11.40'
+__version__ = '0.11.41'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -177,7 +177,7 @@ sys.argv = sys.argv[0:1]
 
 def my_excepthook(excType, excValue, tb):
     message = traceback.format_exception(excType, excValue, tb)
-    string = __version__+'\n'+str(time.ctime())+'\n'
+    string = '__version__: '+__version__+'\n'+str(time.ctime())+'\n'
     for m in message:
         string += m
     error = TextInput(text=str(string))
