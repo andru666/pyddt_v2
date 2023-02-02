@@ -7,7 +7,7 @@ plugin_name = 'Megane3 AIRBAG Reset'
 class Virginizer():
     def __init__(self, ecu):
         super(Virginizer, self).__init__()
-        print(ecu.requests['Synthèse état UCE avant crash'].ManuelSend)
+        print(ecu.requests['Synthèse état UCE avant crash'])
 
         
 """
