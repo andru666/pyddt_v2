@@ -49,7 +49,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.11.37'
+__version__ = '0.11.38'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -177,7 +177,7 @@ sys.argv = sys.argv[0:1]
 
 def my_excepthook(excType, excValue, tb):
     message = traceback.format_exception(excType, excValue, tb)
-    string = str(time.ctime())+'\n'
+    string = __version__+'\n'+str(time.ctime())+'\n'
     for m in message:
         string += m
     error = TextInput(text=str(string))
@@ -251,8 +251,9 @@ class PYDDT(App):
                 if (Environment.isExternalStorageLegacy() == False):
                     permissionErrorLayout.add_widget(MyLabel(text='LegacyExternalStorage : False', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
                     permissionIsGranted = False
-            
-            permissionErrorLayout.add_widget(MyButton(text='Click to exit and check permissions!!!', valign = 'middle', halign = 'center', size_hint=(1, 1), font_size=fs*1.5, on_press=exit))
+            permissionErrorLayout.add_widget(MyLabel(text='Android api: ' + str(api_version), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+            permissionErrorLayout.add_widget(MyLabel(text='Version: ' + str(version), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+            permissionErrorLayout.add_widget(MyButton(text='Click to exit and check permissions!!!', valign = 'middle', halign = 'center', size_hint=(1, None), font_size=fs*1.5, height=fs*3, on_press=exit))
             if (permissionIsGranted == False):
                 return permissionErrorLayout
 
