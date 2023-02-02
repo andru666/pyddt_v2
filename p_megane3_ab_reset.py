@@ -1,12 +1,14 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
+plugin_name = 'Megane3 AIRBAG Reset'
 
-ecufile = "MRSZ_X95_L38_L43_L47_20110505T101858"
 
 class Virginizer():
     def __init__(self, ecu):
         super(Virginizer, self).__init__()
+        print(ecu.requests['Synthèse état UCE avant crash'].ManuelSend)
+
         
 """
 import ecu
