@@ -1188,3 +1188,8 @@ class ELM:
     def delFromCache(self, req ):
         if not mod_globals.opt_demo and  req in self.rsp_cache.keys():
             del self.rsp_cache[req]
+    def errorval(val):
+        if val not in negrsp:
+            return "not registered error"
+        if val in negrsp.keys():
+            return negrsp[val]

@@ -7,12 +7,25 @@ plugin_name = 'Megane3 AIRBAG Reset'
 class Virginizer():
     def __init__(self, ecu):
         super(Virginizer, self).__init__()
-        crash_reset_request = ecu.requests[u'Synthèse état UCE avant crash']
-        print(crash_reset_request)
-        print(ecu.requests['Synthèse état UCE avant crash'].send_request())
+        
+        crash_reset_request = ecu.requests['Synthèse état UCE avant crash']
+        values_dict = crash_reset_request.send_request({}, ecu.datas, ecu.datas.Endian, "62 02 04 00 00 00 00 00 00 00 00 00 00 00 00")
+        
+        if values_dict is None:
+            print('UNEXPECTED RESPONSE')
+        crash = values_dict
+        print(crash)
+        
+    def reset_ecu(self):
+        reset_request = ecu.requests['Reset crash ou accès au mode fournisseur']
+        request_response = reset_request.send_request({u"code d'accès pour reset UCE": '27081977'}, ecu.datas, ecu.datas.Endian)
+        if request_response.values() != 'None' or request_response is not None:
+            print('CLEAR EXECUTED')
+        else:
+            print('CLEAR FAILED')
 
         
-"""
+'''
 import ecu
 import options
 
@@ -104,4 +117,4 @@ class Virginizer(gui.QDialog):
 def plugin_entry():
     v = Virginizer()
     v.exec_()
-"""
+'''
