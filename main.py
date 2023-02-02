@@ -49,7 +49,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.11.36'
+__version__ = '0.11.37'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -182,7 +182,7 @@ def my_excepthook(excType, excValue, tb):
         string += m
     error = TextInput(text=str(string))
     if mod_globals.os == 'android':
-        with open(os.path.join(mod_globals.log_dir, 'crash_'+str(int(time.time()))+'.txt'), 'w') as fout:
+        with open(os.path.join(mod_globals.log_dir, 'crash_'+str(time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime()))+'.txt'), 'w') as fout:
             fout.write(str(string))
 
     popup = Popup(title='Crash', content=error, size=(Window.size[0]*0.9, Window.size[1]*0.9), size_hint=(None, None), auto_dismiss=True, on_dismiss=exit)
@@ -378,7 +378,7 @@ class PYDDT(App):
         mod_globals.windows_size = Window.size
         mod_globals.opt_dump = self.button[LANG.l_dump].active
         mod_globals.opt_can2 = self.button['CAN2'].active
-        #mod_globals.savedCAR = 'savedCAR_x81.csv'
+        #mod_globals.savedCAR = 'savedCAR_x95.csv'
         #mod_globals.savedCAR = 'savedCAR_XTAGFL110LY351920VESTA.csv'
         if self.button[LANG.b_log].state == 'down':
             mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
@@ -620,6 +620,7 @@ def main():
             os.makedirs(mod_globals.dumps_dir)
     except:
         print('Dir creation error!')
+
     kivyScreenConfig()
 
 class MyGridLayout(GridLayout):

@@ -338,6 +338,13 @@ class DDTLauncher(App):
         elif isinstance(data, dict): self.show_screen(x,data[x])
         elif isinstance(data, list): self.loadScreen(x, data)
 
+    def airbag_reset(self):
+        if self.xml == 'MRSZ_X95_L38_L43_L47_20110505T101858.xml':
+            from p_megane3_ab_reset import Virginizer
+            Virginizer(self.decu)
+        
+        
+
     def update_dInputs(self):
         for i in self.iValueNeedUpdate.keys():
             self.iValueNeedUpdate[i] = True
@@ -530,7 +537,8 @@ class DDTLauncher(App):
             self.Layout.add_widget(MyLabel(text=self.currentscreen, color=(0,0,0,1), bgcolor=self.hex_to_rgb(self.scr_c)))
             if len(self.BValue):
                 for b in self.BValue:
-                    self.bValue[eval(b[12])[0]['RequestName']] = {'send':b[12], 'xText':b[0]}
+                    if len(eval(b[12])) > 0:
+                        self.bValue[eval(b[12])[0]['RequestName']] = {'send':b[12], 'xText':b[0]}
             if len(self.DValue) > 0:
                 for d in self.DValue:
                     xText, xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = d
@@ -584,7 +592,7 @@ class DDTLauncher(App):
                     if len(self.BValue) == 1:
                         box2.height = box2.height + fs*3
                         box2.add_widget(button)
-                    else:
+                    elif len(eval(b[12])) > 0:
                         if eval(b[12])[0]['RequestName'] not in dv:
                             box2.height = box2.height + fs*3
                             box2.add_widget(button)
@@ -782,19 +790,6 @@ class DDTLauncher(App):
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(self.xml, self.screens)))
         if self.start:
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
-
-    def airbag_reset(self):
-        print(self.decu.requests.keys())
-        if "Reset crash ou accès au mode fournisseur" in self.decu.requests.keys():
-            requests = self.decu.requests["Reset crash ou accès au mode fournisseur"]
-        elif "Reset Crash" in self.decu.requests.keys():
-            requests = self.decu.requests["Reset Crash"]
-        else:
-            print('not Reset crash ou accès au mode fournisseur')
-            self.MyPopup(content=LANG.l_cont3)
-            return False
-        print(requests)
-        
 
     def readDTC(self):
         if "ReadDTCInformation.ReportDTC" in self.decu.requests.keys():
@@ -1314,7 +1309,7 @@ class DDTLauncher(App):
         self.Screens = {}
         self.screens = {}
         self.screens[LANG.b_read_dtc] = ''
-        #if self.Addr[:-4] == '2C': self.screens['AIRBAG Reset'] = ''
+        if self.Addr[:-4] == '2C': self.screens['AIRBAG Reset'] = ''
         categs = xdoc.findall ("ns0:Target/ns1:Categories/ns1:Category", mod_globals.ns)
         if len(categs):
             for cat in categs:
