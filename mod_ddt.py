@@ -537,7 +537,8 @@ class DDTLauncher(App):
             self.Layout.add_widget(MyLabel(text=self.currentscreen, color=(0,0,0,1), bgcolor=self.hex_to_rgb(self.scr_c)))
             if len(self.BValue):
                 for b in self.BValue:
-                    self.bValue[eval(b[12])[0]['RequestName']] = {'send':b[12], 'xText':b[0]}
+                    if len(eval(b[12])) > 0:
+                        self.bValue[eval(b[12])[0]['RequestName']] = {'send':b[12], 'xText':b[0]}
             if len(self.DValue) > 0:
                 for d in self.DValue:
                     xText, xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = d
@@ -591,7 +592,7 @@ class DDTLauncher(App):
                     if len(self.BValue) == 1:
                         box2.height = box2.height + fs*3
                         box2.add_widget(button)
-                    else:
+                    elif len(eval(b[12])) > 0:
                         if eval(b[12])[0]['RequestName'] not in dv:
                             box2.height = box2.height + fs*3
                             box2.add_widget(button)
