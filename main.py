@@ -49,7 +49,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.11.39'
+__version__ = '0.12.00'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -177,7 +177,7 @@ sys.argv = sys.argv[0:1]
 
 def my_excepthook(excType, excValue, tb):
     message = traceback.format_exception(excType, excValue, tb)
-    string = __version__+'\n'+str(time.ctime())+'\n'
+    string = '__version__: '+__version__+'\n'+str(time.ctime())+'\n'
     for m in message:
         string += m
     error = TextInput(text=str(string))
@@ -238,22 +238,22 @@ class PYDDT(App):
         if mod_globals.os == 'android':
             permissionIsGranted = True
             permissionErrorLayout = GridLayout(cols=1, padding=15, spacing=15, size_hint=(1, 1))
-            permissionErrorLayout.add_widget(MyLabel(text='Permission not granted', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+            permissionErrorLayout.add_widget(MyLabel(text='Permission not granted', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, 1)))
             for perm in permissions:
                 if (check_permission(perm) == False):
                     permissionIsGranted = False
-                    permissionErrorLayout.add_widget(MyLabel(text=perm + ':' +str(check_permission(perm)), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+                    permissionErrorLayout.add_widget(MyLabel(text=perm + ':' +str(check_permission(perm)), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, 1)))
             if api_version > 29:
                 if (Environment.isExternalStorageManager() == False):
-                    permissionErrorLayout.add_widget(MyLabel(text='FILES_ACCESS_PERMISSION : False', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+                    permissionErrorLayout.add_widget(MyLabel(text='FILES_ACCESS_PERMISSION : False', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, 1)))
                     permissionIsGranted = False
             if api_version == 29:
                 if (Environment.isExternalStorageLegacy() == False):
-                    permissionErrorLayout.add_widget(MyLabel(text='LegacyExternalStorage : False', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
+                    permissionErrorLayout.add_widget(MyLabel(text='LegacyExternalStorage : False', font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, 1)))
                     permissionIsGranted = False
-            permissionErrorLayout.add_widget(MyLabel(text='Android api: ' + str(api_version), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
-            permissionErrorLayout.add_widget(MyLabel(text='Version: ' + str(__version__), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, None)))
-            permissionErrorLayout.add_widget(MyButton(text='Click to exit and check permissions!!!', valign = 'middle', halign = 'center', size_hint=(1, None), font_size=fs*1.5, height=fs*3, on_press=exit))
+            permissionErrorLayout.add_widget(MyLabel(text='Android api: ' + str(api_version), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, 1)))
+            permissionErrorLayout.add_widget(MyLabel(text='Version: ' + str(__version__), font_size=(fs*0.9), height=fs*1.4, multiline=True, size_hint=(1, 1)))
+            permissionErrorLayout.add_widget(MyButton(text='Click to exit and check permissions!!!', valign = 'middle', halign = 'center', size_hint=(1, 1), font_size=fs*1.5, height=fs*3, on_press=exit))
             if (permissionIsGranted == False):
                 return permissionErrorLayout
 

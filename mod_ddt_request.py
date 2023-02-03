@@ -71,13 +71,13 @@ class decu_request:
                     'ns1': 'http://www-diag.renault.com/2002/screens'}
         self.Name = rq.attrib["Name"]
         self.DossierMaintenabilite = False
-        DossierMaintenabilite = rq.findall("ns0:DossierMaintenabilite",ns) #[0]
+        DossierMaintenabilite = rq.findall("ns0:DossierMaintenabilite",ns)
         if DossierMaintenabilite: self.DossierMaintenabilite=True
         self.ManuelSend = False
         ManuelSend = rq.findall("ns0:ManuelSend",ns)
         if ManuelSend: self.ManuelSend=True
         self.DenyAccess = []
-        DenyAccess = rq.findall("ns0:DenyAccess",ns) #[0]
+        DenyAccess = rq.findall("ns0:DenyAccess",ns)
         if DenyAccess:
             NoSDS = DenyAccess[0].findall("ns0:NoSDS",ns)
             if NoSDS: self.DenyAccess.append('NoSDS')
@@ -89,7 +89,7 @@ class decu_request:
             if Plant: self.DenyAccess.append('Plant')
             AfterSales = DenyAccess[0].findall("ns0:AfterSales",ns)
             if AfterSales: self.DenyAccess.append('AfterSales')
-        Sent = rq.findall("ns0:Sent",ns) #[0]
+        Sent = rq.findall("ns0:Sent",ns)
         if len(Sent):
             self.SentBytes = ''
             SentBytes = Sent[0].findall("ns0:SentBytes",ns)
@@ -103,14 +103,14 @@ class decu_request:
                 for di in DataItems:
                     dataitem = DataItem( di, defaultEndian )
                     self.SentDI[dataitem.Name]=dataitem
-        Received = rq.findall("ns0:Received",ns) #[0]
+        Received = rq.findall("ns0:Received",ns)
         if len(Received):
             self.MinBytes = 0
             MinBytes = Received[0].attrib["MinBytes"]
             if MinBytes: self.MinBytes = int(MinBytes)
             self.ShiftBytesCount = 0
             ShiftBytesCount = Received[0].findall("ns0:ShiftBytesCount",ns)
-            if len(ShiftBytesCount): self.ShiftBytesCount = int(ShiftBytesCount[0].text) #[0].text)
+            if len(ShiftBytesCount): self.ShiftBytesCount = int(ShiftBytesCount[0].text)
             self.ReplyBytes = ''
             ReplyBytes = Received[0].findall("ns0:ReplyBytes",ns)
             if len(ReplyBytes): self.ReplyBytes = ReplyBytes[0].text
@@ -118,8 +118,60 @@ class decu_request:
             DataItems = Received[0].findall("ns0:DataItem",ns)
             if len(DataItems):
                 for di in DataItems:
-                    dataitem = DataItem( di, defaultEndian    )
+                    dataitem = DataItem(di, defaultEndian)
                     self.ReceivedDI[dataitem.Name]=dataitem
+
+
+    def send_request(self, inputvalues={}, data=None, Endian=None, test_data=None):
+        request_stream = self.build_data_stream(inputvalues, data)
+        request_stream = " ".join(request_stream)
+        self.Endian = Endian
+        if mod_globals.opt_demo:
+            if test_data is not None:
+                elmstream = test_data
+            else:
+                elmstream = self.ReplyBytes
+        else:
+            elmstream = mod_globals.elm.request(request_stream)
+        if elmstream.startswith('WRONG RESPONSE'):
+            return None
+        if elmstream.startswith('7F'):
+            nrsp = mod_globals.elm.errorval(elmstream[6:8])
+            return None
+        values = self.get_values_from_stream(elmstream)
+        return values
+        
+
+    def build_data_stream(self, data, datas):
+        data_stream = self.get_formatted_sentbytes()
+        
+        for k, v in data.items():
+            if k in self.SentDI:
+                datatitem = self.SentDI[k]
+            else:
+                raise KeyError('Ecurequest::build_data_stream : Data item %s does not exist' % k)
+            if k in data:
+                data = datas[k]
+            else:
+                raise KeyError('Ecurequest::build_data_stream : Data %s does not exist' % k)
+            if v in datas:
+                v = hex(datas.items[v])[2:].upper()
+            data.setValue(v, data_stream, datatitem)
+        return data_stream
+
+    def get_values_from_stream(self, stream):
+        values = {}
+        for k, v in self.ReceivedDI.items():
+            if k in self.datas:
+                data = self.datas[k]
+                values[k] = data.getDisplayValue(stream, v, self.Endian)
+            else:
+                raise KeyError('Ecurequest::get_values_from_stream : Data %s does not exist' % k)
+        return values
+
+    def get_formatted_sentbytes(self):
+        bytes_to_send_ascii = self.SentBytes
+        return [str(bytes_to_send_ascii[i:i + 2]) for i in range(0, len(bytes_to_send_ascii), 2)]
 
 class decu_requests:
     def __init__(self, requiest_list, xdoc):
