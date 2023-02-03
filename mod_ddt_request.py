@@ -41,6 +41,7 @@ class decu_request:
     MinBytes = 1
     ShiftBytesCount = 0
     ReplyBytes = ''
+    Endian = ''
     
     def __str__(self):
         sd = ''
@@ -48,7 +49,7 @@ class decu_request:
             sd = sd + '\n'+str(s)
         sd = pyren_decode(sd)
         rd = ''
-        for r in sorted(self.ReceivedDI.values(), key=operator.attrgetter("FirstByte","BitOffset")): 
+        for r in sorted(self.ReceivedDI.values(), key=operator.attrgetter("FirstByte","BitOffset")):
             rd = rd + '\n'+str(r)
         rd = pyren_decode(rd)
         out = '''
@@ -121,11 +122,9 @@ class decu_request:
                     dataitem = DataItem(di, defaultEndian)
                     self.ReceivedDI[dataitem.Name]=dataitem
 
-
-    def send_request(self, inputvalues={}, data=None, Endian=None, test_data=None):
+    def send_request(self, inputvalues={}, data=None, test_data=None):
         request_stream = self.build_data_stream(inputvalues, data)
         request_stream = " ".join(request_stream)
-        self.Endian = Endian
         if mod_globals.opt_demo:
             if test_data is not None:
                 elmstream = test_data
@@ -144,7 +143,7 @@ class decu_request:
 
     def build_data_stream(self, data, datas):
         data_stream = self.get_formatted_sentbytes()
-        
+        self.datas = datas
         for k, v in data.items():
             if k in self.SentDI:
                 datatitem = self.SentDI[k]
@@ -162,6 +161,7 @@ class decu_request:
     def get_values_from_stream(self, stream):
         values = {}
         for k, v in self.ReceivedDI.items():
+            self.Endian = v.Endian
             if k in self.datas:
                 data = self.datas[k]
                 values[k] = data.getDisplayValue(stream, v, self.Endian)

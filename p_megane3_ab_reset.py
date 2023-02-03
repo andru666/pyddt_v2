@@ -1,24 +1,52 @@
+#ecufile = "MRSZ_X95_L38_L43_L47_20110505T101858"
+
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
+import mod_globals
+
 plugin_name = 'Megane3 AIRBAG Reset'
 
 
 class Virginizer():
     def __init__(self, ecu):
+        self.ecu = ecu
+        sds_request = self.ecu.requests[u"Start Diagnostic Session"]
+
+        sds_stream = " ".join(sds_request.build_data_stream({u"Session Name": u"extendedDiagnosticSession"}, self.ecu.datas))
+        if mod_globals.opt_demo:
+            print("SdS stream", sds_stream)
+            return
+        self.ecu.elm.start_session_can(sds_stream)
         super(Virginizer, self).__init__()
         
-        crash_reset_request = ecu.requests['Synthèse état UCE avant crash']
-        values_dict = crash_reset_request.send_request({}, ecu.datas, ecu.datas.Endian, "62 02 04 00 00 00 00 00 00 00 00 00 00 00 00")
+    def check_virgin_status(self):
+        crash_reset_request = self.ecu.requests['Synthèse état UCE avant crash']
+        
+        values_dict = crash_reset_request.send_request({}, self.ecu.datas, "62 02 04 00 00 00 00 00 00 00 00 00 00 00 00")
         
         if values_dict is None:
             print('UNEXPECTED RESPONSE')
-        crash = values_dict
-        print(crash)
+        crash = values_dict['crash détecté']
         
+        if crash == u'crash détecté':
+            print("<font color='red'>CRASH DETECTED</font>")
+        else:
+            print("<font color='green'>NO CRASH DETECTED</font>")
+
+    def start_diag_session(self):
+        sds_request = self.ecu.requests[u"Start Diagnostic Session"]
+
+        sds_stream = " ".join(sds_request.build_data_stream({u"Session Name": u"extendedDiagnosticSession"}))
+        if mod_globals.opt_demo:
+            print("SdS stream", sds_stream)
+            return
+        self.ecu.elm.start_session_can(sds_stream)
+
+
     def reset_ecu(self):
-        reset_request = ecu.requests['Reset crash ou accès au mode fournisseur']
-        request_response = reset_request.send_request({u"code d'accès pour reset UCE": '27081977'}, ecu.datas, ecu.datas.Endian)
+        reset_request = self.ecu.requests['Reset crash ou accès au mode fournisseur']
+        request_response = reset_request.send_request({u"code d'accès pour reset UCE": '27081977'}, self.ecu.datas)
         if request_response.values() != 'None' or request_response is not None:
             print('CLEAR EXECUTED')
         else:
