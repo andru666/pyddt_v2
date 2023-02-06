@@ -10,7 +10,7 @@ if platform != 'android':
     import ctypes
     user32 = ctypes.windll.user32
     Config.set('graphics', 'position', 'custom')
-    Config.set('graphics', 'left', int(user32.GetSystemMetrics(0)/2))
+    Config.set('graphics', 'left', int(user32.GetSystemMetrics(0)/3))
     Config.set('graphics', 'top',  20)
     from kivy.core.window import Window
     Window.size = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
@@ -49,7 +49,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.12.00'
+__version__ = '0.12.01'
 
 if mod_globals.os == 'android':
     fs = fs*2
