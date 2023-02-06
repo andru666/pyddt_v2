@@ -339,10 +339,49 @@ class DDTLauncher(App):
         elif isinstance(data, list): self.loadScreen(x, data)
 
     def airbag_reset(self):
+        from p_ab_reset import Virginizer
+        reset = False
         if self.xml == 'MRSZ_X95_L38_L43_L47_20110505T101858.xml':
-            from p_megane3_ab_reset import Virginizer
-            Virginizer(self.decu)
-        
+            reset = True
+            title = 'Megane3 AIRBAG Reset'
+            info = 'Megane III<br>\nAIRBAG VIRGINIZER<br>\nTHIS PLUGIN WILL UNLOCK AIRBAG CRASH DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            check_req = u'Synthèse état UCE avant crash'
+            check_status = u'crash détecté'
+            reset_req = u'Reset crash ou accès au mode fournisseur'
+            reset_code =u"code d'accès pour reset UCE"
+            code = '27081977'
+            start_req = u'Start Diagnostic Session'
+            start_send = u'Session Name'
+            start_code = u'extendedDiagnosticSession'
+            start_code_fa = u'systemSupplierSpecific'
+        elif self.xml == 'AB90_J77_X85.xml':
+            reset = True
+            title = 'AB90 AIRBAG Reset'
+            info = 'AB90 (Clio III)/2\nAIRBAG VIRGINIZER\nTHIS PLUGIN WILL UNLOCK AIRBAG CRASH DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            check_req = u'Synthèse état UCE'
+            check_status = u'crash détecté'
+            reset_req = u"Reset crash ou accès au mode fournisseur"
+            reset_code = u"code d'accès pour reset UCE"
+            code = '22041998'
+            start_req = u'Start Diagnostic Session'
+            start_send = ''
+            start_code = ''
+            start_code_fa = None
+        elif self.xml == 'RSAT4_ACU_eng_v15_20150511T131328.xml':
+            reset = True
+            title= 'RSAT4 AIRBAG Reset'
+            info = 'TWINGO III/ZOE/DOKKER/DUSTER ph2/TRAFIC III/CAPTUR/LODGY ph1/2\nAIRBAG VIRGINIZER\nTHIS PLUGIN WILL UNLOCK AIRBAG CRASH DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            check_req = u'Reading of ECU state synthesis'
+            check_status = u"crash detected"
+            reset_req = u'Reset Crash'
+            reset_code = u'CLEDEV For reset crash'
+            code = '13041976'
+            start_req = u'Start Diagnostic Session'
+            start_send = u'Session Name'
+            start_code = u'extendedDiagnosticSession'
+            start_code_fa = None
+        if reset:
+            Virginizer(self.decu, title, info, check_req, check_status, reset_req, reset_code, code, start_req, start_send, start_code, start_code_fa)
         
 
     def update_dInputs(self):
