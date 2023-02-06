@@ -122,8 +122,8 @@ class decu_request:
                     dataitem = DataItem(di, defaultEndian)
                     self.ReceivedDI[dataitem.Name]=dataitem
 
-    def send_request(self, inputvalues={}, data=None, test_data=None):
-        request_stream = self.build_data_stream(inputvalues, data)
+    def send_request(self, inputvalues={}, ecu=None, test_data=None):
+        request_stream = self.build_data_stream(inputvalues, ecu.datas)
         request_stream = " ".join(request_stream)
         if mod_globals.opt_demo:
             if test_data is not None:
@@ -131,11 +131,11 @@ class decu_request:
             else:
                 elmstream = self.ReplyBytes
         else:
-            elmstream = mod_globals.elm.request(request_stream)
+            elmstream = ecu.elm.request(request_stream)
         if elmstream.startswith('WRONG RESPONSE'):
             return None
         if elmstream.startswith('7F'):
-            nrsp = mod_globals.elm.errorval(elmstream[6:8])
+            nrsp = ecu.elm.errorval(elmstream[6:8])
             return None
         values = self.get_values_from_stream(elmstream)
         return values
