@@ -945,6 +945,13 @@ class ELM:
         if len(self.startSession) > 0:
             self.lastinitrsp = self.cmd(self.startSession)
 
+    def start_session_can(self, start_session):
+        self.startSession = start_session
+        retcode = self.cmd(self.startSession)
+        if retcode.startswith('50'):
+            return True
+        return False
+
     def check_answer(self, ans):
         if '?' in ans:
             self.unsupportedCommands += 1
