@@ -484,7 +484,6 @@ class DDTLauncher(App):
             txt = None
         if reset:
             Virginizer(self.decu, title, info, check_req, check_status, check_status_val, reset_req, reset_code, code, start_req, start_send, start_code, start_req_fa, start_send_fa, start_code_fa, txt)
-        
 
     def update_dInputs(self):
         for i in self.iValueNeedUpdate.keys():
@@ -525,10 +524,12 @@ class DDTLauncher(App):
         else:
             return
         for key, v in params.items():
-            listIndex = False
+            listIndex = None
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
             if val != 'None':
+                if len(d.List.keys()):
+                    listIndex = int(val,16)
                 if key in self.dLabels.keys():
                     if len(d.List.keys()):
                         listIndex = int(val,16)
@@ -567,8 +568,11 @@ class DDTLauncher(App):
                     if self.iValueNeedUpdate[key]:
                         if listIndex:
                             self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        else:
-                            self.oLabels[key+v['request']].text = val
+                        self.iValueNeedUpdate[key] = False
+                elif (key+v['request']).replace('DataRead', 'DataWrite') in self.oLabels.keys():
+                    if self.iValueNeedUpdate[key]:
+                        if listIndex:
+                            self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
                         self.iValueNeedUpdate[key] = False
                 if key in self.Labels.keys():
                     self.Labels[key].text = val
@@ -1275,11 +1279,14 @@ class DDTLauncher(App):
         for i, v in self.iValue.items():
             if i[:-len(v['request'])] in self.iLabels:
                 self.iValue[i]['value'] = self.iLabels[i[:-len(v['request'])]].text
+            elif i in self.iLabels:
+                self.iValue[i]['value'] = self.iLabels[i].text
             elif i in self.oLabels:
                 self.iValue[i]['value'] = self.oLabels[i].text
             elif i[:-len(v['request'])] in self.Labels:
                 self.iValue[i]['value'] = self.Labels[i[:-len(v['request'])]].text
-
+            elif i in self.Labels:
+                self.iValue[i]['value'] = self.Labels[i].text
         self.decu.clearELMcache()
         if key in self.dBtnSend.keys():
             sends = self.dBtnSend[key]
