@@ -359,6 +359,8 @@ class DDTLauncher(App):
             start_req = u'Start Diagnostic Session'
             start_send = u'Session Name'
             start_code = u'extendedDiagnosticSession'
+            start_req_fa = u'Start Diagnostic Session'
+            start_send_fa = u'Session Name'
             start_code_fa = u'systemSupplierSpecific'
             txt = None
         if self.xml == 'AB90_J77_X85.xml':
@@ -374,7 +376,9 @@ class DDTLauncher(App):
             start_req = u'Start Diagnostic Session'
             start_send = ''
             start_code = ''
-            start_code_fa = None
+            start_req_fa = ''
+            start_send_fa = ''
+            start_code_fa = ''
             txt = None
         if self.xml == 'RSAT4_ACU_eng_v15_20150511T131328.xml':
             reset = True
@@ -389,7 +393,9 @@ class DDTLauncher(App):
             start_req = u'Start Diagnostic Session'
             start_send = u'Session Name'
             start_code = u'extendedDiagnosticSession'
-            start_code_fa = None
+            start_req_fa = ''
+            start_send_fa = ''
+            start_code_fa = ''
             txt = None
         if self.xml == 'BCM_X95_SW_2_V_1_2.xml':
             reset = True
@@ -399,12 +405,65 @@ class DDTLauncher(App):
             check_status = u"VSC UCH vierge (NbBadgeAppris=0)"
             check_status_val = u'Actif'
             reset_req = u'SR_RESERVED VSC 1'
-            reset_code = False
-            code = False
+            reset_code = u''
+            code = u''
             start_req = u'Start Diagnostic Session'
             start_send = u''
             start_code = u''
-            start_code_fa = None
+            start_req_fa = ''
+            start_send_fa = ''
+            start_code_fa = ''
+            txt = 1
+        if self.xml == 'BCM_X91_L43_S_S_SWC_v1.30_20140613T140906.xml':
+            reset = True
+            title= 'Laguna III UCH Reset'
+            info = 'LAGUNA III UCH VIRGINIZER\nTHIS PLUGIN WILL ERASE YOUR UCH\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            check_req = u'Read_A_AC_General_Identifiers_Learning_Status_(bits)_BCM_Input/Output'
+            check_status = u'BCM_IS_BLANK_S'
+            check_status_val = u'true'
+            reset_req = u'SR_RESERVED VSC 1'
+            reset_code = u''
+            code = u''
+            start_req = u'Start Diagnostic Session'
+            start_send = u''
+            start_code = u''
+            start_req_fa = ''
+            start_send_fa = ''
+            start_code_fa = ''
+            txt = 1
+        if self.xml == 'UCH_84_J84_03_60.xml':
+            reset = True
+            title= 'Megane/Scenic II UCH Reset'
+            info = 'MEGANE II UCH VIRGINIZER\nTHIS PLUGIN WILL ERASE YOUR UCH\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            check_req = u'Status général des opérations badges Bits'
+            check_status = u'VSC UCH vierge (NbBadgeAppris=0)'
+            check_status_val = u'Vierge'
+            reset_req = u'RAZ EEPROM'
+            reset_code = u''
+            code = u''
+            start_req = u'Start Diagnostic Session'
+            start_send = u''
+            start_code = u''
+            start_req_fa = 'StartDiagSession Etude'
+            start_send_fa = ''
+            start_code_fa = u''
+            txt = 1
+        if self.xml == 'UCH___M2S_X74_et_X73.xml':
+            reset = True
+            title= 'Laguna II UCH Reset'
+            info = 'LAGUNA II UCH VIRGINIZER\nTHIS PLUGIN WILL ERASE YOUR UCH\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            check_req = u'Lecture Etats Antidémarrage et acces'
+            check_status = u'UCH vierge'
+            check_status_val = u'oui'
+            reset_req = u'Effacement_données_antidem_acces'
+            reset_code = u''
+            code = ''
+            start_req = u'Start Diagnostic Session'
+            start_send = u'Session Name'
+            start_code = u'APV'
+            start_req_fa = 'Start Diagnostic Session'
+            start_send_fa = 'Session Name'
+            start_code_fa = 'Etude'
             txt = 1
         if self.xml == 'test.xml':
             reset = True
@@ -416,13 +475,15 @@ class DDTLauncher(App):
             reset_req = u''
             reset_code = u''
             code = ''
-            start_req = u''
+            start_req = u'Start Diagnostic Session'
             start_send = u''
             start_code = u''
-            start_code_fa = None
+            start_req_fa = ''
+            start_send_fa = ''
+            start_code_fa = ''
             txt = None
         if reset:
-            Virginizer(self.decu, title, info, check_req, check_status, check_status_val, reset_req, reset_code, code, start_req, start_send, start_code, start_code_fa, txt)
+            Virginizer(self.decu, title, info, check_req, check_status, check_status_val, reset_req, reset_code, code, start_req, start_send, start_code, start_req_fa, start_send_fa, start_code_fa, txt)
         
 
     def update_dInputs(self):

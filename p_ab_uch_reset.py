@@ -9,7 +9,7 @@ import mod_globals
 fs = mod_globals.fontSize
 
 class Virginizer():
-    def __init__(self, ecu, title, info, check_req, check_status, check_status_val, reset_req, reset_code, code, start_req, start_send, start_code, start_code_fa, txt=None):
+    def __init__(self, ecu, title, info, check_req, check_status, check_status_val, reset_req, reset_code, code, start_req, start_send, start_code, start_req_fa, start_send_fa, start_code_fa, txt=None):
         global LANG
         self.check_req = check_req
         self.check_status = check_status
@@ -20,6 +20,8 @@ class Virginizer():
         self.start_req = start_req
         self.start_send = start_send
         self.start_code = start_code
+        self.start_req_fa = start_req_fa
+        self.start_send_fa = start_send_fa
         self.start_code_fa = start_code_fa
         self.txt = txt
         if mod_globals.opt_lang == 'ru':
@@ -41,8 +43,7 @@ class Virginizer():
         if self.txt == 1:
             self.butt_check.txt = 'Check UCH Virgin'
             self.butt_virg.txt = 'Virginize UCH'
-            
-        self.butt_virg.disabled = True
+            self.butt_virg.disabled = True
         grid.add_widget(infos2)
         grid.add_widget(self.butt_check)
         grid.add_widget(self.status_check)
@@ -53,9 +54,9 @@ class Virginizer():
         btn_close.bind(on_press=popup.dismiss)
 
     def start_diag_session_fa(self):
-        sds_request = self.ecu.requests[self.start_req]
+        sds_request = self.ecu.requests[self.start_req_fa]
 
-        sds_stream = " ".join(sds_request.build_data_stream({self.start_send: self.start_code_fa}, self.ecu.datas))
+        sds_stream = " ".join(sds_request.build_data_stream({self.start_send_fa: self.start_code_fa}, self.ecu.datas))
         if mod_globals.opt_demo:
             self.status_check.text = str("SdSFA stream  "+ sds_stream + '\n')
             return
@@ -84,16 +85,16 @@ class Virginizer():
         if check_request_values is not None:
             value = check_request_values[self.check_status]
             if value == self.check_status_val:
-                self.butt_virg.disabled = True
                 self.status_check.bgcolor = (1,0,0,1)
                 if self.txt == 1:
+                    self.butt_virg.disabled = True
                     self.status_check.text += 'UCH virgin'
                 else:
                     self.status_check.text += 'CRASH DETECTED'
             else:
-                self.butt_virg.disabled = False
                 self.status_check.bgcolor = (0,1,0,1)
                 if self.txt == 1:
+                    self.butt_virg.disabled = False
                     self.status_check.text += 'UCH coded'
                 else:
                     self.status_check.text += 'NO CRASH DETECTED'
@@ -101,7 +102,7 @@ class Virginizer():
             self.status_check.text += 'UNEXPECTED RESPONSE'
 
     def reset_ecu(self):
-        if self.start_code_fa:
+        if self.start_req_fa:
             self.start_diag_session_fa()
         else:
             self.start_diag_session()
