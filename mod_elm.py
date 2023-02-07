@@ -810,13 +810,6 @@ class ELM:
                     else:
                         ST = int(ST, 16)
                     break
-                elif s[:4] == '037F' and s[6:8] == '78':
-                    if len(s0) > 0 and s == s0[-1]:
-                        r = self.waitFrames(6)
-                        if len(r.strip()) > 0:
-                            responses.append(r)
-                    else:
-                        continue
                 else:
                     responses.append(s)
                     continue
