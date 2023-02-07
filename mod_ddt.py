@@ -303,6 +303,7 @@ class DDTLauncher(App):
             box.add_widget(button)
         for x in datas:
             if x == 'ddt_all_commands': continue
+            if x == 'UCH Reset': continue
             if x == 'AIRBAG Reset': continue
             if x == LANG.l_text9: continue
             if x == LANG.b_read_dtc: continue
@@ -316,6 +317,9 @@ class DDTLauncher(App):
             box.add_widget(button)
         if 'AIRBAG Reset' in data:
             button = MyButton(text='AIRBAG Reset', id='AIRBAG Reset', size_hint=(1, None), height=fs*4, on_release=lambda x=xml:self.res_show_screen(x,data))
+            box.add_widget(button)
+        if 'UCH Reset' in data:
+            button = MyButton(text='UCH Reset', id='UCH Reset', size_hint=(1, None), height=fs*4, on_release=lambda x=xml:self.res_show_screen(x,data))
             box.add_widget(button)
         quitbutton = MyButton(text=LANG.b_back, id=LANG.b_back, size_hint=(1, None), height=fs*4)
         if isinstance(data, list):
@@ -332,14 +336,15 @@ class DDTLauncher(App):
     def res_show_screen(self, xx, data=None):
         x = xx.id
         if x == LANG.l_text9: self.select_dump_RollBack(xx.id)
-        elif x == 'AIRBAG Reset': self.airbag_reset()
+        elif x == 'AIRBAG Reset': self.airbag_uch_reset()
+        elif x == 'UCH Reset': self.airbag_uch_reset()
         elif x == (LANG.b_read_dtc): self.readDTC()
         elif x == (LANG.b_back): self.show_screen(x,data)
         elif isinstance(data, dict): self.show_screen(x,data[x])
         elif isinstance(data, list): self.loadScreen(x, data)
 
-    def airbag_reset(self):
-        from p_ab_reset import Virginizer
+    def airbag_uch_reset(self):
+        from p_ab_uch_reset import Virginizer
         reset = False
         if self.xml == 'MRSZ_X95_L38_L43_L47_20110505T101858.xml':
             reset = True
@@ -347,6 +352,7 @@ class DDTLauncher(App):
             info = 'Megane III<br>\nAIRBAG VIRGINIZER<br>\nTHIS PLUGIN WILL UNLOCK AIRBAG CRASH DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
             check_req = u'Synthèse état UCE avant crash'
             check_status = u'crash détecté'
+            check_status_val = u'crash détecté'
             reset_req = u'Reset crash ou accès au mode fournisseur'
             reset_code =u"code d'accès pour reset UCE"
             code = '27081977'
@@ -354,12 +360,14 @@ class DDTLauncher(App):
             start_send = u'Session Name'
             start_code = u'extendedDiagnosticSession'
             start_code_fa = u'systemSupplierSpecific'
-        elif self.xml == 'AB90_J77_X85.xml':
+            txt = None
+        if self.xml == 'AB90_J77_X85.xml':
             reset = True
             title = 'AB90 AIRBAG Reset'
             info = 'AB90 (Clio III)/2\nAIRBAG VIRGINIZER\nTHIS PLUGIN WILL UNLOCK AIRBAG CRASH DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
             check_req = u'Synthèse état UCE'
             check_status = u'crash détecté'
+            check_status_val = u'crash détecté'
             reset_req = u"Reset crash ou accès au mode fournisseur"
             reset_code = u"code d'accès pour reset UCE"
             code = '22041998'
@@ -367,12 +375,14 @@ class DDTLauncher(App):
             start_send = ''
             start_code = ''
             start_code_fa = None
-        elif self.xml == 'RSAT4_ACU_eng_v15_20150511T131328.xml':
+            txt = None
+        if self.xml == 'RSAT4_ACU_eng_v15_20150511T131328.xml':
             reset = True
             title= 'RSAT4 AIRBAG Reset'
             info = 'TWINGO III/ZOE/DOKKER/DUSTER ph2/TRAFIC III/CAPTUR/LODGY ph1/2\nAIRBAG VIRGINIZER\nTHIS PLUGIN WILL UNLOCK AIRBAG CRASH DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
             check_req = u'Reading of ECU state synthesis'
             check_status = u"crash detected"
+            check_status_val = u"crash detected"
             reset_req = u'Reset Crash'
             reset_code = u'CLEDEV For reset crash'
             code = '13041976'
@@ -380,8 +390,39 @@ class DDTLauncher(App):
             start_send = u'Session Name'
             start_code = u'extendedDiagnosticSession'
             start_code_fa = None
+            txt = None
+        if self.xml == 'BCM_X95_SW_2_V_1_2.xml':
+            reset = True
+            title= 'Megane/Scenic III UCH Reset'
+            info = 'MEGANE III UCH VIRGINIZER\nTHIS PLUGIN WILL ERASE YOUR UCH\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            check_req = u'Read_A_AC_General_Identifiers_Learning_Status_(bits)_BCM_Input/Output'
+            check_status = u"VSC UCH vierge (NbBadgeAppris=0)"
+            check_status_val = u'Actif'
+            reset_req = u'SR_RESERVED VSC 1'
+            reset_code = False
+            code = False
+            start_req = u'Start Diagnostic Session'
+            start_send = u''
+            start_code = u''
+            start_code_fa = None
+            txt = 1
+        if self.xml == 'test.xml':
+            reset = True
+            title= ''
+            info = ''
+            check_req = u''
+            check_status = u''
+            check_status_val = u''
+            reset_req = u''
+            reset_code = u''
+            code = ''
+            start_req = u''
+            start_send = u''
+            start_code = u''
+            start_code_fa = None
+            txt = None
         if reset:
-            Virginizer(self.decu, title, info, check_req, check_status, reset_req, reset_code, code, start_req, start_send, start_code, start_code_fa)
+            Virginizer(self.decu, title, info, check_req, check_status, check_status_val, reset_req, reset_code, code, start_req, start_send, start_code, start_code_fa, txt)
         
 
     def update_dInputs(self):
@@ -1349,6 +1390,7 @@ class DDTLauncher(App):
         self.screens = {}
         self.screens[LANG.b_read_dtc] = ''
         if self.Addr[:-4] == '2C': self.screens['AIRBAG Reset'] = ''
+        if self.Addr[:-4] == '26': self.screens['UCH Reset'] = ''
         categs = xdoc.findall ("ns0:Target/ns1:Categories/ns1:Category", mod_globals.ns)
         if len(categs):
             for cat in categs:
