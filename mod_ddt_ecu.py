@@ -176,9 +176,9 @@ def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, xm
     return 'not_ident#%s#%s#%s#%s'%(DiagVersion, Supplier, Soft, Version)
     
 def minD(value, iterable):
-    if True:
+    try:
         return min(iterable, key=lambda x: abs(int(value, 16) - int(x, 16)))
-    else:
+    except:
         if len(value) > 1:
             val = ''
             for v in value:

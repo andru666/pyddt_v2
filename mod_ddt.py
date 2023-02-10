@@ -305,6 +305,7 @@ class DDTLauncher(App):
             if x == 'ddt_all_commands': continue
             if x == 'UCH Reset': continue
             if x == 'AIRBAG Reset': continue
+            if x == 'EPS Tools': continue
             if x == LANG.l_text9: continue
             if x == LANG.b_read_dtc: continue
             button = MyButton(text=x.replace('ddt_all_commands', ''), id=x, size_hint=(1, None), height=fs*4, on_release=lambda x=xml:self.res_show_screen(x,data))
@@ -320,6 +321,9 @@ class DDTLauncher(App):
             box.add_widget(button)
         if 'UCH Reset' in data:
             button = MyButton(text='UCH Reset', id='UCH Reset', size_hint=(1, None), height=fs*4, on_release=lambda x=xml:self.res_show_screen(x,data))
+            box.add_widget(button)
+        if 'EPS Tools' in data:
+            button = MyButton(text='EPS Tools', id='EPS Tools', size_hint=(1, None), height=fs*4, on_release=lambda x=xml:self.res_show_screen(x,data))
             box.add_widget(button)
         quitbutton = MyButton(text=LANG.b_back, id=LANG.b_back, size_hint=(1, None), height=fs*4)
         if isinstance(data, list):
@@ -338,6 +342,7 @@ class DDTLauncher(App):
         if x == LANG.l_text9: self.select_dump_RollBack(xx.id)
         elif x == 'AIRBAG Reset': self.airbag_uch_reset()
         elif x == 'UCH Reset': self.airbag_uch_reset()
+        elif x == 'EPS Tools': self.airbag_uch_reset()
         elif x == (LANG.b_read_dtc): self.readDTC()
         elif x == (LANG.b_back): self.show_screen(x,data)
         elif isinstance(data, dict): self.show_screen(x,data[x])
@@ -346,84 +351,226 @@ class DDTLauncher(App):
     def airbag_uch_reset(self):
         from p_ab_uch_reset import Virginizer
         reset = False
+        Vin = None
+        txt = None
+        test = None
         if self.xml == 'MRSZ_X95_L38_L43_L47_20110505T101858.xml':
             reset = True
             title = 'Megane3 AIRBAG Reset'
             info = 'Megane III<br>\nAIRBAG VIRGINIZER<br>\nTHIS PLUGIN WILL UNLOCK AIRBAG CRASH DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
-            check_req = u'Synthèse état UCE avant crash'
-            check_status = u'crash détecté'
-            check_status_val = u'crash détecté'
-            reset_req = u'Reset crash ou accès au mode fournisseur'
-            reset_code =u"code d'accès pour reset UCE"
-            code = '27081977'
             start_req = u'Start Diagnostic Session'
             start_send = u'Session Name'
             start_code = u'extendedDiagnosticSession'
+            start_req_fa = u'Start Diagnostic Session'
+            start_send_fa = u'Session Name'
             start_code_fa = u'systemSupplierSpecific'
-            txt = None
+            check_req = u'Synthèse état UCE avant crash'
+            check_status = u'crash détecté'
+            check_status_val1 = u'crash détecté'
+            check_status_val2 = u''
+            check_status_val3 = u''
+            reset_req = u'Reset crash ou accès au mode fournisseur'
+            reset_code =u"code d'accès pour reset UCE"
+            code = '27081977'
+            test = 1
         if self.xml == 'AB90_J77_X85.xml':
             reset = True
             title = 'AB90 AIRBAG Reset'
             info = 'AB90 (Clio III)/2\nAIRBAG VIRGINIZER\nTHIS PLUGIN WILL UNLOCK AIRBAG CRASH DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
-            check_req = u'Synthèse état UCE'
-            check_status = u'crash détecté'
-            check_status_val = u'crash détecté'
-            reset_req = u"Reset crash ou accès au mode fournisseur"
-            reset_code = u"code d'accès pour reset UCE"
-            code = '22041998'
             start_req = u'Start Diagnostic Session'
             start_send = ''
             start_code = ''
-            start_code_fa = None
-            txt = None
+            start_req_fa = u''
+            start_send_fa = ''
+            start_code_fa = ''
+            check_req = u'Synthèse état UCE'
+            check_status = u'crash détecté'
+            check_status_val1 = u'crash détecté'
+            check_status_val2 = u''
+            check_status_val3 = u''
+            reset_req = u"Reset crash ou accès au mode fournisseur"
+            reset_code = u"code d'accès pour reset UCE"
+            code = '22041998'
+            test = 1
         if self.xml == 'RSAT4_ACU_eng_v15_20150511T131328.xml':
             reset = True
             title= 'RSAT4 AIRBAG Reset'
             info = 'TWINGO III/ZOE/DOKKER/DUSTER ph2/TRAFIC III/CAPTUR/LODGY ph1/2\nAIRBAG VIRGINIZER\nTHIS PLUGIN WILL UNLOCK AIRBAG CRASH DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
-            check_req = u'Reading of ECU state synthesis'
-            check_status = u"crash detected"
-            check_status_val = u"crash detected"
-            reset_req = u'Reset Crash'
-            reset_code = u'CLEDEV For reset crash'
-            code = '13041976'
             start_req = u'Start Diagnostic Session'
             start_send = u'Session Name'
             start_code = u'extendedDiagnosticSession'
-            start_code_fa = None
-            txt = None
+            start_req_fa = u''
+            start_send_fa = ''
+            start_code_fa = ''
+            check_req = u'Reading of ECU state synthesis'
+            check_status = u"crash detected"
+            check_status_val1 = u"crash detected"
+            check_status_val2 = u'no crash detected'
+            check_status_val3 = u''
+            reset_req = u'Reset Crash'
+            reset_code = u'CLEDEV For reset crash'
+            code = '13041976'
+            test = 1
         if self.xml == 'BCM_X95_SW_2_V_1_2.xml':
             reset = True
             title= 'Megane/Scenic III UCH Reset'
             info = 'MEGANE III UCH VIRGINIZER\nTHIS PLUGIN WILL ERASE YOUR UCH\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
-            check_req = u'Read_A_AC_General_Identifiers_Learning_Status_(bits)_BCM_Input/Output'
-            check_status = u"VSC UCH vierge (NbBadgeAppris=0)"
-            check_status_val = u'Actif'
-            reset_req = u'SR_RESERVED VSC 1'
-            reset_code = False
-            code = False
             start_req = u'Start Diagnostic Session'
             start_send = u''
             start_code = u''
-            start_code_fa = None
+            start_req_fa = u''
+            start_send_fa = ''
+            start_code_fa = ''
+            check_req = u'Read_A_AC_General_Identifiers_Learning_Status_(bits)_BCM_Input/Output'
+            check_status = u"VSC UCH vierge (NbBadgeAppris=0)"
+            check_status_val1 = u'Actif'
+            check_status_val2 = u'inactif'
+            check_status_val3 = u''
+            reset_req = u'SR_RESERVED VSC 1'
+            reset_code = u''
+            code = u''
             txt = 1
+        if self.xml == 'BCM_X91_L43_S_S_SWC_v1.30_20140613T140906.xml':
+            reset = True
+            title= 'Laguna III UCH Reset'
+            info = 'LAGUNA III UCH VIRGINIZER\nTHIS PLUGIN WILL ERASE YOUR UCH\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            start_req = u'Start Diagnostic Session'
+            start_send = u''
+            start_code = u''
+            start_req_fa = u''
+            start_send_fa = ''
+            start_code_fa = ''
+            check_req = u'Read_A_AC_General_Identifiers_Learning_Status_(bits)_BCM_Input/Output'
+            check_status = u'BCM_IS_BLANK_S'
+            check_status_val1 = u'true'
+            check_status_val2 = u'false'
+            check_status_val3 = u''
+            reset_req = u'SR_RESERVED VSC 1'
+            reset_code = u''
+            code = u''
+            txt = 1
+        if self.xml == 'UCH_84_J84_03_60.xml':
+            reset = True
+            title= 'Megane/Scenic II UCH Reset'
+            info = 'MEGANE II UCH VIRGINIZER\nTHIS PLUGIN WILL ERASE YOUR UCH\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            start_req = u'Start Diagnostic Session'
+            start_send = u''
+            start_code = u''
+            start_req_fa = u'StartDiagSession Etude'
+            start_send_fa = ''
+            start_code_fa = u''
+            check_req = u'Status général des opérations badges Bits'
+            check_status = u'VSC UCH vierge (NbBadgeAppris=0)'
+            check_status_val1 = u'Vierge'
+            check_status_val2 = u'Codée'
+            check_status_val3 = u''
+            reset_req = u'RAZ EEPROM'
+            reset_code = u''
+            code = u''
+            txt = 1
+        if self.xml == 'UCH___M2S_X74_et_X73.xml':
+            reset = True
+            title= 'Laguna II UCH Reset'
+            info = 'LAGUNA II UCH VIRGINIZER\nTHIS PLUGIN WILL ERASE YOUR UCH\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            start_req = u'Start Diagnostic Session'
+            start_send = u'Session Name'
+            start_code = u'APV'
+            start_req_fa = u'Start Diagnostic Session'
+            start_send_fa = 'Session Name'
+            start_code_fa = 'Etude'
+            check_req = u'Lecture Etats Antidémarrage et acces'
+            check_status = u'UCH vierge'
+            check_status_val1 = u'oui'
+            check_status_val2 = u'non'
+            check_status_val3 = u''
+            reset_req = u'Effacement_données_antidem_acces'
+            reset_code = u''
+            code = ''
+            txt = 1
+        if self.xml == 'X98ph2_X87ph2_EPS_HFP_v1.00_20150622T140219_20160726T172209.xml':
+            reset = True
+            title= 'Clio IV EPS Reset'
+            info = 'Clio IV EPS VIRGINIZER\nTHIS PLUGIN WILL RESET EPS IMMO DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            start_req = u'StartDiagnosticSession.extendedSession'
+            start_send = u''
+            start_code = u''
+            start_req_fa = u'StartDiagnosticSession.supplierSession'
+            start_send_fa = u''
+            start_code_fa = u''
+            check_req = u'DataRead.DongleState'
+            check_status = u'DongleState'
+            check_status_val1 = u'NotOperational'
+            check_status_val2 = u'OperationalBlanked'
+            check_status_val3 = u'OperationalLearnt'
+            reset_req = u'SRBLID.DongleBlanking.Request'
+            reset_code = u'Dongle.Code'
+            code = '1976'
+            txt = 2
+        if self.xml == 'DAE_X95_X38_X10_v1.88_20120228T113904.xml':
+            reset = True
+            title= 'ZOE/FLENCE/Megane III/Scenic III EPS Reset'
+            info = 'ZOE/FLENCE/Megane III/Scenic III EPS VIRGINIZER\nTHIS PLUGIN WILL RESET EPS IMMO DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            start_req = u'SDS - Start Diagnostic Session $C0'
+            start_send = u''
+            start_code = u''
+            start_req_fa = u'SDS - Start Diagnostic Session $FA'
+            start_send_fa = ''
+            start_code_fa = ''
+            check_req = u'DataRead.DID - Dongle state'
+            check_status = u'DID - Dongle state'
+            check_status_val1 = u'Not operational'
+            check_status_val2 = u'Operational blank'
+            check_status_val3 = u'Operational learnt'
+            reset_req = u'SRBLID - Dongle blanking'
+            reset_code = u''
+            code = ''
+            txt = 2
+            test = 2
+        if self.xml == 'DAE_J77_X85_Gen2___v3.7.xml':
+            reset = True
+            title= 'Modus/Clio III EPS Reset'
+            info = 'Modus/Clio III EPS VIRGINIZER\nTHIS PLUGIN WILL RESET EPS IMMO DATA\nGO AWAY IF YOU HAVE NO IDEA OF WHAT IT MEANS'
+            start_req = u'Start Diagnostic Session'
+            start_send = u''
+            start_code = u''
+            start_req_fa = u'SDS - Start Diagnostic $FB'
+            start_send_fa = ''
+            start_code_fa = ''
+            check_req = u'RDBLI - System Frame'
+            check_status = u'Dongle status'
+            check_status_val1 = u'Système VIERGE - Aucun code mémorisé'
+            check_status_val2 = u''
+            check_status_val3 = u''
+            reset_req = u'WDBLI - Erase of Dongle_ID code'
+            reset_code = u''
+            code = ''
+            txt = 2
+            test = 3
+            Vin = True
         if self.xml == 'test.xml':
             reset = True
             title= ''
             info = ''
+            start_req = u'Start Diagnostic Session'
+            start_send = u''
+            start_code = u''
+            start_req_fa = u''
+            start_send_fa = ''
+            start_code_fa = ''
             check_req = u''
             check_status = u''
-            check_status_val = u''
+            check_status_val1 = u''
+            check_status_val2 = u''
+            check_status_val3 = u''
             reset_req = u''
             reset_code = u''
             code = ''
-            start_req = u''
-            start_send = u''
-            start_code = u''
-            start_code_fa = None
             txt = None
+            test = None
         if reset:
-            Virginizer(self.decu, title, info, check_req, check_status, check_status_val, reset_req, reset_code, code, start_req, start_send, start_code, start_code_fa, txt)
-        
+            Virginizer(self.decu, title, info, check_req, check_status, check_status_val1, check_status_val2, check_status_val3, reset_req, reset_code, code, start_req, start_send, start_code, start_req_fa, start_send_fa, start_code_fa, txt, test, Vin)
+        else:
+            return self.MyPopup(title=self.xml, content='В данный момент нет данных для вашего блока')
 
     def update_dInputs(self):
         for i in self.iValueNeedUpdate.keys():
@@ -464,10 +611,12 @@ class DDTLauncher(App):
         else:
             return
         for key, v in params.items():
-            listIndex = False
+            listIndex = None
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
             if val != 'None':
+                if len(d.List.keys()):
+                    listIndex = int(val,16)
                 if key in self.dLabels.keys():
                     if len(d.List.keys()):
                         listIndex = int(val,16)
@@ -506,8 +655,11 @@ class DDTLauncher(App):
                     if self.iValueNeedUpdate[key]:
                         if listIndex:
                             self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        else:
-                            self.oLabels[key+v['request']].text = val
+                        self.iValueNeedUpdate[key] = False
+                elif (key+v['request']).replace('DataRead', 'DataWrite') in self.oLabels.keys():
+                    if self.iValueNeedUpdate[key]:
+                        if listIndex:
+                            self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
                         self.iValueNeedUpdate[key] = False
                 if key in self.Labels.keys():
                     self.Labels[key].text = val
@@ -1214,11 +1366,14 @@ class DDTLauncher(App):
         for i, v in self.iValue.items():
             if i[:-len(v['request'])] in self.iLabels:
                 self.iValue[i]['value'] = self.iLabels[i[:-len(v['request'])]].text
+            elif i in self.iLabels:
+                self.iValue[i]['value'] = self.iLabels[i].text
             elif i in self.oLabels:
                 self.iValue[i]['value'] = self.oLabels[i].text
             elif i[:-len(v['request'])] in self.Labels:
                 self.iValue[i]['value'] = self.Labels[i[:-len(v['request'])]].text
-
+            elif i in self.Labels:
+                self.iValue[i]['value'] = self.Labels[i].text
         self.decu.clearELMcache()
         if key in self.dBtnSend.keys():
             sends = self.dBtnSend[key]
@@ -1391,6 +1546,7 @@ class DDTLauncher(App):
         self.screens[LANG.b_read_dtc] = ''
         if self.Addr[:-4] == '2C': self.screens['AIRBAG Reset'] = ''
         if self.Addr[:-4] == '26': self.screens['UCH Reset'] = ''
+        if self.Addr[:-4] == '04': self.screens['EPS Tools'] = ''
         categs = xdoc.findall ("ns0:Target/ns1:Categories/ns1:Category", mod_globals.ns)
         if len(categs):
             for cat in categs:
