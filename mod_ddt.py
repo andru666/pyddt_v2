@@ -569,6 +569,8 @@ class DDTLauncher(App):
             test = None
         if reset:
             Virginizer(self.decu, title, info, check_req, check_status, check_status_val1, check_status_val2, check_status_val3, reset_req, reset_code, code, start_req, start_send, start_code, start_req_fa, start_send_fa, start_code_fa, txt, test, Vin)
+        else:
+            return self.MyPopup(title=self.xml, content='В данный момент нет данных для вашего блока')
 
     def update_dInputs(self):
         for i in self.iValueNeedUpdate.keys():
