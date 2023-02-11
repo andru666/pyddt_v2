@@ -1368,10 +1368,18 @@ class DDTLauncher(App):
                 self.iValue[i]['value'] = self.iLabels[i[:-len(v['request'])]].text
             elif i in self.iLabels:
                 self.iValue[i]['value'] = self.iLabels[i].text
+            elif i+v['request'] in self.iLabels:
+                self.iValue[i]['value'] = self.iLabels[i+v['request']].text
             elif i in self.oLabels:
                 self.iValue[i]['value'] = self.oLabels[i].text
+            elif i[:-len(v['request'])] in self.oLabels:
+                self.iValue[i]['value'] = self.oLabels[i[:-len(v['request'])]].text
+            elif i+v['request'] in self.oLabels:
+                self.iValue[i]['value'] = self.oLabels[i+v['request']].text
             elif i[:-len(v['request'])] in self.Labels:
                 self.iValue[i]['value'] = self.Labels[i[:-len(v['request'])]].text
+            elif i+v['request'] in self.Labels:
+                self.iValue[i]['value'] = self.Labels[i+v['request']].text
             elif i in self.Labels:
                 self.iValue[i]['value'] = self.Labels[i].text
         self.decu.clearELMcache()
