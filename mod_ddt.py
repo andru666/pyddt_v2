@@ -1121,7 +1121,7 @@ class DDTLauncher(App):
             box.add_widget(Label(text='Момент проявления неисправности', size_hint=(1, None), height=fs*3))
             requests_mem = self.decu.requests[self.data_dtc[dt.id]['FreezeFrame']]
             box.height += len(requests_mem.ReceivedDI.keys()) * fs*3
-            dtcread_command = requests_mem.SentBytes.encode('ascii')
+            dtcread_command = requests_mem.SentBytes
             if dtcread_command == '1200040000':
                 dtcread_command = '120004'+dt.id
             resp = self.elm.request(dtcread_command)
