@@ -1180,6 +1180,7 @@ class DDTLauncher(App):
         popup_scan.open()
         
         EventLoop.idle()
+        self.i = 0
         i = 0
         self.detectedEcus = {}
         x = 0
@@ -1189,6 +1190,7 @@ class DDTLauncher(App):
         self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
         EventLoop.idle()
         for p in ['KWP','CAN-250','CAN-500']:
+            i = self.i
             popup_scan.title = LANG.l_title1 + p
             if p == 'KWP':
                 p1 = 'KWP'
@@ -1196,14 +1198,14 @@ class DDTLauncher(App):
             else:
                 p1 = p
                 self.elm.init_can()
-            EventLoop.idle()
             for Addr, pro in self.addr.alist.items():
                 self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
+                EventLoop.idle()
                 if Addr in self.detectedEcus.keys():
                     if self.detectedEcus[Addr]['xml'] != '':
                         break
                 self.cheks(Addr, pro['xml'].keys(), p1, pro['iso8'], i, len(self.addr.alist), vins)
-            i += 1
+                i += 1
         '''if self.v_proj == 'ALL_CARS':
             for Addr, pro in self.addr.alist.items():
                 self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
@@ -1276,6 +1278,7 @@ class DDTLauncher(App):
         if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': return
         xml = mod_ddt_ecu.ecuSearch(self.v_proj, Addr, DiagVersion, Supplier, Soft, Version, self.eculist, xml)
         if xml:
+            self.i += 1
             if isinstance(xml, list): xml = xml[0]
             self.detectedEcus[Addr] = {'prot':self.protocol, 'xml':xml,'ses':StartSession, 'undef':'0', 'iso8':iso}
             self.getDumpListByXml(xml)
@@ -1422,7 +1425,9 @@ class DDTLauncher(App):
             commandSet += "%-10s Delay:%-3s (%s)\n" % (c['c'], c['d'], c['r'].Name)
         self.ButtonConfirmation(commandSet, slist)
 
-    def setEcuAddress(self, ce):
+    def setEcuAddress(self, ce, pro=None):
+        if not pro:
+            pro = ce['prot']
         self.protocol = ''
         ecudata = {'idTx': '',
                    'idRx': '',
@@ -1431,7 +1436,7 @@ class DDTLauncher(App):
                    'ModelId': ce['addr'],
                    'ecuname': ce['xml'],
                    }
-        if ce['prot'].startswith('CAN'):
+        if pro.startswith('CAN'):
             if ce['prot'] == 'CAN-250':
                 ecudata['protocol'] = 'CAN-250'
                 ecudata['brp'] = '01'
@@ -1441,7 +1446,7 @@ class DDTLauncher(App):
             ecudata['pin'] = 'can'
             self.protocol = ecudata['protocol']
             self.elm.set_can_addr(ce['addr'], ecudata)
-        if ce['prot'].startswith('KWP') or ce['prot'].startswith('ISO'):
+        if pro.startswith('KWP') or pro.startswith('ISO'):
             if ce['prot'] == 'KWP-FAST':
                 ecudata['protocol'] = 'KWP-Fast'
                 ecudata['fastInit'] = ce['addr']
