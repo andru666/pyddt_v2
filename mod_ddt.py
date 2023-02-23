@@ -1188,8 +1188,25 @@ class DDTLauncher(App):
         p_xml = {}
         self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
         EventLoop.idle()
-        
-        if self.v_proj == 'ALL_CARS':
+        for p in ['KWP','CAN-250','CAN-500']:
+            print(p)
+            if p == 'KWP':
+                p1 = 'KWP'
+                self.elm.init_iso()
+            else:
+                p1 = p
+                self.elm.init_can()
+            self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
+            EventLoop.idle()
+            for Addr, pro in self.addr.alist.items():
+                if Addr in self.detectedEcus.keys():
+                    if self.detectedEcus[Addr]['xml']:
+                        print(self.detectedEcus[Addr]['xml'])
+                        print
+                        break
+                self.cheks(Addr, pro['xml'].keys(), p1, pro['iso8'], i, len(self.addr.alist), vins)
+            i += 1
+        '''if self.v_proj == 'ALL_CARS':
             for Addr, pro in self.addr.alist.items():
                 self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
                 EventLoop.idle()
@@ -1219,7 +1236,7 @@ class DDTLauncher(App):
                 if len(pro['CAN']):
                     self.elm.init_can()
                     self.cheks(Addr, pro['CAN'], 'CAN', pro['iso8'], i, len(p_xml), vins)
-                i += 1
+                i += 1'''
         self.elm.close_protocol()
         for ce in self.carecus:
             if ce['addr'] in self.detectedEcus.keys():
