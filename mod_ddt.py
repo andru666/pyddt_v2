@@ -1189,20 +1189,18 @@ class DDTLauncher(App):
         self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
         EventLoop.idle()
         for p in ['KWP','CAN-250','CAN-500']:
-            print(p)
+            popup_scan.title = LANG.l_title1 + p
             if p == 'KWP':
                 p1 = 'KWP'
                 self.elm.init_iso()
             else:
                 p1 = p
                 self.elm.init_can()
-            self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
             EventLoop.idle()
             for Addr, pro in self.addr.alist.items():
+                self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
                 if Addr in self.detectedEcus.keys():
-                    if self.detectedEcus[Addr]['xml']:
-                        print(self.detectedEcus[Addr]['xml'])
-                        print
+                    if self.detectedEcus[Addr]['xml'] != '':
                         break
                 self.cheks(Addr, pro['xml'].keys(), p1, pro['iso8'], i, len(self.addr.alist), vins)
             i += 1
@@ -1279,7 +1277,7 @@ class DDTLauncher(App):
         xml = mod_ddt_ecu.ecuSearch(self.v_proj, Addr, DiagVersion, Supplier, Soft, Version, self.eculist, xml)
         if xml:
             if isinstance(xml, list): xml = xml[0]
-            self.detectedEcus[Addr] = {'prot':pro, 'xml':xml,'ses':StartSession, 'undef':'0', 'iso8':iso}
+            self.detectedEcus[Addr] = {'prot':self.protocol, 'xml':xml,'ses':StartSession, 'undef':'0', 'iso8':iso}
             self.getDumpListByXml(xml)
             if len(self.v_dumpList) > 0:
                 self.detectedEcus[Addr]['dump'] = self.v_dumpList[-1]
@@ -1425,6 +1423,7 @@ class DDTLauncher(App):
         self.ButtonConfirmation(commandSet, slist)
 
     def setEcuAddress(self, ce):
+        self.protocol = ''
         ecudata = {'idTx': '',
                    'idRx': '',
                    'slowInit': '',
@@ -1434,30 +1433,32 @@ class DDTLauncher(App):
                    }
         if ce['prot'].startswith('CAN'):
             if ce['prot'] == 'CAN-250':
-                ecudata['protocol'] = 'CAN_250'
+                ecudata['protocol'] = 'CAN-250'
                 ecudata['brp'] = '01'
             else:
-                ecudata['protocol'] = 'CAN_500'
+                ecudata['protocol'] = 'CAN-500'
                 ecudata['brp'] = '0'
             ecudata['pin'] = 'can'
+            self.protocol = ecudata['protocol']
             self.elm.set_can_addr(ce['addr'], ecudata)
         if ce['prot'].startswith('KWP') or ce['prot'].startswith('ISO'):
             if ce['prot'] == 'KWP-FAST':
-                ecudata['protocol'] = 'KWP_Fast'
+                ecudata['protocol'] = 'KWP-Fast'
                 ecudata['fastInit'] = ce['addr']
                 ecudata['slowInit'] = ''
                 mod_globals.opt_si = False
             elif ce['prot'] == 'ISO8' and ce['iso8'] != '':
-                ecudata['protocol'] = 'KWP_Slow'
+                ecudata['protocol'] = 'KWP-Slow'
                 ecudata['fastInit'] = ''
                 ecudata['slowInit'] = ce['iso8']
                 mod_globals.opt_si = True
             else:
-                ecudata['protocol'] = 'KWP_Slow'
+                ecudata['protocol'] = 'KWP-Slow'
                 ecudata['fastInit'] = ''
                 ecudata['slowInit'] = ce['addr']
                 mod_globals.opt_si = True
             ecudata['pin'] = 'iso'
+            self.protocol = ecudata['protocol']
             self.elm.set_iso_addr(ce['addr'], ecudata)
 
     def getSelectedECU(self, xml):
