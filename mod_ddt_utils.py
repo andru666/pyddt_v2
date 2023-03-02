@@ -217,11 +217,15 @@ class ddtAddressing():
                 if f in fun.keys():
                     if fun[f]['XId']:
                         self.alist[f]['XId'] = hex(int(fun[f]['XId']))[2:].upper()
+                self.alist[f]['RId'] = ''
+                if f in fun.keys():
+                    if fun[f]['RId']:
+                        self.alist[f]['RId'] = hex(int(fun[f]['RId']))[2:].upper()
                 for t in data[f]['targets']:
                     self.alist[f]['FuncName'] = data[f]['FuncName']
                     self.alist[f]['iso8'] = ''
                     if f in fun.keys():
-                        self.alist[f]['iso8'] = fun[f]['iso8']
+                        self.alist[f]['iso8'] = hex(int(fun[f]['iso8']))[2:].upper()
                     if data[f]['targets'][t]['Protocol'].startswith('KWP2000 FastInit'):
                         self.alist[f]['xml'][t] = 'KWP-FAST'
                     elif data[f]['targets'][t]['Protocol'].startswith('KWP2000 Init'):
@@ -244,12 +248,16 @@ class ddtAddressing():
                 if f in fun.keys():
                     if fun[f]['XId']:
                         self.alist[f]['XId'] = hex(int(fun[f]['XId']))[2:].upper()
+                self.alist[f]['RId'] = ''
+                if f in fun.keys():
+                    if fun[f]['RId']:
+                        self.alist[f]['RId'] = hex(int(fun[f]['RId']))[2:].upper()
                 for t in data[f]['targets']:
                     if "'"+filename.lower()+"'" in str(data[f]['targets'][t]['Projects']).lower():
                         self.alist[f]['FuncName'] = data[f]['FuncName']
                         self.alist[f]['iso8'] = ''
                         if f in fun.keys():
-                            self.alist[f]['iso8'] = fun[f]['iso8']
+                            if self.alist[f]['iso8']: self.alist[f]['iso8'] = hex(int(fun[f]['iso8']))[2:].upper()
                         if data[f]['targets'][t]['Protocol'].startswith('KWP2000 FastInit'):
                             self.alist[f]['xml'][t] = 'KWP-FAST'
                         elif data[f]['targets'][t]['Protocol'].startswith('KWP2000 Init'):
@@ -314,6 +322,20 @@ class ddtAddressing():
                     Function_all = root1.findall("ns0:Function[@Name='"+name+"']", ns)
                     try:
                         fun[addr]['XId'] = Function_all[0].findall('ns0:XId',ns)[0].text
+                    except:
+                        pass
+                RId = fu.findall('ns0:RId',ns)
+                fun[addr]['RId'] = ''
+                if RId:
+                    if RId[0].text:
+                        if not RId[0].text.startswith('-'):
+                            fun[addr]['RId'] = RId[0].text
+                else:
+                    tree1 = et.parse(mod_db_manager.get_file_from_ddt('vehicles/GenericAddressing.xml'))
+                    root1 = tree1.getroot()
+                    Function_all = root1.findall("ns0:Function[@Name='"+name+"']", ns)
+                    try:
+                        fun[addr]['RId'] = Function_all[0].findall('ns0:RId',ns)[0].text
                     except:
                         pass
                 ISO8 = fu.findall('ns0:ISO8',ns)

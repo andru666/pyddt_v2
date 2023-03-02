@@ -1198,14 +1198,32 @@ class DDTLauncher(App):
             else:
                 p1 = p
                 self.elm.init_can()
-            for Addr, pro in self.addr.alist.items():
+            for ce in self.carecus:
+                i += 1
                 self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
                 EventLoop.idle()
-                if Addr in self.detectedEcus.keys():
-                    if self.detectedEcus[Addr]['xml'] != '':
+                if ce['addr'] in self.detectedEcus.keys():
+                    if self.detectedEcus[ce['addr']]['xml'] != '':
                         break
-                self.cheks(Addr, pro['xml'].keys(), p1, pro['iso8'], i, len(self.addr.alist), vins)
-                i += 1
+                self.setEcuAddress(ce, p)
+                StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN = mod_scan_ecus.readECUIds(self.elm)
+                if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': continue
+                xmls = mod_ddt_ecu.ecuSearch(self.v_proj, ce['addr'], DiagVersion, Supplier, Soft, Version, self.eculist, self.addr.alist[ce['addr']]['xml'].keys())
+                if xmls:
+                    if isinstance(xmls, list): xml = xml[0]
+                    else: xml = xmls
+                    self.detectedEcus[ce['addr']] = {'prot':self.protocol, 'xml':xml,'ses':StartSession, 'undef':'0', 'iso8':ce['iso8']}
+                    self.getDumpListByXml(xml)
+                    if len(self.v_dumpList) > 0:
+                        self.detectedEcus[ce['addr']]['dump'] = self.v_dumpList[-1]
+                    else:
+                        self.detectedEcus[ce['addr']]['dump'] = ''
+                    if VIN!='':
+                        if VIN not in vins.keys():
+                            vins[VIN] = 1
+                        else:
+                            vins[VIN] = vins[VIN] + 1
+                
         '''if self.v_proj == 'ALL_CARS':
             for Addr, pro in self.addr.alist.items():
                 self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
@@ -1429,12 +1447,12 @@ class DDTLauncher(App):
         if not pro:
             pro = ce['prot']
         self.protocol = ''
-        ecudata = {'idTx': '',
-                   'idRx': '',
+        ecudata = {'idTx': ce['XId'],
+                   'idRx': ce['RId'],
                    'slowInit': '',
                    'fastInit': '',
                    'ModelId': ce['addr'],
-                   'ecuname': ce['xml'],
+                   'ecuname': 'ddt_unknown',
                    }
         if pro.startswith('CAN'):
             if ce['prot'] == 'CAN-250':
@@ -1605,6 +1623,7 @@ class DDTLauncher(App):
                 ecu['undef'] = '1'
                 ecu['iso8'] = self.addr.alist[e]['iso8']
                 ecu['XId'] = self.addr.alist[e]['XId']
+                ecu['RId'] = self.addr.alist[e]['RId']
                 ecu['addr'] = e
                 ecu['name'] = self.addr.alist[e]['FuncName']
                 if not mod_globals.opt_scan:
@@ -1639,6 +1658,7 @@ class DDTLauncher(App):
                 e = [ecu['undef'],
                      ecu['addr'],
                      ecu['XId'],
+                     ecu['RId'],
                      ecu['iso8'],
                      ecu['prot'],
                      ecu['name'],
@@ -1676,12 +1696,13 @@ class DDTLauncher(App):
                 ecu['undef'] = li[0]
                 ecu['addr'] = li[1]
                 ecu['XId'] = li[2]
-                ecu['iso8'] = li[3]
-                ecu['prot'] = li[4]
-                ecu['name'] = li[5]
-                ecu['xml'] = li[6]
-                ecu['dump'] = li[7]
-                ecu['ses']  = li[8]
+                ecu['RId'] = li[3]
+                ecu['iso8'] = li[4]
+                ecu['prot'] = li[5]
+                ecu['name'] = li[6]
+                ecu['xml'] = li[7]
+                ecu['dump'] = li[8]
+                ecu['ses']  = li[9]
                 self.carecus.append(ecu)
         self.addr = mod_ddt_utils.ddtAddressing(self.v_proj, self.eculist)
         self.renewEcuList()
