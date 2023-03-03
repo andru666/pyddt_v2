@@ -1178,10 +1178,8 @@ class DDTLauncher(App):
         self.scantxt = Label(text='Init', width=self.Window_size[0]*0.95)
         popup_scan = Popup(title=LANG.l_title1, title_size=fs*1.5, title_align='center', content=self.scantxt, size=(self.Window_size[0], 400), size_hint=(None, None))
         popup_scan.open()
-        
-        EventLoop.idle()
-        self.i = 0
         i = 0
+        EventLoop.idle()
         self.detectedEcus = {}
         x = 0
         p1=0
@@ -1190,7 +1188,7 @@ class DDTLauncher(App):
         self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
         EventLoop.idle()
         for p in ['KWP','CAN-250','CAN-500']:
-            i = self.i
+            i = 0
             popup_scan.title = LANG.l_title1 + p
             if p == 'KWP':
                 p1 = 'KWP'
@@ -1204,7 +1202,7 @@ class DDTLauncher(App):
                 EventLoop.idle()
                 if ce['addr'] in self.detectedEcus.keys():
                     if self.detectedEcus[ce['addr']]['xml'] != '':
-                        break
+                        continue
                 self.setEcuAddress(ce, p)
                 StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN = mod_scan_ecus.readECUIds(self.elm)
                 if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': continue
@@ -1455,6 +1453,7 @@ class DDTLauncher(App):
                    'ecuname': 'ddt_unknown',
                    }
         if pro.startswith('CAN'):
+            print('can')
             if ce['prot'] == 'CAN-250':
                 ecudata['protocol'] = 'CAN-250'
                 ecudata['brp'] = '01'
@@ -1465,6 +1464,7 @@ class DDTLauncher(App):
             self.protocol = ecudata['protocol']
             self.elm.set_can_addr(ce['addr'], ecudata)
         if pro.startswith('KWP') or pro.startswith('ISO'):
+            print('kwp')
             if ce['prot'] == 'KWP-FAST':
                 ecudata['protocol'] = 'KWP-Fast'
                 ecudata['fastInit'] = ce['addr']
