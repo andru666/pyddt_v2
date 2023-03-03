@@ -50,7 +50,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.12.14'
+__version__ = '0.12.15'
 
 if mod_globals.os == 'android':
     fs = fs*2
