@@ -1043,11 +1043,10 @@ class ELM:
             TXa = dnat[addr]
         else:
             TXa = 'undefined'
-            TXa = addr
         if addr in list(snat.keys()):
             RXa = snat[addr]
         else:
-            RXa = addr
+            RXa = 'undefined'
         if len(TXa) == 8:
             self.check_answer(self.cmd('at cp ' + TXa[:2]))
             self.check_answer(self.cmd('at sh ' + TXa[2:]))

@@ -1121,7 +1121,7 @@ class DDTLauncher(App):
             box.add_widget(Label(text='Момент проявления неисправности', size_hint=(1, None), height=fs*3))
             requests_mem = self.decu.requests[self.data_dtc[dt.id]['FreezeFrame']]
             box.height += len(requests_mem.ReceivedDI.keys()) * fs*3
-            dtcread_command = requests_mem.SentBytes.encode('ascii')
+            dtcread_command = requests_mem.SentBytes
             if dtcread_command == '1200040000':
                 dtcread_command = '120004'+dt.id
             resp = self.elm.request(dtcread_command)
@@ -1178,9 +1178,8 @@ class DDTLauncher(App):
         self.scantxt = Label(text='Init', width=self.Window_size[0]*0.95)
         popup_scan = Popup(title=LANG.l_title1, title_size=fs*1.5, title_align='center', content=self.scantxt, size=(self.Window_size[0], 400), size_hint=(None, None))
         popup_scan.open()
-        
-        EventLoop.idle()
         i = 0
+        EventLoop.idle()
         self.detectedEcus = {}
         x = 0
         p1=0
@@ -1188,8 +1187,42 @@ class DDTLauncher(App):
         p_xml = {}
         self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
         EventLoop.idle()
-        
-        if self.v_proj == 'ALL_CARS':
+        for p in ['KWP','CAN-250','CAN-500']:
+            i = 0
+            popup_scan.title = LANG.l_title1 + p
+            if p == 'KWP':
+                p1 = 'KWP'
+                self.elm.init_iso()
+            else:
+                p1 = p
+                self.elm.init_can()
+            for ce in self.carecus:
+                i += 1
+                self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
+                EventLoop.idle()
+                if ce['addr'] in self.detectedEcus.keys():
+                    if self.detectedEcus[ce['addr']]['xml'] != '':
+                        continue
+                self.setEcuAddress(ce, p)
+                StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN = mod_scan_ecus.readECUIds(self.elm)
+                if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': continue
+                xmls = mod_ddt_ecu.ecuSearch(self.v_proj, ce['addr'], DiagVersion, Supplier, Soft, Version, self.eculist, self.addr.alist[ce['addr']]['xml'].keys())
+                if xmls:
+                    if isinstance(xmls, list): xml = xml[0]
+                    else: xml = xmls
+                    self.detectedEcus[ce['addr']] = {'prot':self.protocol, 'xml':xml,'ses':StartSession, 'undef':'0', 'iso8':ce['iso8']}
+                    self.getDumpListByXml(xml)
+                    if len(self.v_dumpList) > 0:
+                        self.detectedEcus[ce['addr']]['dump'] = self.v_dumpList[-1]
+                    else:
+                        self.detectedEcus[ce['addr']]['dump'] = ''
+                    if VIN!='':
+                        if VIN not in vins.keys():
+                            vins[VIN] = 1
+                        else:
+                            vins[VIN] = vins[VIN] + 1
+                
+        '''if self.v_proj == 'ALL_CARS':
             for Addr, pro in self.addr.alist.items():
                 self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
                 EventLoop.idle()
@@ -1219,7 +1252,7 @@ class DDTLauncher(App):
                 if len(pro['CAN']):
                     self.elm.init_can()
                     self.cheks(Addr, pro['CAN'], 'CAN', pro['iso8'], i, len(p_xml), vins)
-                i += 1
+                i += 1'''
         self.elm.close_protocol()
         for ce in self.carecus:
             if ce['addr'] in self.detectedEcus.keys():
@@ -1261,8 +1294,9 @@ class DDTLauncher(App):
         if DiagVersion == '' and Supplier == '' and Soft == '' and Version == '': return
         xml = mod_ddt_ecu.ecuSearch(self.v_proj, Addr, DiagVersion, Supplier, Soft, Version, self.eculist, xml)
         if xml:
+            self.i += 1
             if isinstance(xml, list): xml = xml[0]
-            self.detectedEcus[Addr] = {'prot':pro, 'xml':xml,'ses':StartSession, 'undef':'0', 'iso8':iso}
+            self.detectedEcus[Addr] = {'prot':self.protocol, 'xml':xml,'ses':StartSession, 'undef':'0', 'iso8':iso}
             self.getDumpListByXml(xml)
             if len(self.v_dumpList) > 0:
                 self.detectedEcus[Addr]['dump'] = self.v_dumpList[-1]
@@ -1407,40 +1441,45 @@ class DDTLauncher(App):
             commandSet += "%-10s Delay:%-3s (%s)\n" % (c['c'], c['d'], c['r'].Name)
         self.ButtonConfirmation(commandSet, slist)
 
-    def setEcuAddress(self, ce):
-        ecudata = {'idTx': '',
-                   'idRx': '',
+    def setEcuAddress(self, ce, pro=None):
+        if not pro:
+            pro = ce['prot']
+        self.protocol = ''
+        ecudata = {'idTx': ce['XId'],
+                   'idRx': ce['RId'],
                    'slowInit': '',
                    'fastInit': '',
                    'ModelId': ce['addr'],
-                   'ecuname': ce['xml'],
+                   'ecuname': 'ddt_unknown',
                    }
-        if ce['prot'].startswith('CAN'):
-            if ce['prot'] == 'CAN-250':
-                ecudata['protocol'] = 'CAN_250'
+        if pro.startswith('CAN'):
+            if pro == 'CAN-250':
+                ecudata['protocol'] = 'CAN-250'
                 ecudata['brp'] = '01'
             else:
-                ecudata['protocol'] = 'CAN_500'
+                ecudata['protocol'] = 'CAN-500'
                 ecudata['brp'] = '0'
             ecudata['pin'] = 'can'
+            self.protocol = ecudata['protocol']
             self.elm.set_can_addr(ce['addr'], ecudata)
-        if ce['prot'].startswith('KWP') or ce['prot'].startswith('ISO'):
+        if pro.startswith('KWP') or pro.startswith('ISO'):
             if ce['prot'] == 'KWP-FAST':
-                ecudata['protocol'] = 'KWP_Fast'
+                ecudata['protocol'] = 'KWP-Fast'
                 ecudata['fastInit'] = ce['addr']
                 ecudata['slowInit'] = ''
                 mod_globals.opt_si = False
             elif ce['prot'] == 'ISO8' and ce['iso8'] != '':
-                ecudata['protocol'] = 'KWP_Slow'
+                ecudata['protocol'] = 'KWP-Slow'
                 ecudata['fastInit'] = ''
                 ecudata['slowInit'] = ce['iso8']
                 mod_globals.opt_si = True
             else:
-                ecudata['protocol'] = 'KWP_Slow'
+                ecudata['protocol'] = 'KWP-Slow'
                 ecudata['fastInit'] = ''
                 ecudata['slowInit'] = ce['addr']
                 mod_globals.opt_si = True
             ecudata['pin'] = 'iso'
+            self.protocol = ecudata['protocol']
             self.elm.set_iso_addr(ce['addr'], ecudata)
 
     def getSelectedECU(self, xml):
@@ -1582,6 +1621,7 @@ class DDTLauncher(App):
                 ecu['undef'] = '1'
                 ecu['iso8'] = self.addr.alist[e]['iso8']
                 ecu['XId'] = self.addr.alist[e]['XId']
+                ecu['RId'] = self.addr.alist[e]['RId']
                 ecu['addr'] = e
                 ecu['name'] = self.addr.alist[e]['FuncName']
                 if not mod_globals.opt_scan:
@@ -1616,6 +1656,7 @@ class DDTLauncher(App):
                 e = [ecu['undef'],
                      ecu['addr'],
                      ecu['XId'],
+                     ecu['RId'],
                      ecu['iso8'],
                      ecu['prot'],
                      ecu['name'],
@@ -1653,12 +1694,13 @@ class DDTLauncher(App):
                 ecu['undef'] = li[0]
                 ecu['addr'] = li[1]
                 ecu['XId'] = li[2]
-                ecu['iso8'] = li[3]
-                ecu['prot'] = li[4]
-                ecu['name'] = li[5]
-                ecu['xml'] = li[6]
-                ecu['dump'] = li[7]
-                ecu['ses']  = li[8]
+                ecu['RId'] = li[3]
+                ecu['iso8'] = li[4]
+                ecu['prot'] = li[5]
+                ecu['name'] = li[6]
+                ecu['xml'] = li[7]
+                ecu['dump'] = li[8]
+                ecu['ses']  = li[9]
                 self.carecus.append(ecu)
         self.addr = mod_ddt_utils.ddtAddressing(self.v_proj, self.eculist)
         self.renewEcuList()
