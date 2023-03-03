@@ -225,7 +225,7 @@ class ddtAddressing():
                     self.alist[f]['FuncName'] = data[f]['FuncName']
                     self.alist[f]['iso8'] = ''
                     if f in fun.keys():
-                        self.alist[f]['iso8'] = hex(int(fun[f]['iso8']))[2:].upper()
+                        if self.alist[f]['iso8']: self.alist[f]['iso8'] = hex(int(fun[f]['iso8']))[2:].upper()
                     if data[f]['targets'][t]['Protocol'].startswith('KWP2000 FastInit'):
                         self.alist[f]['xml'][t] = 'KWP-FAST'
                     elif data[f]['targets'][t]['Protocol'].startswith('KWP2000 Init'):
