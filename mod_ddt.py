@@ -1453,8 +1453,7 @@ class DDTLauncher(App):
                    'ecuname': 'ddt_unknown',
                    }
         if pro.startswith('CAN'):
-            print('can')
-            if ce['prot'] == 'CAN-250':
+            if pro == 'CAN-250':
                 ecudata['protocol'] = 'CAN-250'
                 ecudata['brp'] = '01'
             else:
@@ -1464,7 +1463,6 @@ class DDTLauncher(App):
             self.protocol = ecudata['protocol']
             self.elm.set_can_addr(ce['addr'], ecudata)
         if pro.startswith('KWP') or pro.startswith('ISO'):
-            print('kwp')
             if ce['prot'] == 'KWP-FAST':
                 ecudata['protocol'] = 'KWP-Fast'
                 ecudata['fastInit'] = ce['addr']
