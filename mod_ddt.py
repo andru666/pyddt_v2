@@ -276,9 +276,6 @@ class DDTLauncher(App):
             popup_init.open()
             EventLoop.idle()
             ce['dump'] = self.guiSaveDump(self.decu)
-            for ec in self.carecus:
-                if ce['xml'][:-4] in ec['xml']:
-                    ec['dump'] = ce['dump']
             self.renewEcuList()
             self.SaveBtnClick(self.labels.text, None)
             popup_init.dismiss()
