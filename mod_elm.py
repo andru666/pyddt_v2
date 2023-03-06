@@ -1062,12 +1062,12 @@ class ELM:
                 self.lf.write('#' * 60 + '\n#    Double BRP, try CAN250 and then CAN500\n' + '#' * 60 + '\n')
                 self.lf.flush()
             self.set_can_250(TXa)
-            tmprsp = self.send_raw('0210C0')
+            """tmprsp = self.send_raw('0210C0')
             if 'CAN ERROR' in tmprsp:
                 ecu['brp'] = '0'
                 self.set_can_500(TXa)
             else:
-                ecu['brp'] = '1'
+                ecu['brp'] = '1'"""
         elif 'brp' in ecu.keys() and '1' in ecu['brp']:
             self.set_can_250(TXa)
         else:

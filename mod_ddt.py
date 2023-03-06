@@ -1863,7 +1863,10 @@ class DDTLauncher(App):
 
         im = ' from ' + str(max)
         i = 0
+               
+        EventLoop.idle()
         for request in decu.requests.values():
+            self.lbltxt = Label(text='Сохранено ' + str(i) + '/' + str(len(list(decu.requests.keys()))))
             i = i + 1
             progressValue = progressValue + 1
             sys.stdout.flush()
