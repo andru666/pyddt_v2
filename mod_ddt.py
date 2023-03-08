@@ -68,7 +68,7 @@ class DDTLauncher(App):
         self.elm = elm
         self.clock_event = None
         self.scf = 10.0
-        if True:
+        if ':' in self.filterText:
             self.v_proj = self.filterText.split(':')[0].strip()
         else:
             self.v_proj = 'ALL_CARS'
@@ -603,9 +603,9 @@ class DDTLauncher(App):
             return
         self.decu.elm.clear_cache()
         self.elm.clear_cache()
-        if True:
+        try:
             params = self.get_ecu_values()
-        else:
+        except:
             return
         for key, v in params.items():
             listIndex = None
@@ -1271,7 +1271,7 @@ class DDTLauncher(App):
         if self.v_vin=='' and len(vins.keys()):
             self.v_vin = (max(vins.items(), key=operator.itemgetter(1))[0])
         if len(self.v_vin) > 0 and self.v_vin.isalnum():
-            if True:
+            if self.v_vin:
                 mod_globals.savedCAR = 'savedCAR_'+self.v_vin+'.csv'
                 self.SaveBtnClick(self.v_vin, None)
             else:
@@ -1309,24 +1309,24 @@ class DDTLauncher(App):
         hex_string = hex(int(hex_string)).split('x')[-1]
         if hex_string == '0': return 0.0, 0.0, 0.0, 1.0
         while len(hex_string)<6: hex_string = '0'+hex_string
-        if True:
+        try:
             r_hex = round(int(hex_string[0:2], 16)/255.0, 2)
-        else:
+        except:
             r_hex = 0
-        if True:
+        try:
             g_hex = round(int(hex_string[2:4], 16)/255.0, 2)
-        else:
+        except:
             g_hex = 0
-        if True:
+        try:
             b_hex = round(int(hex_string[4:6], 16)/255.0, 2)
-        else:
+        except:
             b_hex = 0
         return b_hex, g_hex, r_hex, 1.0
 
     def startScreen(self, data):
         if type(data) == dict:
             for r in data:
-                if True:
+                if r in data.keys():
                     if data[r]: continue
                 else:
                     pass
@@ -1359,18 +1359,18 @@ class DDTLauncher(App):
         self.popup_confirm.open()
 
     def no(self, instance):
-        if True:
+        try:
             self.popup_confirm.dismiss()
-        else:
+        except:
             pass
         self.start = True
         self.start = Clock.schedule_once(self.update_values, 0.02)
         return False
 
     def yes(self, slist):
-        if True:
+        try:
             self.popup_confirm.dismiss()
-        else:
+        except:
             pass
         confirmed = True
         layout = GridLayout(cols=1, padding=5, spacing=5, size_hint=(1, None), height=fs*4)
@@ -1387,9 +1387,9 @@ class DDTLauncher(App):
         
         self.MyPopup(content_box=root)
         self.start = Clock.schedule_once(self.update_values, 0.02)
-        if True:
+        try:
             self.update_dInputs()
-        else:
+        except:
             pass
 
     def buttonPressed(self, btn, key):
@@ -1545,7 +1545,7 @@ class DDTLauncher(App):
     def getDumpListByXml(self, xmlname=None):
         if xmlname==None:
             self.v_dumpList = []
-            if True:
+            if len(self.dv_xml) > 4:
                 xml = self.dv_xml[:-4]
             else:
                 xml = ''
@@ -1792,7 +1792,7 @@ class DDTLauncher(App):
         for root, dirs, files in os.walk ("./dumps"):
             for f in files:
                 if self.decu.ecufname.split ('/')[-1][:-4] in f:
-                    if True:
+                    if '_' in f:
                         uda = f.split ('_')[0]
                         fda = datetime.datetime.fromtimestamp (int (uda)).strftime ('%Y/%m/%d %H:%M:%S')
                         flist.append (fda + '\t#\t' + f)
@@ -1803,7 +1803,7 @@ class DDTLauncher(App):
     
         ch = ListDialog (self.root, "Choose dump for roll back", flist).show ()
     
-        if True:
+        if '#' in ch:
             fname = './dumps/' + ch.split ("#")[1].strip ()
         else:
             return ""
@@ -2069,7 +2069,7 @@ class DDTECU():
         self.Multipoint = '1'
     
     def __del__(self):
-        if True:
+        try:
             del(self.elm)
             del(self.cecu)
             del(self.ecufname)
@@ -2081,7 +2081,7 @@ class DDTECU():
             del(LANGmap)
             del(self.BaudRate)
             del(self.Multipoint)
-        else:
+        except:
             pass
     
     def setELM(self, elm):
@@ -2155,9 +2155,10 @@ class DDTECU():
                     n = [v for v in iValues.keys() if v.startswith(d.Name)]
                     if not len(n):
                         continue
-            if True:
+            
+            try:
                 value = iValues[n[0]]['value'].strip()
-            else:
+            except:
                 value = iValues[d.Name].strip()
             value = self.getValueFromInput(d, value)
             littleEndian = True if sdi.Endian=="Little" else False
