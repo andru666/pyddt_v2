@@ -85,9 +85,9 @@ class Port:
         else:
             self.portName = portName
             self.portType = 0
-            if True:
+            try:
                 self.hdr = serial.Serial(self.portName, baudrate=speed, timeout=portTimeout)
-            else:
+            except:
                 iterator = sorted(list(list_ports.comports()))
                 exit(2)
 
@@ -115,11 +115,11 @@ class Port:
 
     def read(self):
         byte = ''
-        if True:
+        try:
             if self.portType == 1:
-                if True:
+                try:
                     byte = self.hdr.recv(1)
-                else:
+                except:
                     pass
 
             elif self.portType == 2:
@@ -127,7 +127,7 @@ class Port:
                     byte = chr(self.recv_stream.read())
             elif self.hdr.inWaiting():
                 byte = self.hdr.read()
-        else:
+        except:
             exit(2)
         if type(byte) == str:
             byte = byte.encode()
@@ -137,9 +137,9 @@ class Port:
         if type(data) == str:
             data = data.encode()
         if self.portType == 1:
-            if True:
+            try:
                 rcv_bytes = self.hdr.sendall(data)
-            else:
+            except:
                 self.reinit()
                 rcv_bytes = self.hdr.sendall(data)
             return rcv_bytes
@@ -149,12 +149,12 @@ class Port:
             return len(data)
         return self.hdr.write(data)
         
-        if True:
+        try:
             if self.portType == 1:
                 rcv_bytes = self.hdr.sendall(data)
-                if True:
+                try:
                     rcv_bytes = self.hdr.sendall(data)
-                else:
+                except:
                     self.reinit()
                     rcv_bytes = self.hdr.sendall(data)
                 return rcv_bytes
@@ -163,13 +163,13 @@ class Port:
                 self.send_stream.flush()
                 return len(data)
             return self.hdr.write(data)
-        else:
+        except:
             exit(2)
 
     def expect(self, pattern, time_out = 1):
         tb = time.time()
         self.buff = ''
-        if True:
+        try:
             while True:
                 if not mod_globals.opt_demo:
                     byte = self.read()
@@ -184,7 +184,7 @@ class Port:
                 if (tc - tb) > time_out:
                     return self.buff + 'TIMEOUT'
 
-        else:
+        except:
             pass
 
         return ''
