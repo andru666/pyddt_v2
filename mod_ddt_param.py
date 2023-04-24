@@ -19,7 +19,6 @@ def get_value(n, decu, elm, auto=True, request=None, responce=None, resp=None):
     if hv == mod_globals.none_val:
         n['value'] = mod_globals.none_val
         return n
-
     if d.BytesASCII:
         res = bytes.fromhex(hv).decode('utf-8','replace')
         if not all(c in string.printable for c in res):
