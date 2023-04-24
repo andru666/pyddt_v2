@@ -96,4 +96,17 @@ def readECUIds( elm ):
                         VIN = trim(bytes.fromhex(VIN).decode('utf-8', 'ignore').strip())
                 else:
                     pass
+            else:
+                IdRsp_6183 = elm.request(req='6183', positive='61', cache=False)
+                if len(IdRsp) > 59 and not IdRsp.startswith('7F'):
+                    DiagVersion = str(int(IdRsp[21:23], 16))
+                    Supplier = IdRsp[24:32].replace(' ', '').strip()
+                    Supplier = trim(bytes.fromhex(Supplier).decode('utf-8', 'ignore').strip())
+                    Soft = IdRsp[48:53].replace(' ', '').strip()
+                    Version = IdRsp[54:59].replace(' ', '').strip()
+                    Std = 'STD_A'
+                    vinRsp = elm.request(req='2181', positive='61', cache=False)
+                    if len(vinRsp)>55 and 'NR' not in vinRsp and not vinRsp.startswith('7F'):
+                        VIN = vinRsp[6:56].replace(' ', '').strip()
+                        VIN = trim(bytes.fromhex(VIN).decode('utf-8', 'ignore').strip())
     return StartSession, DiagVersion, Supplier, Soft, Version, Std, VIN
