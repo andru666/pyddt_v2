@@ -97,7 +97,7 @@ def readECUIds( elm ):
                 else:
                     pass
             else:
-                IdRsp_6183 = elm.request(req='6183', positive='61', cache=False)
+                IdRsp_2183 = elm.request(req='2183', positive='61', cache=False)
                 if len(IdRsp) > 59 and not IdRsp.startswith('7F'):
                     DiagVersion = str(int(IdRsp[21:23], 16))
                     Supplier = IdRsp[24:32].replace(' ', '').strip()
