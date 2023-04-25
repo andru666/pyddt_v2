@@ -99,11 +99,11 @@ def readECUIds( elm ):
             else:
                 IdRsp_2183 = elm.request(req='2183', positive='61', cache=False)
                 if len(IdRsp) > 59 and not IdRsp.startswith('7F'):
-                    DiagVersion = str(int(IdRsp[21:23], 16))
-                    Supplier = IdRsp[24:32].replace(' ', '').strip()
+                    DiagVersion = '0'
+                    Supplier = IdRsp[6:21].replace(' ', '').strip()
                     Supplier = trim(bytes.fromhex(Supplier).decode('utf-8', 'ignore').strip())
-                    Soft = IdRsp[48:53].replace(' ', '').strip()
-                    Version = IdRsp[54:59].replace(' ', '').strip()
+                    Soft = IdRsp[33:47].replace(' ', '').strip()
+                    Version = IdRsp[48:].replace(' ', '').strip()
                     Std = 'STD_A'
                     vinRsp = elm.request(req='2181', positive='61', cache=False)
                     if len(vinRsp)>55 and 'NR' not in vinRsp and not vinRsp.startswith('7F'):
