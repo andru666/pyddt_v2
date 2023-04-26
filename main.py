@@ -22,10 +22,7 @@ if platform != 'android':
         Window.size = Window.size[1]*0.6, Window.size[1]*0.9
 else:
     from kivy.core.window import Window
-    if Window.size[1] > Window.size[0]:
-        fs = Window.size[1]*8.0/Window.size[0]
-    else:
-        fs = Window.size[0]*8.0/Window.size[1]
+    
 from mod_db_manager import get_zip
 from mod_elm import ELM
 import mod_globals, mod_ddt_utils, mod_ddt
@@ -637,6 +634,16 @@ def destroy():
 def kivyScreenConfig():
     global resizeFont
     Window.bind(on_close=destroy)
+    if mod_globals.os == 'android':
+        if Window.size[1] > Window.size[0]:
+            fs = Window.size[1]*8.0/Window.size[0]
+        else:
+            fs = Window.size[0]*8.0/Window.size[1]
+        if not mod_globals.screen_orient:
+            set_orientation_portrait()
+        else:
+            set_orientation_landscape()
+        
     while 1:
         config = PYDDT()
         config.run()
