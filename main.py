@@ -50,7 +50,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.12.25'
+__version__ = '0.12.26'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -297,6 +297,7 @@ class PYDDT(App):
         layout.add_widget(self.make_input_toggle(LANG.b_log, mod_globals.opt_log, 'down' if len(mod_globals.opt_log) > 0 else  'normal'))
         layout.add_widget(self.make_input(LANG.l_font_size, str(mod_globals.fontSize)))
         layout.add_widget(self.make_box_switch(LANG.l_dump, mod_globals.opt_dump))
+        layout.add_widget(self.orientation())
         layout.add_widget(self.make_box_switch('CAN2', mod_globals.opt_can2))
         layout.add_widget(self.lang_app())
         root = ScrollView(size_hint=(1, 1))
@@ -304,6 +305,34 @@ class PYDDT(App):
         Fl.add_widget(root)
         Fl.add_widget(MyLabel(text='Version : ' + __version__ , size_hint =(.3, None), pos=(0, Window.size[1]-title.height/2), font_size=(fs*0.8), height=fs*1.4, multiline=True))
         return Fl
+
+    def orientation(self):
+        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
+        label = MyLabel(text='orient', font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
+        self.button_orient = MyButton(text='orient', font_size=fs*2, on_press=self.change_orientation)
+        if not mod_globals.screen_orient:
+            self.button_orient.text = 'landscape'
+        else:
+            self.button_orient.text = 'portrait'
+        
+        glay.add_widget(label)
+        glay.add_widget(self.button_orient)
+        return glay
+
+    def change_orientation(self, inst):
+        if not mod_globals.screen_orient:
+            self.button_orient.text = 'landscape'
+            set_orientation_landscape()
+            mod_globals.screen_orient = True
+        else:
+            self.button_orient.text = 'portrait'
+            set_orientation_portrait()
+            mod_globals.screen_orient = False
+        self.settings.save()
+        try:
+            self.stop()
+        except:
+            pass
 
     def scanALLecus(self, instance):
         mod_globals.opt_scan = True
