@@ -47,7 +47,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.12.26'
+__version__ = '0.12.27'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -305,26 +305,26 @@ class PYDDT(App):
 
     def orientation(self):
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
-        label = MyLabel(text='orient', font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
-        self.button_orient = MyButton(text='orient', font_size=fs*2, on_press=self.change_orientation)
+        label = MyLabel(text=LANG.l_text10, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
+        self.button_orient = MyButton(text='', font_size=fs*2, on_press=self.change_orientation)
         if not mod_globals.screen_orient:
-            self.button_orient.text = 'landscape'
+            self.button_orient.text = LANG.b_landscape
         else:
-            self.button_orient.text = 'portrait'
-        
+            self.button_orient.text = LANG.b_portrait
         glay.add_widget(label)
         glay.add_widget(self.button_orient)
         return glay
 
     def change_orientation(self, inst):
-        if not mod_globals.screen_orient:
-            self.button_orient.text = 'landscape'
-            set_orientation_landscape()
-            mod_globals.screen_orient = True
-        else:
-            self.button_orient.text = 'portrait'
-            set_orientation_portrait()
-            mod_globals.screen_orient = False
+        if mod_globals.os == 'android':
+            if not mod_globals.screen_orient:
+                self.button_orient.text = 'landscape'
+                set_orientation_landscape()
+                mod_globals.screen_orient = True
+            else:
+                self.button_orient.text = 'portrait'
+                set_orientation_portrait()
+                mod_globals.screen_orient = False
         self.settings.save()
         try:
             self.stop()
