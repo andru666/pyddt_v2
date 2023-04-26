@@ -51,7 +51,7 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.12.27'
+__version__ = '0.12.28'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -271,7 +271,7 @@ class PYDDT(App):
         Fl = FloatLayout()
         layout = GridLayout(cols=1, padding=5, spacing=10, size_hint=(1, None))
         layout.bind(minimum_height=layout.setter('height'))
-        title = MyLabel(text='PyDDT', font_size=(fs*3), size_hint=(1, None))
+        title = MyLabel(text='PyDDT ' + __version__ , font_size=(fs*3), size_hint=(1, None))
         layout.add_widget(title)
         try:
             self.archive = str(mod_globals.db_archive_file).rpartition('/')[2]
@@ -304,7 +304,7 @@ class PYDDT(App):
         root = ScrollView(size_hint=(1, 1))
         root.add_widget(layout)
         Fl.add_widget(root)
-        Fl.add_widget(MyLabel(text='Version : ' + __version__ , size_hint =(.3, None), pos=(0, Window.size[1]-title.height/2), font_size=(fs*0.8), height=fs*1.4, multiline=True))
+        #Fl.add_widget(MyLabel(text='Version : ' + __version__ , size_hint =(.3, None), pos=(0, Window.size[1]-title.height/2), font_size=(fs*0.8), height=fs*1.4, multiline=True))
         return Fl
 
     def orientation(self):
@@ -639,10 +639,6 @@ def kivyScreenConfig():
     global resizeFont
     Window.bind(on_close=destroy)
     if mod_globals.os == 'android':
-        if Window.size[1] > Window.size[0]:
-            fs = Window.size[1]*8.0/Window.size[0]
-        else:
-            fs = Window.size[0]*8.0/Window.size[1]
         if not mod_globals.screen_orient:
             set_orientation_portrait()
         else:
