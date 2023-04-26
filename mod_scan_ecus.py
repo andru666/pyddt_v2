@@ -101,7 +101,7 @@ def readECUIds( elm ):
                 if len(IdRsp) > 22 and not IdRsp.startswith('7F'):
                     DiagVersion = '0'
                     Supplier = IdRsp[6:].replace(' ', '').strip()
-                    Supplier = trim(bytes.fromhex(Supplier).decode('utf-8', 'ignore').strip())
+                    #Supplier = trim(bytes.fromhex(Supplier).decode('utf-8', 'ignore').strip())
                     Soft = '0'
                     Version = '0'
                     #Soft = IdRsp[33:47].replace(' ', '').strip()
