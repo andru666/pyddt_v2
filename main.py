@@ -310,7 +310,7 @@ class PYDDT(App):
     def orientation(self):
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         label = MyLabel(text=LANG.l_text10, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
-        self.button_orient = MyButton(text='', font_size=fs*2, on_press=self.change_orientation)
+        self.button_orient = MyButton(text='', font_size=fs, on_press=self.change_orientation)
         if not mod_globals.screen_orient:
             self.button_orient.text = LANG.b_landscape
         else:
