@@ -18,6 +18,8 @@ b_savedcar = 'Charger savedCAR'
 b_quit = '<SORTIR>'
 b_write = 'Écrire'
 b_clear1 = 'DÉGAGER'
+b_portrait = u'PORTRAIT'
+b_landscape = u'LANDSCAPE'
 
 l_cont1 = "L'ECU sélectionné n'est pas défini. Veuillez d'abord le scanner."
 l_cont2 = 'ELM ne répond pas.'
@@ -49,6 +51,7 @@ l_text6 = 'Aucune demande ClearDTC pour cet ECU, enverra 14FF00 par défaut'
 l_text7 = "Une erreur s'est produite lors de la suppression du DTC.\n\n Échec de la suppression du DTC."
 l_text8 = 'Effacer le DTC avec succès.'
 l_text9 = 'RollBack DUMP'
+l_text10 = u'Orientation'
 l_op_scr = 'Ouverture de FICHIERS XML'
 l_font_size = 'Taille de police'
 l_car = 'AVTO'
