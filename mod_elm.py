@@ -778,13 +778,14 @@ class ELM:
                 frsp = self.send_raw('at r1')
                 self.ATR1 = True
             tb = time.time()
-            if Fn > 1 and Fc == (Fn - 1):
+            if Fn > 1 and Fc == Fn:
                 self.send_raw('ATSTFF')
                 self.send_raw('ATAT1')
             if (Fc == 0 or Fc == (Fn - 1)) and len(raw_command[Fc]) < 16:
                 frsp = self.send_raw(raw_command[Fc] + '1')
             else:
                 frsp = self.send_raw(raw_command[Fc])
+            
             Fc = Fc + 1
             s0 = []
             for s in frsp.upper().split('\n'):
