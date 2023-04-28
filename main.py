@@ -343,7 +343,7 @@ class PYDDT(App):
         label = Label(text=LANG.l_n_car1, font_size=fs*3, size_hint=(1, 1), halign = 'center', valign = 'middle', text_size=(Window.size[0]*0.7, Window.size[1]*0.7))
         popup = Popup(title=LANG.error, title_size=fs*1.5, title_align='center', content=label, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
         if mod_globals.opt_car != LANG.b_select:
-                base.EventLoop.window.canvas.clear()
+            base.EventLoop.window.canvas.clear()
             Layout = GridLayout(cols=1, size_hint=(1, 1))
             Layout.add_widget(MyButton(text='KWP', size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['KWP'])))
             Layout.add_widget(MyButton(text='CAN-250', size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['CAN-250'])))
