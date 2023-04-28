@@ -658,8 +658,14 @@ class DDTLauncher(App):
                         if listIndex:
                             self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
                         self.iValueNeedUpdate[key] = False
+                elif len([I for I in self.oLabels.keys() if I.startswith(key)]):
+                    if self.iValueNeedUpdate[key]:
+                        if listIndex:
+                            self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                        self.iValueNeedUpdate[key] = False
                 if key in self.Labels.keys():
                     self.Labels[key].text = val
+        
         if self.start:
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
 
