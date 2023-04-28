@@ -52,7 +52,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.12.31'
+__version__ = '0.12.32'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -343,17 +343,23 @@ class PYDDT(App):
         label = Label(text=LANG.l_n_car1, font_size=fs*3, size_hint=(1, 1), halign = 'center', valign = 'middle', text_size=(Window.size[0]*0.7, Window.size[1]*0.7))
         popup = Popup(title=LANG.error, title_size=fs*1.5, title_align='center', content=label, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
         if mod_globals.opt_car != LANG.b_select:
-            lbltxt = Label(text=LANG.l_scan, font_size=fs)
-            popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
-            popup_init.open()
-            base.EventLoop.idle()
-            popup_init.dismiss()
-            base.EventLoop.window.canvas.clear()
-            mod_ddt.DDT_START(mod_globals.opt_car, self.elm)
+                base.EventLoop.window.canvas.clear()
+            Layout = GridLayout(cols=1, size_hint=(1, 1))
+            Layout.add_widget(MyButton(text='KWP', size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['KWP'])))
+            Layout.add_widget(MyButton(text='CAN-250', size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['CAN-250'])))
+            Layout.add_widget(MyButton(text='CAN-500', size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['CAN-500'])))
+            Layout.add_widget(MyButton(text='KWP + CAN-250', size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['KWP','CAN-250'])))
+            Layout.add_widget(MyButton(text=LANG.b_all_prot, size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['KWP','CAN-250','CAN-500'])))
+            self.popup_init = Popup(title=LANG.l_title8, title_size=fs*1.5, title_align='center', content=Layout, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
+            self.popup_init.open()
             base.EventLoop.idle()
         else:
             popup.open()
             return
+    
+    def start_ddt(self, p):
+        self.popup_init.dismiss()
+        mod_ddt.DDT_START(mod_globals.opt_car, self.elm, p)
     
     def OpenEcu(self, instance):
         if instance.id == 'demo': 

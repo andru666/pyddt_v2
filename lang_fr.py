@@ -20,6 +20,7 @@ b_write = 'Écrire'
 b_clear1 = 'DÉGAGER'
 b_portrait = u'PORTRAIT'
 b_landscape = u'LANDSCAPE'
+b_all_prot = 'ALL protocols'
 
 l_cont1 = "L'ECU sélectionné n'est pas défini. Veuillez d'abord le scanner."
 l_cont2 = 'ELM ne répond pas.'
@@ -42,6 +43,7 @@ l_title4 = 'Sélectionner xml ECU'
 l_title5 = 'TROUVER UNE VOITURE'
 l_title6 = 'Code défauts ECU'
 l_title7 = "Il n'y a pas de différences dans les décharges."
+l_title8 = 'Choose protocols'
 l_text1 = 'Chargement dump'
 l_text2 = 'Sauver dump'
 l_text3 = 'OUI'

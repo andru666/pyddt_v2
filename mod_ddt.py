@@ -48,7 +48,7 @@ class MyScatterLayout(ScatterLayout):
 
 class DDTLauncher(App):
     
-    def __init__(self, opt_car=None, elm=None):
+    def __init__(self, opt_car=None, elm=None, Protocol=None):
         global LANG
         if mod_globals.opt_lang == 'ru':
             import lang_ru as LANG
@@ -66,6 +66,7 @@ class DDTLauncher(App):
         self.dv_addr = []
         self.ecutree = {}
         self.elm = elm
+        self.Protocol = Protocol
         self.clock_event = None
         self.scf = 10.0
         if ':' in self.filterText:
@@ -1173,6 +1174,7 @@ class DDTLauncher(App):
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(x, self.screens)))
 
     def ScanAllBtnClick(self):
+        EventLoop.idle()
         if self.elm.lf!=0:
             self.elm.lf.write("#load: "+self.filterText+"\n")
             self.elm.lf.flush()  
@@ -1190,7 +1192,7 @@ class DDTLauncher(App):
         p_xml = {}
         self.scantxt.text = LANG.l_cont7 + str(i) + '/' + str(len(self.addr.alist)) + LANG.l_cont8 + str(len(self.detectedEcus))
         EventLoop.idle()
-        for p in ['KWP','CAN-250','CAN-500']:
+        for p in self.Protocol:
             i = 0
             popup_scan.title = LANG.l_title1 + p
             if p == 'KWP':
@@ -1886,9 +1888,9 @@ class DDTLauncher(App):
         df.close()
         return dumpFileName
 
-def DDT_START(filterText, elm=None):
+def DDT_START(filterText, elm=None, p=None):
     while 1:
-        root = DDTLauncher(filterText, elm)
+        root = DDTLauncher(filterText, elm, p)
         root.run()
 
 class MyLabel_scr(Label):
