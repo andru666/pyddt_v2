@@ -52,7 +52,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.12.32'
+__version__ = '0.12.33'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -573,7 +573,7 @@ class PYDDT(App):
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         label = MyLabel(text=LANG.l_lang, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
         self.bt_lang = DropDown(height=(fs * 2))
-        lang = {'English':'en','France':'fr','Русский':'ru',}
+        lang = {'English':'en','France':'fr','Русский':'ru','Slovenský':'sk'}
         for v, k in lang.items():
             but = MyButton(text=v, id=k, font_size=fs*2)
             but.bind(on_release=self.select_lang)
