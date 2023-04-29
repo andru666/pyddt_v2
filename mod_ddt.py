@@ -54,6 +54,8 @@ class DDTLauncher(App):
             import lang_ru as LANG
         elif mod_globals.opt_lang == 'en':
             import lang_en as LANG
+        elif mod_globals.opt_lang == 'sk':
+            import lang_sk as LANG
         else:
             import lang_fr as LANG
         self.eculist = mod_ddt_utils.loadECUlist()
