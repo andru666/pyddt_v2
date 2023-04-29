@@ -70,7 +70,7 @@ l_load = 'Načítam'
 l_enter_here = 'Zadaj údaje'
 error = 'CHYBA'
 not_ident = 'Žiadne identifikátory'
-lang = 'sk'
+lang = 'en'
 
 list_ru = {}
 list_name = {'ABS-VDC_29b':'ABS-VDC_29b', 
