@@ -16,10 +16,10 @@ if platform != 'android':
     Window.size = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
     if Window.size[1] > Window.size[0]:
         fs = Window.size[1]*8.0/Window.size[0]
-        Window.size = Window.size[0]*0.6, Window.size[0]*0.9
+        Window.size = Window.size[0]*0.8, Window.size[0]*0.9
     else:
         fs = Window.size[0]*8.0/Window.size[1]
-        Window.size = Window.size[1]*0.6, Window.size[1]*0.9
+        Window.size = Window.size[1]*0.8, Window.size[1]*0.9
 else:
     from kivy.core.window import Window
     if Window.size[1] > Window.size[0]:
@@ -52,7 +52,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.12.33'
+__version__ = '0.12.35'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -424,7 +424,7 @@ class PYDDT(App):
         mod_globals.opt_dump = self.button[LANG.l_dump].active
         mod_globals.opt_can2 = self.button['CAN2'].active
         #mod_globals.savedCAR = 'savedCAR_x95.csv'
-        #mod_globals.savedCAR = 'savedCAR_XTAGFL110LY351920VESTA.csv'
+        #mod_globals.savedCAR = 'savedCAR_test.csv'
         if self.button[LANG.b_log].state == 'down':
             mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
         else:
