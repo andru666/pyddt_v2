@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys, os, ast, time, pickle, copy, string
+import sys, os, ast, time, pickle, copy, string, zipfile
 from shutil import copyfile
 from datetime import datetime
 from kivy import base
@@ -49,7 +49,10 @@ class MyScatterLayout(ScatterLayout):
 class DDTLauncher(App):
     
     def __init__(self, opt_car=None, elm=None, Protocol=None):
+        
         global LANG
+        global fs
+        
         if mod_globals.opt_lang == 'ru':
             import lang_ru as LANG
         elif mod_globals.opt_lang == 'en':
@@ -58,19 +61,20 @@ class DDTLauncher(App):
             import lang_sk as LANG
         else:
             import lang_fr as LANG
+        
         self.eculist = mod_ddt_utils.loadECUlist()
         self.Window_size = mod_globals.windows_size
-        self.filterText = opt_car
-        global fs
+        self.var_dump = mod_globals.opt_dump
         fs = mod_globals.fontSize
-        self.carecus = []
-        self.v_dumpList = []
-        self.dv_addr = []
-        self.ecutree = {}
+        self.filterText = opt_car
         self.elm = elm
         self.Protocol = Protocol
-        self.clock_event = None
         self.scf = 10.0
+        
+        self.clock_event = None
+        self.roll_back = False
+        self.translate = True
+        
         if ':' in self.filterText:
             self.v_proj = self.filterText.split(':')[0].strip()
         else:
@@ -79,7 +83,15 @@ class DDTLauncher(App):
             self.v_proj = 'ALL_CARS'
             self.filterText = 'ALL_CARS'
         self.labels = TextInput(text=self.v_proj, size_hint=(0.6, None), padding=[0, fs/1.5], font_size=fs, height=3*fs)
-        self.roll_back = False
+        self.pl = mod_ddt_utils.ddtProjects()
+        
+        self.carecus = []
+        self.v_dumpList = []
+        self.dv_addr = []
+        self.ecutree = {}
+        self.label = {}
+        self.dict_trans = {}
+        
         self.v_addr = ''
         self.Roll_back = ''
         self.v_vin = ''
@@ -91,9 +103,7 @@ class DDTLauncher(App):
         self.var_cfc = ''
         self.var_port = ''
         self.var_speed = ''
-        self.label = {}
-        self.var_dump = mod_globals.opt_dump
-        self.pl = mod_ddt_utils.ddtProjects()
+        
         if mod_globals.savedCAR != LANG.b_select:
             self.LoadCarFile(mod_globals.savedCAR)
         else:
@@ -219,6 +229,8 @@ class DDTLauncher(App):
         mod_ddt_ecu.ecuIdent(self.Addr[:-4], DiagVersion, Supplier, Soft, Version, self.eculist)
 
     def OpenECUScreens(self, ce):
+        self.currentscreen = ce['xml']
+        self.load_translite()
         if not mod_globals.opt_demo and self.var_dump:
             mod_globals.opt_dump = True
         else:
@@ -308,7 +320,13 @@ class DDTLauncher(App):
             if x == 'EPS Tools': continue
             if x == LANG.l_text9: continue
             if x == LANG.b_read_dtc: continue
-            button = MyButton(text=x.replace('ddt_all_commands', ''), id=x, size_hint=(1, None), height=fs*4, on_release=lambda x=xml:self.res_show_screen(x,data))
+            x = x.replace('ddt_all_commands', '')
+            if x in self.dict_trans.keys():
+                Text = self.dict_trans[x]
+            else:
+                Text = x
+                    
+            button = MyButton(text=Text, id=x, size_hint=(1, None), height=fs*4, on_release=lambda x=xml:self.res_show_screen(x,data))
             box.add_widget(button)
         if 'ddt_all_commands' in data:
             button = MyButton(text='ddt_all_commands', id='ddt_all_commands', size_hint=(1, None), height=fs*4, on_release=lambda x=xml:self.res_show_screen(x,data))
@@ -581,7 +599,13 @@ class DDTLauncher(App):
         W = W*self.flayout.scale
         if W*self.flayout.scale > self.Window_size[0]: W = self.Window_size[0]
         for o in optionList:
-            btn = MyButton(text=o, id=o, font_size=int(f)*self.flayout.scale, size_hint=(None,None), size=(W,H*self.flayout.scale))
+            if ':' in o:
+                O = o.split(':')
+                if O[1] in self.dict_t.keys():
+                    oText = o.replace(O[1], self.dict_t[O[1]])
+                else:
+                    oText = o
+            btn = MyButton(text=oText, id=o, font_size=int(f)*self.flayout.scale, size_hint=(None,None), size=(W,H*self.flayout.scale))
             btn.bind(on_release=lambda btn = btn, i = i: self.select_option(btn.text, i))
             self.dropdowns[i].add_widget(btn)
         self.dropdowns[i].bind(on_select=lambda instance, x: setattr(self.triggers[i], 'text', x))
@@ -701,6 +725,28 @@ class DDTLauncher(App):
             self.make_box = True
             self.loadScreen(self.currentscreen, dt)
     
+    def load_translite(self):
+        trans = os.path.join(mod_globals.user_data_dir, mod_globals.opt_lang + '.zip')
+        if os.path.isfile(trans):
+            arc = zipfile.ZipFile(trans, mode='r')
+            ec = self.currentscreen[:-3] + 'txt'
+            search = '<..>"(.*)"</..><ru>"(.*)"</ru>'
+            fr_ru = re.findall(search, mod_db_manager.get_file_content(ec, arc).decode('utf-8'))
+            for fr, ru in fr_ru:
+                self.dict_trans[fr] = ru
+        self.dict_t = self.dict_trans
+
+    def change_lang(self, dt):
+        if self.translate:
+            self.translate = False
+            self.dict_t = {}
+        else:
+            self.translate = True
+            self.dict_t = self.dict_trans
+        self.update_dInputs()
+        self.loadScreen(self.currentscreen, dt)
+        print(self.translate)
+    
     def loadScreen(self, scr, data):
         self.Layout.clear_widgets()
         self.start = True
@@ -749,11 +795,12 @@ class DDTLauncher(App):
         
         labe = False
         
-        box1 = GridLayout(cols=3, size_hint=(1, None), height=fs*3)
+        box1 = GridLayout(cols=4, size_hint=(1, None), height=fs*3)
         box2 = GridLayout(cols=1, spacing=5, padding=5)
         box1.add_widget(self.startStopButton)
         box1.add_widget(MyButton(text=LANG.b_close, size_hint=(1, 1), on_release=lambda x:self.show_screen(self.xml, data)))
         box1.add_widget(MyButton(text=LANG.b_change_view, size_hint=(1, 1), on_release=lambda x:self.change_screen(data)))
+        box1.add_widget(MyButton(text='LANG', size_hint=(0.3, 1), on_release=lambda x:self.change_lang(data)))
         self.Layout.add_widget(box1)
         self.startStopButton.bind(on_release=lambda args:self.startStop())
         if scr_w > scr_h:
@@ -846,7 +893,11 @@ class DDTLauncher(App):
                     xText, xColor, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = l['values']
                     if not xText or int(l['sq']) > (scr_w * scr_h)/3:
                         labe = True
-                    self.flayout.add_widget(MyLabel_scr(text=xText, id=xText, halign=halign, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, valign=xAlignment, bgcolor=self.hex_to_rgb(xColor),  size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrHeight+xrTop)/self.scf)))
+                    if xText in self.dict_t.keys():
+                        Text = self.dict_t[xText]
+                    else:
+                        Text = xText
+                    self.flayout.add_widget(MyLabel_scr(text=Text, id=xText, halign=halign, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*src, valign=xAlignment, bgcolor=self.hex_to_rgb(xColor),  size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrHeight+xrTop)/self.scf)))
             if len(self.DValue) > 0:
                 for d in self.DValue:
                     xText, xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = d
@@ -857,8 +908,13 @@ class DDTLauncher(App):
                         xSize = xrHeight/self.scf/src/2.5
                     else:
                         xSize = xfSize
+                    if xText in self.dict_t.keys():
+                        Text = self.dict_t[xText]
+                    else:
+                        Text = xText
+                    
                     if xWidth/self.scf > 40:
-                        label = MyLabel_scr(text=xText, id=xText+'_'+xReq, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xSize*src, halign='left', bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        label = MyLabel_scr(text=Text, id=xText+'_'+xReq, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xSize*src, halign='left', bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
                         self.flayout.add_widget(label)
                     if not labe and self.hex_to_rgb(self.scr_c) == self.hex_to_rgb(xColor):
                         xColor = int(xColor)/2
@@ -869,15 +925,25 @@ class DDTLauncher(App):
             if len(self.BValue) > 0:
                 for b in self.BValue:
                     xText, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign, b = b
-                    button = MyButton(text=xText, text_size=(xrWidth/self.scf, xrHeight/self.scf), valign='middle', id=b, color=self.hex_to_rgb(xfColor), bold=xfBold, halign=halign, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                    if xText in self.dict_t.keys():
+                        Text = self.dict_t[xText]
+                    else:
+                        Text = xText
+                    
+                    button = MyButton(text=Text, text_size=(xrWidth/self.scf, xrHeight/self.scf), valign='middle', id=b, color=self.hex_to_rgb(xfColor), bold=xfBold, halign=halign, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
                     button.bind(on_release = lambda btn=xText, key=b: self.buttonPressed(btn.text, btn.id))
                     self.flayout.add_widget(button)
             
             if len(self.IValue) > 0:
                 for i in self.IValue:
                     i, xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = i
+                    if i in self.dict_t.keys():
+                        Text = self.dict_t[i]
+                    else:
+                        Text = i
+                    
                     if xWidth/self.scf > 40:
-                        label = MyLabel_scr(text=i, id=i, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, halign='left', font_size=xfSize*src, bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        label = MyLabel_scr(text=Text, id=i, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, halign='left', font_size=xfSize*src, bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
                         self.flayout.add_widget(label)
                     if i+xReq not in self.iValue.keys():
                         if i not in self.dValue.keys():
@@ -897,10 +963,23 @@ class DDTLauncher(App):
                         self.iValue[i+xReq] = {'value':optionList[0], 'name':i, 'request':xReq}
                         self.dropdowns[i+xReq] = DropDown(auto_width=False, width=xrWidth)
                         for o in optionList:
-                            btn = MyButton(text=o, id=o, font_size=xfSize*src*self.flayout.scale, size_hint_y=None, height=xrHeight)
+                            if ':' in o:
+                                O = o.split(':')
+                                if O[1] in self.dict_t.keys():
+                                    oText = o.replace(O[1], self.dict_t[O[1]])
+                                else:
+                                    oText = o
+                            btn = MyButton(text=oText, id=o, font_size=xfSize*src*self.flayout.scale, size_hint_y=None, height=xrHeight)
                             btn.bind(on_release=lambda btn=btn, i=i+xReq: self.select_option(btn.text, i))
                             self.dropdowns[i+xReq].add_widget(btn)
-                        self.triggers[i+xReq] = MyButton(text=self.iValue[i+xReq]['value'], id=i+xReq, size_hint=(None, None), font_size=xfSize*src, size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        o = self.iValue[i+xReq]['value']
+                        if ':' in o:
+                            O = o.split(':')
+                            if O[1] in self.dict_t.keys():
+                                oText = o.replace(O[1], self.dict_t[O[1]])
+                            else:
+                                oText = o
+                        self.triggers[i+xReq] = MyButton(text=oText, id=i+xReq, size_hint=(None, None), font_size=xfSize*src, size=((xrWidth - xWidth)/self.scf, xrHeight/self.scf), pos=((xrLeft + xWidth)/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
                         self.triggers[i+xReq].bind(on_release=lambda bt,L=optionList,f=xfSize*src,H=xrHeight/self.scf,W=(xrWidth - xWidth)/self.scf:self.drop(bt.id, L, f, H, W))
                         self.oLabels[i+xReq] = self.triggers[i+xReq]
                         self.dropdowns[i+xReq].bind(on_select=lambda instance, x: setattr(self.triggers[i+xReq], 'text', x))
