@@ -745,7 +745,6 @@ class DDTLauncher(App):
             self.dict_t = self.dict_trans
         self.update_dInputs()
         self.loadScreen(self.currentscreen, dt)
-        print(self.translate)
     
     def loadScreen(self, scr, data):
         self.Layout.clear_widgets()
@@ -1620,10 +1619,11 @@ class DDTLauncher(App):
     def select_dump(self, bt, idds):
         if not self.roll_back:
             addr = idds.split('_')[0]
+            if bt.text == LANG.b_clear1:
+                bt.text = ''
             for n in self.carecus:
                 if n['addr'] == addr:
                     n['dump'] = bt.text
-            if bt.text == LANG.b_clear1: bt.text = ''
             self.label[idds].text = bt.text
             self.renewEcuList()
         else:
