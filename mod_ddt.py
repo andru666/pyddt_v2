@@ -730,6 +730,8 @@ class DDTLauncher(App):
         if os.path.isfile(trans):
             arc = zipfile.ZipFile(trans, mode='r')
             ec = self.currentscreen[:-3] + 'txt'
+            if ec not in arc.namelist():
+                return
             search = '<..>"(.*)"</..><ru>"(.*)"</ru>'
             fr_ru = re.findall(search, mod_db_manager.get_file_content(ec, arc).decode('utf-8'))
             for fr, ru in fr_ru:
