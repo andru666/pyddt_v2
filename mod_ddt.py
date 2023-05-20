@@ -91,6 +91,7 @@ class DDTLauncher(App):
         self.ecutree = {}
         self.label = {}
         self.dict_trans = {}
+        self.dict_t = {}
         
         self.v_addr = ''
         self.Roll_back = ''
