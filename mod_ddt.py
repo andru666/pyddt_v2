@@ -673,24 +673,28 @@ class DDTLauncher(App):
                             for iD in self.dLabels[key]:
                                 iD.text = val
                 if key in self.iLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        self.iLabels[key].text = val
-                        self.iValueNeedUpdate[key] = False
+                    if key in self.iValueNeedUpdate:
+                        if self.iValueNeedUpdate[key]:
+                            self.iLabels[key].text = val
+                            self.iValueNeedUpdate[key] = False
                 if key+v['request'] in self.oLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex:
-                            self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        self.iValueNeedUpdate[key] = False
+                    if key in self.iValueNeedUpdate:
+                        if self.iValueNeedUpdate[key]:
+                            if listIndex:
+                                self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                            self.iValueNeedUpdate[key] = False
                 elif (key+v['request']).replace('DataRead', 'DataWrite') in self.oLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex:
-                            self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        self.iValueNeedUpdate[key] = False
+                    if key in self.iValueNeedUpdate:
+                        if self.iValueNeedUpdate[key]:
+                            if listIndex:
+                                self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                            self.iValueNeedUpdate[key] = False
                 elif len([I for I in self.oLabels.keys() if I.startswith(key)]):
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex:
-                            self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        self.iValueNeedUpdate[key] = False
+                    if key in self.iValueNeedUpdate:
+                        if self.iValueNeedUpdate[key]:
+                            if listIndex:
+                                self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                            self.iValueNeedUpdate[key] = False
                 if key in self.Labels.keys():
                     self.Labels[key].text = val
         
