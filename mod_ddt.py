@@ -1200,7 +1200,9 @@ class DDTLauncher(App):
             if value_hex['value'] == None or value_hex['value'] == 'None': continue
             glay = GridLayout(cols=2, size_hint=(1, None))
             glay.height = fs*2*math.ceil(len(k)*1.0/(glay.width*0.7/2))
-            label1 = MyLabelBlue(text=k, halign='left', valign='middle', size_hint=(0.6, 1), font_size=fs)
+            if k in self.dict_t.keys():
+                k_txt = self.dict_t[k]
+            label1 = MyLabelBlue(text=k_txt, halign='left', valign='middle', size_hint=(0.6, 1), font_size=fs)
             glay.add_widget(label1)
             if ':' not in value_hex['value']:
                 value = int('0x' + value_hex['value'], 16)
