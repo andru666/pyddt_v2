@@ -1174,7 +1174,11 @@ class DDTLauncher(App):
                 self.data_dtc[DTC]['resp'] = ' '.join(can_response)
                 self.data_dtc[DTC]['requests'] = requests
                 ln.bind(on_press=self.show_DTC)
-                ln.text += ' : ' + self.data_dtc[DTC]['name']
+                tx = self.data_dtc[DTC]['name']
+                if tx in self.dict_t.keys():
+                    ln.text += ' : ' +  self.dict_t[tx]
+                else:
+                    ln.text += ' : ' + tx
             box.add_widget(MyLabel(text='', height=fs*0.4, bgcolor=(0,0,0.2,1)))
             box.add_widget(ln)
             box.height = box.height + ln.height + fs*0.4
@@ -1185,9 +1189,11 @@ class DDTLauncher(App):
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(x, self.screens)))
 
     def show_DTC(self, dt):
+        tit = dt.text.split(':', 1)[1]
         requests = self.data_dtc[dt.id]['requests']
         box = GridLayout(cols=1, spacing=5, size_hint=(1, None))
         box.height = len(requests.ReceivedDI.keys()) * fs*3
+        
         for k in requests.ReceivedDI.keys():
             if k == "NDTC" or k == "FirstDTC": continue
             value_hex = get_value({'request':requests.Name,'name':k}, self.decu, self.elm, resp=self.data_dtc[dt.id]['resp'])
@@ -1198,10 +1204,22 @@ class DDTLauncher(App):
             glay.add_widget(label1)
             if ':' not in value_hex['value']:
                 value = int('0x' + value_hex['value'], 16)
-                value = '[' + str(value) + '] ' + hex(value)
+                if k in self.decu.datas.keys():
+                    if value in self.decu.datas[k].List.keys():
+                        value = self.decu.datas[k].List[value]
+                        if value in self.dict_t.keys():
+                            value = self.dict_t[value]
+                    else:
+                        value = '[' + str(value) + '] ' + hex(value)
             else:
                 value = value_hex['value'].split(':', 1)
-                value = '[' + str(value[0]) + '] ' + value[1]
+                if k in self.decu.datas.keys():
+                    if value[1] in self.decu.datas[k].List.keys():
+                        value = self.decu.datas[k].List[value[1]]
+                        if value in self.dict_t.keys():
+                            value = self.dict_t[value]
+                    else:
+                        value = '[' + str(value[0]) + '] ' + value[1]
             v_h = fs*2*math.ceil(len(value)*1.0/(glay.width*0.4/2))
             if v_h > glay.height:
                 glay.height = v_h
@@ -1219,7 +1237,11 @@ class DDTLauncher(App):
             for k in requests_mem.ReceivedDI.keys():
                 glay = GridLayout(cols=2, size_hint=(1, None))
                 glay.height = fs*2*math.ceil(len(k)*1.0/(glay.width*0.7/2))
-                label1 = MyLabelBlue(text=k, halign='left', valign='middle', size_hint=(0.6, 1), font_size=fs)
+                if k in self.dict_t.keys():
+                    txt = self.dict_t[k]
+                else:
+                    txt = k
+                label1 = MyLabelBlue(text=txt, halign='left', valign='middle', size_hint=(0.6, 1), font_size=fs)
                 glay.add_widget(label1)
                 value = get_value({'request':requests_mem.Name,'name':k}, self.decu, self.elm, resp=resp)
                 if ':' in value['value']:
@@ -1234,7 +1256,7 @@ class DDTLauncher(App):
                 box.add_widget(glay)
         root = ScrollView(size_hint=(1, 1))
         root.add_widget(box)
-        self.MyPopup(title=self.data_dtc[dt.id]['name'], content_box=root, height=self.Window_size[1], weigh=self.Window_size[0])
+        self.MyPopup(title=tit, content_box=root, height=self.Window_size[1], weigh=self.Window_size[0])
 
     def dialogClearDTC(self):
         self.ButtonConfirmation(LANG.l_cont12, 'clearDTC')
@@ -1802,7 +1824,9 @@ class DDTLauncher(App):
         if self.make_box:
             self.BOX2.append(i)
         glay = GridLayout(cols=2, size_hint=(1, None), height=fs*6)
-        label1 = MyLabelBlue(text=i, halign='left', valign='middle', size_hint=(0.5, 1), font_size=fs)
+        if i in self.dict_t.keys():
+            txt = self.dict_t[i]
+        label1 = MyLabelBlue(text=txt, halign='left', valign='middle', size_hint=(0.5, 1), font_size=fs)
         glay.add_widget(label1)
         if i in self.iValue:
             glay.cols = 3
