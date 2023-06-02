@@ -7,7 +7,7 @@ from kivy import base
 from kivy.app import App
 from kivy.base import EventLoop
 from kivy.clock import Clock
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, Rectangle, Line
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
@@ -646,58 +646,102 @@ class DDTLauncher(App):
                     if len(d.List.keys()):
                         listIndex = int(val,16)
                         if listIndex in d.List.keys():
-                            if len(self.dLabels[key]) ==1: self.dLabels[key][0].text =  d.List[listIndex]
+                            if len(self.dLabels[key]) ==1:
+                                if d.List[listIndex] in self.dict_t.keys():
+                                    self.dLabels[key][0].text = self.dict_t[d.List[listIndex]]
+                                else:
+                                    self.dLabels[key][0].text = d.List[listIndex]
                             else:
                                 for iD in self.dLabels[key]:
-                                    iD.text =  d.List[listIndex]
+                                    if d.List[listIndex] in self.dict_t.keys():
+                                        iD.text = self.dict_t[d.List[listIndex]]
+                                    else:
+                                        iD.text = d.List[listIndex]
                         else:
-                            if len(self.dLabels[key]) ==1: self.dLabels[key][0].text =  val
+                            if len(self.dLabels[key]) ==1:
+                                if val in self.dict_t.keys():
+                                    self.dLabels[key][0].text = self.dict_t[val]
+                                else:
+                                    self.dLabels[key][0].text = val
                             else:
                                 for iD in self.dLabels[key]:
-                                    iD.text = val
+                                    if val in self.dict_t.keys():
+                                        iD.text = self.dict_t[val]
+                                    else:
+                                        iD.text = val
                     elif d.Scaled:
-                        if len(self.dLabels[key]) ==1: self.dLabels[key][0].text = val+' '+d.Unit
+                        if len(self.dLabels[key]) ==1:
+                            if val in self.dict_t.keys():
+                                self.dLabels[key][0].text = self.dict_t[val]+' '+d.Unit
+                            else:
+                                self.dLabels[key][0].text = val+' '+d.Unit
                         else:
                             for iD in self.dLabels[key]:
-                                iD.text = val+' '+d.Unit
+                                if d.List[listIndex] in self.dict_t.keys():
+                                    iD.text = self.dict_t[d.List[listIndex]]
+                                else:
+                                    iD.text = val+' '+d.Unit
                     else:
-                        if len(self.dLabels[key]) ==1: self.dLabels[key][0].text = val
+                        if len(self.dLabels[key]) ==1:
+                            if val in self.dict_t.keys():
+                                self.dLabels[key][0].text = self.dict_t[val]
+                            else:
+                                self.dLabels[key][0].text = val
                         else:
                             for iD in self.dLabels[key]:
-                                iD.text = val
+                                if val in self.dict_t.keys():
+                                    iD.text = self.dict_t[val]
+                                else:
+                                    iD.text = val
                 else:
                     if key in self.dLabels.keys():
                         if len(self.dLabels[key]) == 1:
-                            self.dLabels[key][0].text = val
+                            if val in self.dict_t.keys():
+                                self.dLabels[key][0].text = self.dict_t[val]
+                            else:
+                                self.dLabels[key][0].text = val
                         else:
                             for iD in self.dLabels[key]:
-                                iD.text = val
+                                if val in self.dict_t.keys():
+                                    iD.text = self.dict_t[val]
+                                else:
+                                    iD.text = val
                 if key in self.iLabels.keys():
-                    if key in self.iValueNeedUpdate:
-                        if self.iValueNeedUpdate[key]:
+                    if self.iValueNeedUpdate[key]:
+                        if val in self.dict_t.keys():
+                            self.iLabels[key].text = self.dict_t[val]
+                        else:
                             self.iLabels[key].text = val
-                            self.iValueNeedUpdate[key] = False
+                        self.iValueNeedUpdate[key] = False
                 if key+v['request'] in self.oLabels.keys():
-                    if key in self.iValueNeedUpdate:
-                        if self.iValueNeedUpdate[key]:
-                            if listIndex:
+                    if self.iValueNeedUpdate[key]:
+                        if listIndex:
+                            if d.List[listIndex] in self.dict_t.keys():
+                                self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
+                            else:
                                 self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                            self.iValueNeedUpdate[key] = False
+                        self.iValueNeedUpdate[key] = False
                 elif (key+v['request']).replace('DataRead', 'DataWrite') in self.oLabels.keys():
-                    if key in self.iValueNeedUpdate:
-                        if self.iValueNeedUpdate[key]:
-                            if listIndex:
+                    if self.iValueNeedUpdate[key]:
+                        if listIndex:
+                            if d.List[listIndex] in self.dict_t.keys():
+                                self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
+                            else:
                                 self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                            self.iValueNeedUpdate[key] = False
+                        self.iValueNeedUpdate[key] = False
                 elif len([I for I in self.oLabels.keys() if I.startswith(key)]):
-                    if key in self.iValueNeedUpdate:
-                        if self.iValueNeedUpdate[key]:
-                            if listIndex:
+                    if self.iValueNeedUpdate[key]:
+                        if listIndex in d.List.keys():
+                            if d.List[listIndex] in self.dict_t.keys():
+                                self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
+                            else:
                                 self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                            self.iValueNeedUpdate[key] = False
+                        self.iValueNeedUpdate[key] = False
                 if key in self.Labels.keys():
-                    self.Labels[key].text = val
-        
+                    if val in self.dict_t.keys():
+                        self.Labels[key].text = self.dict_t[val]
+                    else:
+                        self.Labels[key].text = val
         if self.start:
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
 
@@ -813,8 +857,9 @@ class DDTLauncher(App):
             src = (scr_w*1.0 / scr_h)
         else:
             src = (scr_h*1.0 / scr_w)
-        while src > 1.3: src = src / 1.1
-        while src < 1.3: src = src * 1.1
+        while src > 1.1: src = src / 1.1
+        while src < 1.1: src = src * 1.1
+        
         labels = ecu_labels(self.LValue, scr)
         dispalys = ecu_dispalys(self.DValue, scr, self.decu)
         buttons = ecu_buttons(self.BValue, self.dBtnSend, scr)
@@ -1179,6 +1224,7 @@ class DDTLauncher(App):
                     ln.text += ' : ' +  self.dict_t[tx]
                 else:
                     ln.text += ' : ' + tx
+                
             box.add_widget(MyLabel(text='', height=fs*0.4, bgcolor=(0,0,0.2,1)))
             box.add_widget(ln)
             box.height = box.height + ln.height + fs*0.4
@@ -1492,18 +1538,19 @@ class DDTLauncher(App):
         except:
             pass
         confirmed = True
-        layout = GridLayout(cols=1, padding=5, spacing=5, size_hint=(1, None), height=fs*4)
+        layout = GridLayout(cols=1, padding=5, spacing=5, size_hint=(1, None), height=fs/2)
         if confirmed:
             for c in slist:
                 rsp = '00'
                 rsp = self.decu.elmRequest (c['c'], c['d'], cache=False)
                 tmstr = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-                layout.add_widget(MyLabel(text=tmstr+' >   '+c['c']+'\nRcvd:'+rsp, size_hint=(1, None), height=fs*4, bgcolor=(0,0.5,0,1)))
-                layout.height += fs*4
-        layout.height += fs*4.5
+                ttt = MyLabel(text=tmstr+' >   '+c['c']+'\nRcvd:'+rsp, size_hint=(1, None), height=fs*4, bgcolor=(0,0.5,0,1))
+                while ttt.height < len(rsp)/1.5:
+                    ttt.height += fs*2
+                layout.height += ttt.height
+                layout.add_widget(ttt)
         root = ScrollView(size_hint=(1, 0.85))
         root.add_widget(layout)
-        
         self.MyPopup(content_box=root)
         self.start = Clock.schedule_once(self.update_values, 0.02)
         try:
@@ -2018,7 +2065,7 @@ class MyLabel_scr(Label):
             self.id = kwargs['id']
             del kwargs ['id']
         super(MyLabel_scr, self).__init__(**kwargs)
-        
+        self.text = ' ' + self.text
         self.bind(size=self.setter('text_size'))
         if 'halign' not in kwargs:
             self.halign = 'center'
@@ -2034,12 +2081,12 @@ class MyLabel_scr(Label):
         if not self.canvas:
             return
         self.canvas.before.clear()
-        """with self.canvas.before:
-            Color(0, 0, 0, 1)
-            Rectangle(pos=(self.pos[0], self.pos[1]), size=(self.size[0], self.size[1]))"""
         with self.canvas.before:
             Color(self.bgcolor[0], self.bgcolor[1], self.bgcolor[2], self.bgcolor[3])
-            Rectangle(pos=(self.pos[0], self.pos[1]), size=(self.size[0], self.size[1]))
+            Rectangle(pos=self.pos, size=self.size)
+        with self.canvas.before:
+            Color(0, 0, 0, 1)
+            Line(width=1.2, rectangle=[self.pos[0], self.pos[1], self.size[0], self.size[1]])
             
 class MyLabel(Label):
     global fs
@@ -2147,6 +2194,8 @@ class MyButton(Button):
             del kwargs ['id']
         super(MyButton, self).__init__(**kwargs)
         self.bind(size=self.setter('text_size'))
+        if 'bgcolor' not in kwargs:
+            self.bgcolor = (0, 0, 0, 1)
         if 'halign' not in kwargs:
             self.halign = 'center'
         if 'valign' not in kwargs:
@@ -2156,8 +2205,7 @@ class MyButton(Button):
         if 'size_hint' not in kwargs:
             self.size_hint = (1, None)
 
-
-
+    
 class DDTECU():
     global LANG
     elm = None
