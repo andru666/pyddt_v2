@@ -69,7 +69,7 @@ class DDTLauncher(App):
         self.filterText = opt_car
         self.elm = elm
         self.Protocol = Protocol
-        self.scf = 10.0
+        self.scf = 5.0
         
         self.clock_event = None
         self.roll_back = False
@@ -677,8 +677,8 @@ class DDTLauncher(App):
                                 self.dLabels[key][0].text = val+' '+d.Unit
                         else:
                             for iD in self.dLabels[key]:
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    iD.text = self.dict_t[d.List[listIndex]]
+                                if val in self.dict_t.keys():
+                                    iD.text = self.dict_t[val]
                                 else:
                                     iD.text = val+' '+d.Unit
                     else:
@@ -716,26 +716,35 @@ class DDTLauncher(App):
                 if key+v['request'] in self.oLabels.keys():
                     if self.iValueNeedUpdate[key]:
                         if listIndex:
-                            if d.List[listIndex] in self.dict_t.keys():
-                                self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                            else:
-                                self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                            if listIndex in d.List.keys():
+                                if d.List[listIndex] in self.dict_t.keys():
+                                    self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
+                                else:
+                                    self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                        else:
+                            self.oLabels[key+v['request']].text = val
                         self.iValueNeedUpdate[key] = False
                 elif (key+v['request']).replace('DataRead', 'DataWrite') in self.oLabels.keys():
                     if self.iValueNeedUpdate[key]:
                         if listIndex:
-                            if d.List[listIndex] in self.dict_t.keys():
-                                self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                            else:
-                                self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                            if listIndex in d.List.keys():
+                                if d.List[listIndex] in self.dict_t.keys():
+                                    self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
+                                else:
+                                    self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                        else:
+                            self.oLabels[key+v['request']].text = val
                         self.iValueNeedUpdate[key] = False
                 elif len([I for I in self.oLabels.keys() if I.startswith(key)]):
                     if self.iValueNeedUpdate[key]:
                         if listIndex in d.List.keys():
-                            if d.List[listIndex] in self.dict_t.keys():
-                                self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                            else:
-                                self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                            if listIndex in d.List.keys():
+                                if d.List[listIndex] in self.dict_t.keys():
+                                    self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
+                                else:
+                                    self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                        else:
+                            self.oLabels[key+v['request']].text = val
                         self.iValueNeedUpdate[key] = False
                 if key in self.Labels.keys():
                     if val in self.dict_t.keys():
@@ -857,8 +866,8 @@ class DDTLauncher(App):
             src = (scr_w*1.0 / scr_h)
         else:
             src = (scr_h*1.0 / scr_w)
-        while src > 1.1: src = src / 1.1
-        while src < 1.1: src = src * 1.1
+        while src > self.scf/2: src = src / 1.1
+        while src < self.scf/2: src = src * 1.1
         
         labels = ecu_labels(self.LValue, scr)
         dispalys = ecu_dispalys(self.DValue, scr, self.decu)
