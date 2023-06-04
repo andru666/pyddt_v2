@@ -1257,6 +1257,8 @@ class DDTLauncher(App):
             glay.height = fs*2*math.ceil(len(k)*1.0/(glay.width*0.7/2))
             if k in self.dict_t.keys():
                 k_txt = self.dict_t[k]
+            else:
+                k_txt = k
             label1 = MyLabelBlue(text=k_txt, halign='left', valign='middle', size_hint=(0.6, 1), font_size=fs)
             glay.add_widget(label1)
             if ':' not in value_hex['value']:
