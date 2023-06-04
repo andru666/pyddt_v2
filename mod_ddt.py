@@ -1884,6 +1884,8 @@ class DDTLauncher(App):
         glay = GridLayout(cols=2, size_hint=(1, None), height=fs*6)
         if i in self.dict_t.keys():
             txt = self.dict_t[i]
+        else:
+            txt = i
         label1 = MyLabelBlue(text=txt, halign='left', valign='middle', size_hint=(0.5, 1), font_size=fs)
         glay.add_widget(label1)
         if i in self.iValue:
