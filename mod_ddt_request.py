@@ -98,8 +98,9 @@ class decu_request:
             if self.SentBytes == '1200040000':
                 if self.Name in data_dtc:
                     self.SentBytes = '120004' + data_dtc[self.Name]
-                else:
+                elif '0' in data_dtc:
                     self.SentBytes = '120004' + data_dtc['0']
+                
             self.VariableLength = False
             VariableLength = Sent[0].findall("ns0:VariableLength",ns)
             if len(VariableLength): self.VariableLength=True
@@ -187,7 +188,11 @@ class decu_requests:
             for device in devices[0]:
                 if 'DTC' in device.attrib:
                     if 'FreezeFrame' in device.attrib:
-                        data_dtc[device.attrib['FreezeFrame']] = hex(int(device.attrib['DTC'])).replace("0x", "").upper()
+                        FreezeFrame = device.attrib['FreezeFrame']
+                        if FreezeFrame == 'Read Freeze Frame':
+                            data_dtc[device.attrib['Name']] = hex(int(device.attrib['DTC'])).replace("0x", "").upper()
+                        else:
+                            data_dtc[FreezeFrame] = hex(int(device.attrib['DTC'])).replace("0x", "").upper()
                     elif '0' not in data_dtc.keys():
                         data_dtc['0'] = hex(int(device.attrib['DTC'])).replace("0x", "").upper()
         tmpdoc = xdoc.findall('ns0:Target/ns0:Requests', ns)
