@@ -49,6 +49,7 @@ ddt_arc = ""
 ddtroot = ".."
 db_archive_file = None
 cache_dir = "./cache/"
+crash_dir = "./crashs/"
 
 log_dir = "./logs/"
 dumps_dir = "./dumps/"

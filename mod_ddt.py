@@ -3,7 +3,6 @@
 import sys, os, ast, time, pickle, copy, string, zipfile
 from shutil import copyfile
 from datetime import datetime
-from kivy import base
 from kivy.app import App
 from kivy.base import EventLoop
 from kivy.clock import Clock
@@ -733,7 +732,7 @@ class DDTLauncher(App):
                                 else:
                                     self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
                         else:
-                            self.oLabels[key+v['request']].text = val
+                            self.oLabels[(key+v['request']).replace('DataRead', 'DataWrite')].text = val
                         self.iValueNeedUpdate[key] = False
                 elif len([I for I in self.oLabels.keys() if I.startswith(key)]):
                     if self.iValueNeedUpdate[key]:
@@ -1457,7 +1456,6 @@ class DDTLauncher(App):
             mod_globals.savedCAR = 'savedCAR_'+self.v_proj+'.csv'
             self.SaveBtnClick(self.v_proj, None)
         popup_scan.dismiss()
-        base.stopTouchApp()
         EventLoop.window.canvas.clear()
         mod_globals.opt_scan = False
 
