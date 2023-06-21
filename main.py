@@ -52,7 +52,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.12.44'
+__version__ = '0.12.45'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -142,6 +142,7 @@ if mod_globals.os == 'android':
         mod_globals.cache_dir = user_datadir + '/cache/'
         mod_globals.log_dir = user_datadir + '/logs/'
         mod_globals.dumps_dir = user_datadir + '/dumps/'
+        mod_globals.crash_dir = user_datadir + '/crashs/'
 
         AndroidActivityInfo = autoclass('android.content.pm.ActivityInfo')
         Params = autoclass('android.view.WindowManager$LayoutParams')
@@ -185,13 +186,11 @@ def my_excepthook(excType, excValue, tb):
         string += m
     error = TextInput(text=str(string))
     if mod_globals.os == 'android':
-        with open(os.path.join(mod_globals.log_dir, 'crash_'+str(time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime()))+'.txt'), 'w') as fout:
+        with open(os.path.join(mod_globals.crash_dir, 'crash_'+str(time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime()))+'.txt'), 'w') as fout:
             fout.write(str(string))
-
     popup = Popup(title='Crash', content=error, size=(Window.size[0]*0.9, Window.size[1]*0.9), size_hint=(None, None), auto_dismiss=True, on_dismiss=exit)
-    popup.open()
+    popup.open()    
     base.runTouchApp()
-    
     exit(2)
 
 sys.excepthook = my_excepthook
@@ -452,7 +451,6 @@ class PYDDT(App):
         if mod_globals.opt_car != LANG.b_select or (mod_globals.savedCAR != LANG.b_select and not mod_globals.opt_scan):
             try:
                 self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
-                #self.stop()
             except:
                 labelText = '''
                     Could not connect to the ELM.
@@ -469,9 +467,9 @@ class PYDDT(App):
                 lbltxt = Label(text=labelText, font_size=mod_globals.fontSize)
                 popup_load = Popup(title='ELM connection error', title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.9, Window.size[1]*0.9), auto_dismiss=True, on_dismiss=exit)
                 popup_load.open()
-                base.runTouchApp()
                 exit(2)
                 return
+
     def find_in_car(self, ins):
         glay = GridLayout(cols=1, size_hint=(1, 1))
         self.find = TextInput(text='', size_hint=(1, None), font_size=fs*1.5, multiline=False, height=(fs * 3), padding=[fs/2, fs/2])
@@ -641,6 +639,7 @@ class MyButton(Button):
             if fs > 20: 
                 lines = lines * 1.05
             self.height = fmn * lines * fs * simb
+
 def destroy():
     exit()
 
@@ -652,7 +651,6 @@ def kivyScreenConfig():
             set_orientation_portrait()
         else:
             set_orientation_landscape()
-        
     while 1:
         config = PYDDT()
         config.run()
@@ -664,13 +662,14 @@ def main():
     try:
         if not os.path.exists(mod_globals.cache_dir):
             os.makedirs(mod_globals.cache_dir)
+        if not os.path.exists(mod_globals.crash_dir):
+            os.makedirs(mod_globals.crash_dir)
         if not os.path.exists(mod_globals.log_dir):
             os.makedirs(mod_globals.log_dir)
         if not os.path.exists(mod_globals.dumps_dir):
             os.makedirs(mod_globals.dumps_dir)
     except:
         print('Dir creation error!')
-
     kivyScreenConfig()
 
 class MyGridLayout(GridLayout):
