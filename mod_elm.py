@@ -938,6 +938,9 @@ class ELM:
         self.startSession = start_session_cmd
         if len(self.startSession) > 0:
             self.lastinitrsp = self.cmd(self.startSession)
+            if self.lastinitrsp.startswith('50'):
+                return True
+            return False
 
     def start_session_can(self, start_session):
         self.startSession = start_session

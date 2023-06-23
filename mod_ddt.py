@@ -91,7 +91,7 @@ class DDTLauncher(App):
         self.label = {}
         self.dict_trans = {}
         self.dict_t = {}
-        
+        self.currentsession = ''
         self.v_addr = ''
         self.Roll_back = ''
         self.v_vin = ''
@@ -1319,6 +1319,20 @@ class DDTLauncher(App):
     def dialogClearDTC(self):
         self.ButtonConfirmation(LANG.l_cont12, 'clearDTC')
 
+    def startDiagnosticSession(self, sds=""):
+        if sds == "":
+            sds = '10C0'
+        if self.currentsession == sds:
+            return
+        if self.protocol.startswith('CAN'):
+            if not mod_globals.opt_demo:
+                self.elm.start_session_can(sds)
+            self.currentsession = sds
+        elif self.protocol.startswith('KWP'):
+            if not mod_globals.opt_demo:
+                self.elm.start_session(sds)
+            self.currentsession = sds
+
     def clearDTC(self):
         self.popup_confirm.dismiss()
         self.Layout.clear_widgets()
@@ -1332,7 +1346,7 @@ class DDTLauncher(App):
         else:
             self.Layout.add_widget(MyLabel(text=LANG.l_text6, bgcolor=(0,0.5,0,1)))
             requests = "14FF00"
-        self.setEcuAddress(self.getSelectedECU(self.xml))
+        self.startDiagnosticSession()
         response = self.elm.request(requests)
         if 'WRONG' in response:
             self.Layout.add_widget(MyLabel(text=LANG.l_text7, bgcolor=(0,0.5,0,1)))
