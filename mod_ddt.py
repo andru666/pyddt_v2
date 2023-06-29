@@ -2065,8 +2065,8 @@ class DDTLauncher(App):
             progressValue = progressValue + 1
             sys.stdout.flush()
             if request.SentBytes[:2] in AllowedList + ['17', '19']:
-                '''if request.SentBytes[:2] == '19' and request.SentBytes[:2] != '1902':
-                    continue'''
+                if request.SentBytes[:2] == '19' and request.SentBytes[:2] != '1902':
+                    continue
                 pos = chr(ord(request.SentBytes[0]) + 4) + request.SentBytes[1]
                 rsp = decu.elm.request(request.SentBytes, pos, False)
                 if ':' in rsp: continue
