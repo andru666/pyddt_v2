@@ -69,7 +69,7 @@ class DDTLauncher(App):
         self.elm = elm
         self.Protocol = Protocol
         self.scf = 5.0
-        
+        if mod_globals.os != 'android': self.scf = 10.0
         self.clock_event = None
         self.roll_back = False
         self.translate = True
@@ -866,8 +866,8 @@ class DDTLauncher(App):
         else:
             src = (scr_h*1.0 / scr_w)
         while src > self.scf/2: src = src / 1.1
-        while src < self.scf/2: src = src * 1.1
-        
+        if mod_globals.os == 'android':
+            while src < self.scf/2: src = src * 1.1
         labels = ecu_labels(self.LValue, scr)
         dispalys = ecu_dispalys(self.DValue, scr, self.decu)
         buttons = ecu_buttons(self.BValue, self.dBtnSend, scr)
@@ -2065,8 +2065,8 @@ class DDTLauncher(App):
             progressValue = progressValue + 1
             sys.stdout.flush()
             if request.SentBytes[:2] in AllowedList + ['17', '19']:
-                if request.SentBytes[:2] == '19' and request.SentBytes[:2] != '1902':
-                    continue
+                '''if request.SentBytes[:2] == '19' and request.SentBytes[:2] != '1902':
+                    continue'''
                 pos = chr(ord(request.SentBytes[0]) + 4) + request.SentBytes[1]
                 rsp = decu.elm.request(request.SentBytes, pos, False)
                 if ':' in rsp: continue

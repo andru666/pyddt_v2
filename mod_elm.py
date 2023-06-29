@@ -144,7 +144,7 @@ class Port:
                 rcv_bytes = self.hdr.sendall(data)
             return rcv_bytes
         elif self.portType == 2:
-            self.send_stream.write(data.decode("utf-8"))
+            self.send_stream.write(data)
             self.send_stream.flush()
             return len(data)
         return self.hdr.write(data)
