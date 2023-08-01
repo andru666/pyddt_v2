@@ -4,7 +4,7 @@ import sys, os, ast, time, pickle, copy, string, zipfile
 from shutil import copyfile
 from datetime import datetime
 from kivy.app import App
-from kivy.base import EventLoop
+from kivy.base import EventLoop, ExceptionManager
 from kivy.clock import Clock
 from kivy.graphics import Color, Rectangle, Line
 from kivy.uix.boxlayout import BoxLayout
@@ -631,7 +631,9 @@ class DDTLauncher(App):
         self.decu.elm.clear_cache()
         self.elm.clear_cache()
         try:
+            EventLoop.idle()
             params = self.get_ecu_values()
+            EventLoop.idle()
         except:
             return
         for key, v in params.items():
@@ -754,13 +756,13 @@ class DDTLauncher(App):
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
 
     def get_ecu_values(self):
-        EventLoop.idle()
-        EventLoop.window.mainloop()
         dct = {}
         if len(self.dValue):
             for d in self.dValue.keys():
                 if self.dValue[d]['request'] not in self.REQ: continue
+                EventLoop.idle()
                 EventLoop.window.mainloop()
+                EventLoop.idle()
                 val = get_value(self.dValue[d], self.decu, self.elm)
                 if ':' in val['value']:
                     val['value'] = val['value'].split(':')[1]
