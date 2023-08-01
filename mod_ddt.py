@@ -631,12 +631,10 @@ class DDTLauncher(App):
         self.decu.elm.clear_cache()
         self.elm.clear_cache()
         try:
-            EventLoop.idle()
             params = self.get_ecu_values()
         except:
             return
         for key, v in params.items():
-            EventLoop.idle()
             listIndex = None
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
@@ -761,7 +759,6 @@ class DDTLauncher(App):
             for d in self.dValue.keys():
                 if self.dValue[d]['request'] not in self.REQ: continue
                 EventLoop.window.mainloop()
-                EventLoop.idle()
                 val = get_value(self.dValue[d], self.decu, self.elm)
                 if ':' in val['value']:
                     val['value'] = val['value'].split(':')[1]
