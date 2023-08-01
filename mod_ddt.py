@@ -68,7 +68,7 @@ class DDTLauncher(App):
         self.filterText = opt_car
         self.elm = elm
         self.Protocol = Protocol
-        self.scf = 5.0
+        self.scf = 10.0
         if mod_globals.os != 'android': self.scf = 10.0
         self.clock_event = None
         self.roll_back = False
