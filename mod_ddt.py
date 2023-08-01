@@ -68,7 +68,7 @@ class DDTLauncher(App):
         self.filterText = opt_car
         self.elm = elm
         self.Protocol = Protocol
-        self.scf = 10.0
+        self.scf = 5.0
         if mod_globals.os != 'android': self.scf = 10.0
         self.clock_event = None
         self.roll_back = False
@@ -754,6 +754,8 @@ class DDTLauncher(App):
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
 
     def get_ecu_values(self):
+        EventLoop.idle()
+        EventLoop.window.mainloop()
         dct = {}
         if len(self.dValue):
             for d in self.dValue.keys():
