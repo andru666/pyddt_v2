@@ -755,6 +755,7 @@ class DDTLauncher(App):
 
     def get_ecu_values(self):
         dct = {}
+        EventLoop.idle()
         if len(self.dValue):
             for d in self.dValue.keys():
                 #EventLoop.idle()
