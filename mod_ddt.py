@@ -632,8 +632,6 @@ class DDTLauncher(App):
         self.elm.clear_cache()
         try:
             params = self.get_ecu_values()
-            EventLoop.idle()
-            EventLoop.window.mainloop()
         except:
             return
         for key, v in params.items():
@@ -758,6 +756,9 @@ class DDTLauncher(App):
     def get_ecu_values(self):
         dct = {}
         if len(self.dValue):
+            
+            EventLoop.idle()
+            EventLoop.window.mainloop()
             for d in self.dValue.keys():
                 if self.dValue[d]['request'] not in self.REQ: continue
                 
