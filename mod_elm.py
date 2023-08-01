@@ -349,7 +349,8 @@ class ELM:
         self.ATCFC0 = mod_globals.opt_cfc0
 
     def __del__(self):
-        if not mod_globals.opt_demo:
+        if not mod_globals.opt_demo and not isinstance(self.port, int):
+            print(self.port)
             self.port.write('atz\r')
             #self.port.atKeepAlive = 0
 

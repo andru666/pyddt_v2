@@ -631,7 +631,6 @@ class DDTLauncher(App):
         self.decu.elm.clear_cache()
         self.elm.clear_cache()
         try:
-            base.runTouchApp(embedded=True)
             EventLoop.idle()
             params = self.get_ecu_values()
         except:
@@ -753,7 +752,6 @@ class DDTLauncher(App):
                         self.Labels[key].text = self.dict_t[val]
                     else:
                         self.Labels[key].text = val
-        base.stopTouchApp()
         if self.start:
             self.clock_event = Clock.schedule_once(self.update_values, 0.02)
 
