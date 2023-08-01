@@ -68,7 +68,7 @@ class DDTLauncher(App):
         self.filterText = opt_car
         self.elm = elm
         self.Protocol = Protocol
-        self.scf = 10.0
+        self.scf = 5.0
         if mod_globals.os != 'android': self.scf = 10.0
         self.clock_event = None
         self.roll_back = False
@@ -758,7 +758,7 @@ class DDTLauncher(App):
         if len(self.dValue):
             for d in self.dValue.keys():
                 if self.dValue[d]['request'] not in self.REQ: continue
-                EventLoop.window.mainloop()
+                EventLoop.window.mainloop(EventLoop.window)
                 val = get_value(self.dValue[d], self.decu, self.elm)
                 if ':' in val['value']:
                     val['value'] = val['value'].split(':')[1]
