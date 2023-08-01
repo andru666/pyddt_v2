@@ -756,10 +756,10 @@ class DDTLauncher(App):
     def get_ecu_values(self):
         dct = {}
         if len(self.dValue):
-            
             EventLoop.idle()
             EventLoop.window.mainloop()
             for d in self.dValue.keys():
+                EventLoop.idle()
                 if self.dValue[d]['request'] not in self.REQ: continue
                 
                 val = get_value(self.dValue[d], self.decu, self.elm)
