@@ -863,12 +863,10 @@ class DDTLauncher(App):
         self.Layout.add_widget(box1)
         self.startStopButton.bind(on_release=lambda args:self.startStop())
         if scr_w > scr_h:
-            src = (scr_w*1.0 / scr_h)
+            src = (scr_w*0.5 / scr_h)
         else:
-            src = (scr_h*1.0 / scr_w)
-        while src > self.scf/2: src = src / 1.1
-        if mod_globals.os == 'android':
-            while src < self.scf/2: src = src * 1.1
+            src = (scr_h*0.5 / scr_w)
+        if src < 1.5: src = 1.5
         labels = ecu_labels(self.LValue, scr)
         dispalys = ecu_dispalys(self.DValue, scr, self.decu)
         buttons = ecu_buttons(self.BValue, self.dBtnSend, scr)
