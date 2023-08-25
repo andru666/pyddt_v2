@@ -12,7 +12,7 @@ class ecu_dispalys:
                     xText = dispaly.attrib["DataName"]
                 else:
                     if len(decu.requests[xReq].ReceivedDI) == 1:
-                        xText = decu.requests[xReq].ReceivedDI.keys()[0]
+                        xText = list(decu.requests[xReq].ReceivedDI.keys ())[0]
                     else:
                         xText = xReq
                 if "Color" in dispaly.attrib.keys():

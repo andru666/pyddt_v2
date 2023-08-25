@@ -42,8 +42,9 @@ def file_in_ddt( pattern ):
     li = list(filter(regex.search, file_list))
     return len(li)
 
-def get_file_content(filename):
-    zf = get_zip()
+def get_file_content(filename, zf=None):
+    if not zf:
+        zf = get_zip()
     return zf.read(filename)
 
 def path_in_ddt( pattern ):

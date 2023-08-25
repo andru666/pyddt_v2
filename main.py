@@ -16,16 +16,17 @@ if platform != 'android':
     Window.size = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
     if Window.size[1] > Window.size[0]:
         fs = Window.size[1]*8.0/Window.size[0]
-        Window.size = Window.size[0]*0.6, Window.size[0]*0.9
+        Window.size = Window.size[0]*0.8, Window.size[0]*0.9
     else:
         fs = Window.size[0]*8.0/Window.size[1]
-        Window.size = Window.size[1]*0.6, Window.size[1]*0.9
+        Window.size = Window.size[1]*0.8, Window.size[1]*0.9
 else:
     from kivy.core.window import Window
     if Window.size[1] > Window.size[0]:
         fs = Window.size[1]*8.0/Window.size[0]
     else:
         fs = Window.size[0]*8.0/Window.size[1]
+        
 from mod_db_manager import get_zip
 from mod_elm import ELM
 import mod_globals, mod_ddt_utils, mod_ddt
@@ -50,7 +51,8 @@ import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
-__version__ = '0.12.16'
+
+__version__ = '0.12.58'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -140,6 +142,7 @@ if mod_globals.os == 'android':
         mod_globals.cache_dir = user_datadir + '/cache/'
         mod_globals.log_dir = user_datadir + '/logs/'
         mod_globals.dumps_dir = user_datadir + '/dumps/'
+        mod_globals.crash_dir = user_datadir + '/crashs/'
 
         AndroidActivityInfo = autoclass('android.content.pm.ActivityInfo')
         Params = autoclass('android.view.WindowManager$LayoutParams')
@@ -183,13 +186,11 @@ def my_excepthook(excType, excValue, tb):
         string += m
     error = TextInput(text=str(string))
     if mod_globals.os == 'android':
-        with open(os.path.join(mod_globals.log_dir, 'crash_'+str(time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime()))+'.txt'), 'w') as fout:
+        with open(os.path.join(mod_globals.crash_dir, 'crash_'+str(time.strftime("%Y-%m-%d-%H.%M.%S", time.localtime()))+'.txt'), 'w') as fout:
             fout.write(str(string))
-
     popup = Popup(title='Crash', content=error, size=(Window.size[0]*0.9, Window.size[1]*0.9), size_hint=(None, None), auto_dismiss=True, on_dismiss=exit)
-    popup.open()
+    popup.open()    
     base.runTouchApp()
-    
     exit(2)
 
 sys.excepthook = my_excepthook
@@ -264,13 +265,15 @@ class PYDDT(App):
             import lang_ru as LANG
         elif mod_globals.opt_lang == 'en':
             import lang_en as LANG
+        elif mod_globals.opt_lang == 'sk':
+            import lang_sk as LANG
         else:
             import lang_fr as LANG
         get_zip()
         Fl = FloatLayout()
         layout = GridLayout(cols=1, padding=5, spacing=10, size_hint=(1, None))
         layout.bind(minimum_height=layout.setter('height'))
-        title = MyLabel(text='PyDDT', font_size=(fs*3), size_hint=(1, None))
+        title = MyLabel(text='PyDDT ' + __version__ , font_size=(fs*3), size_hint=(1, None))
         layout.add_widget(title)
         try:
             self.archive = str(mod_globals.db_archive_file).rpartition('/')[2]
@@ -297,13 +300,42 @@ class PYDDT(App):
         layout.add_widget(self.make_input_toggle(LANG.b_log, mod_globals.opt_log, 'down' if len(mod_globals.opt_log) > 0 else  'normal'))
         layout.add_widget(self.make_input(LANG.l_font_size, str(mod_globals.fontSize)))
         layout.add_widget(self.make_box_switch(LANG.l_dump, mod_globals.opt_dump))
+        layout.add_widget(self.orientation())
         layout.add_widget(self.make_box_switch('CAN2', mod_globals.opt_can2))
         layout.add_widget(self.lang_app())
         root = ScrollView(size_hint=(1, 1))
         root.add_widget(layout)
         Fl.add_widget(root)
-        Fl.add_widget(MyLabel(text='Version : ' + __version__ , size_hint =(.3, None), pos=(0, Window.size[1]-title.height/2), font_size=(fs*0.8), height=fs*1.4, multiline=True))
+        #Fl.add_widget(MyLabel(text='Version : ' + __version__ , size_hint =(.3, None), pos=(0, Window.size[1]-title.height/2), font_size=(fs*0.8), height=fs*1.4, multiline=True))
         return Fl
+
+    def orientation(self):
+        glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
+        label = MyLabel(text=LANG.l_text10, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
+        self.button_orient = MyButton(text='', font_size=fs, on_press=self.change_orientation)
+        if not mod_globals.screen_orient:
+            self.button_orient.text = LANG.b_landscape
+        else:
+            self.button_orient.text = LANG.b_portrait
+        glay.add_widget(label)
+        glay.add_widget(self.button_orient)
+        return glay
+
+    def change_orientation(self, inst):
+        if mod_globals.os == 'android':
+            if not mod_globals.screen_orient:
+                self.button_orient.text = 'landscape'
+                set_orientation_landscape()
+                mod_globals.screen_orient = True
+            else:
+                self.button_orient.text = 'portrait'
+                set_orientation_portrait()
+                mod_globals.screen_orient = False
+        self.settings.save()
+        try:
+            self.stop()
+        except:
+            pass
 
     def scanALLecus(self, instance):
         mod_globals.opt_scan = True
@@ -312,17 +344,23 @@ class PYDDT(App):
         label = Label(text=LANG.l_n_car1, font_size=fs*3, size_hint=(1, 1), halign = 'center', valign = 'middle', text_size=(Window.size[0]*0.7, Window.size[1]*0.7))
         popup = Popup(title=LANG.error, title_size=fs*1.5, title_align='center', content=label, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
         if mod_globals.opt_car != LANG.b_select:
-            lbltxt = Label(text=LANG.l_scan, font_size=fs)
-            popup_init = Popup(title=LANG.l_load, title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
-            popup_init.open()
-            base.EventLoop.idle()
-            popup_init.dismiss()
             base.EventLoop.window.canvas.clear()
-            mod_ddt.DDT_START(mod_globals.opt_car, self.elm)
+            Layout = GridLayout(cols=1, size_hint=(1, 1))
+            Layout.add_widget(MyButton(text='KWP', size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['KWP'])))
+            Layout.add_widget(MyButton(text='CAN-250', size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['CAN-250'])))
+            Layout.add_widget(MyButton(text='CAN-500', size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['CAN-500'])))
+            Layout.add_widget(MyButton(text='KWP + CAN-250', size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['KWP','CAN-250'])))
+            Layout.add_widget(MyButton(text=LANG.b_all_prot, size_hint=(1, 1), on_release=lambda bt:self.start_ddt(['KWP','CAN-250','CAN-500'])))
+            self.popup_init = Popup(title=LANG.l_title8, title_size=fs*1.5, title_align='center', content=Layout, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
+            self.popup_init.open()
             base.EventLoop.idle()
         else:
             popup.open()
             return
+    
+    def start_ddt(self, p):
+        self.popup_init.dismiss()
+        mod_ddt.DDT_START(mod_globals.opt_car, self.elm, p)
     
     def OpenEcu(self, instance):
         if instance.id == 'demo': 
@@ -385,7 +423,7 @@ class PYDDT(App):
         mod_globals.opt_dump = self.button[LANG.l_dump].active
         mod_globals.opt_can2 = self.button['CAN2'].active
         #mod_globals.savedCAR = 'savedCAR_x95.csv'
-        #mod_globals.savedCAR = 'savedCAR_XTAGFL110LY351920VESTA.csv'
+        #mod_globals.savedCAR = 'savedCAR_test.csv'
         if self.button[LANG.b_log].state == 'down':
             mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
         else:
@@ -413,7 +451,6 @@ class PYDDT(App):
         if mod_globals.opt_car != LANG.b_select or (mod_globals.savedCAR != LANG.b_select and not mod_globals.opt_scan):
             try:
                 self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
-                #self.stop()
             except:
                 labelText = '''
                     Could not connect to the ELM.
@@ -430,9 +467,9 @@ class PYDDT(App):
                 lbltxt = Label(text=labelText, font_size=mod_globals.fontSize)
                 popup_load = Popup(title='ELM connection error', title_size=fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.9, Window.size[1]*0.9), auto_dismiss=True, on_dismiss=exit)
                 popup_load.open()
-                base.runTouchApp()
                 exit(2)
                 return
+
     def find_in_car(self, ins):
         glay = GridLayout(cols=1, size_hint=(1, 1))
         self.find = TextInput(text='', size_hint=(1, None), font_size=fs*1.5, multiline=False, height=(fs * 3), padding=[fs/2, fs/2])
@@ -536,7 +573,7 @@ class PYDDT(App):
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         label = MyLabel(text=LANG.l_lang, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
         self.bt_lang = DropDown(height=(fs * 2))
-        lang = {'English':'en','France':'fr','Русский':'ru',}
+        lang = {'English':'en','France':'fr','Русский':'ru','Slovenský':'sk'}
         for v, k in lang.items():
             but = MyButton(text=v, id=k, font_size=fs*2)
             but.bind(on_release=self.select_lang)
@@ -602,12 +639,18 @@ class MyButton(Button):
             if fs > 20: 
                 lines = lines * 1.05
             self.height = fmn * lines * fs * simb
+
 def destroy():
     exit()
 
 def kivyScreenConfig():
     global resizeFont
     Window.bind(on_close=destroy)
+    if mod_globals.os == 'android':
+        if not mod_globals.screen_orient:
+            set_orientation_portrait()
+        else:
+            set_orientation_landscape()
     while 1:
         config = PYDDT()
         config.run()
@@ -619,13 +662,14 @@ def main():
     try:
         if not os.path.exists(mod_globals.cache_dir):
             os.makedirs(mod_globals.cache_dir)
+        if not os.path.exists(mod_globals.crash_dir):
+            os.makedirs(mod_globals.crash_dir)
         if not os.path.exists(mod_globals.log_dir):
             os.makedirs(mod_globals.log_dir)
         if not os.path.exists(mod_globals.dumps_dir):
             os.makedirs(mod_globals.dumps_dir)
     except:
         print('Dir creation error!')
-
     kivyScreenConfig()
 
 class MyGridLayout(GridLayout):

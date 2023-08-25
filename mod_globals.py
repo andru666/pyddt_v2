@@ -26,7 +26,7 @@ opt_verbose = False
 opt_cmd = True
 opt_ddt = False
 opt_si = False
-opt_cfc0 = False
+opt_cfc0 = True
 opt_n1c = False
 opt_dev = False
 opt_devses = '1086'
@@ -49,6 +49,7 @@ ddt_arc = ""
 ddtroot = ".."
 db_archive_file = None
 cache_dir = "./cache/"
+crash_dir = "./crashs/"
 
 log_dir = "./logs/"
 dumps_dir = "./dumps/"

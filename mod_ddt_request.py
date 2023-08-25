@@ -67,7 +67,7 @@ class decu_request:
             ''' % (self.Name, self.DossierMaintenabilite, self.ManuelSend, self.DenyAccess, self.SentBytes, sd, self.VariableLength, rd, self.MinBytes, self.ShiftBytesCount, self.ReplyBytes)
         return pyren_encode(out)    
     
-    def __init__(self, rq, defaultEndian ):
+    def __init__(self, rq, defaultEndian, data_dtc):
         ns = {'ns0': 'http://www-diag.renault.com/2002/ECU',
                     'ns1': 'http://www-diag.renault.com/2002/screens'}
         self.Name = rq.attrib["Name"]
@@ -95,6 +95,12 @@ class decu_request:
             self.SentBytes = ''
             SentBytes = Sent[0].findall("ns0:SentBytes",ns)
             if len(SentBytes): self.SentBytes = SentBytes[0].text
+            if self.SentBytes == '1200040000':
+                if self.Name in data_dtc:
+                    self.SentBytes = '120004' + data_dtc[self.Name]
+                elif '0' in data_dtc:
+                    self.SentBytes = '120004' + data_dtc['0']
+                
             self.VariableLength = False
             VariableLength = Sent[0].findall("ns0:VariableLength",ns)
             if len(VariableLength): self.VariableLength=True
@@ -176,6 +182,19 @@ class decu_request:
 class decu_requests:
     def __init__(self, requiest_list, xdoc):
         ns = {'ns0': 'http://www-diag.renault.com/2002/ECU', 'ns1': 'http://www-diag.renault.com/2002/screens'}
+        data_dtc = {}
+        devices = xdoc.findall('ns0:Target/ns0:Devices', ns)
+        if devices:
+            for device in devices[0]:
+                if 'DTC' in device.attrib:
+                    if 'FreezeFrame' in device.attrib:
+                        FreezeFrame = device.attrib['FreezeFrame']
+                        if FreezeFrame == 'Read Freeze Frame':
+                            data_dtc[device.attrib['Name']] = hex(int(device.attrib['DTC'])).replace("0x", "").upper()
+                        else:
+                            data_dtc[FreezeFrame] = hex(int(device.attrib['DTC'])).replace("0x", "").upper()
+                    elif '0' not in data_dtc.keys():
+                        data_dtc['0'] = hex(int(device.attrib['DTC'])).replace("0x", "").upper()
         tmpdoc = xdoc.findall('ns0:Target/ns0:Requests', ns)
         defaultEndian = ''
         if tmpdoc and ('Endian' in tmpdoc[0].attrib.keys()):
@@ -185,5 +204,5 @@ class decu_requests:
         requests = tmpdoc[0].findall("ns0:Request", ns)
         if requests:
             for rq in requests:
-                request = decu_request( rq, defaultEndian )
+                request = decu_request(rq, defaultEndian, data_dtc)
                 requiest_list[request.Name] = request

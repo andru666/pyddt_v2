@@ -85,9 +85,9 @@ class Port:
         else:
             self.portName = portName
             self.portType = 0
-            if True:
+            try:
                 self.hdr = serial.Serial(self.portName, baudrate=speed, timeout=portTimeout)
-            else:
+            except:
                 iterator = sorted(list(list_ports.comports()))
                 exit(2)
 
@@ -115,11 +115,11 @@ class Port:
 
     def read(self):
         byte = ''
-        if True:
+        try:
             if self.portType == 1:
-                if True:
+                try:
                     byte = self.hdr.recv(1)
-                else:
+                except:
                     pass
 
             elif self.portType == 2:
@@ -127,7 +127,7 @@ class Port:
                     byte = chr(self.recv_stream.read())
             elif self.hdr.inWaiting():
                 byte = self.hdr.read()
-        else:
+        except:
             exit(2)
         if type(byte) == str:
             byte = byte.encode()
@@ -137,9 +137,9 @@ class Port:
         if type(data) == str:
             data = data.encode()
         if self.portType == 1:
-            if True:
+            try:
                 rcv_bytes = self.hdr.sendall(data)
-            else:
+            except:
                 self.reinit()
                 rcv_bytes = self.hdr.sendall(data)
             return rcv_bytes
@@ -149,12 +149,12 @@ class Port:
             return len(data)
         return self.hdr.write(data)
         
-        if True:
+        try:
             if self.portType == 1:
                 rcv_bytes = self.hdr.sendall(data)
-                if True:
+                try:
                     rcv_bytes = self.hdr.sendall(data)
-                else:
+                except:
                     self.reinit()
                     rcv_bytes = self.hdr.sendall(data)
                 return rcv_bytes
@@ -163,13 +163,13 @@ class Port:
                 self.send_stream.flush()
                 return len(data)
             return self.hdr.write(data)
-        else:
+        except:
             exit(2)
 
     def expect(self, pattern, time_out = 1):
         tb = time.time()
         self.buff = ''
-        if True:
+        try:
             while True:
                 if not mod_globals.opt_demo:
                     byte = self.read()
@@ -184,7 +184,7 @@ class Port:
                 if (tc - tb) > time_out:
                     return self.buff + 'TIMEOUT'
 
-        else:
+        except:
             pass
 
         return ''
@@ -349,7 +349,8 @@ class ELM:
         self.ATCFC0 = mod_globals.opt_cfc0
 
     def __del__(self):
-        if not mod_globals.opt_demo:
+        if not mod_globals.opt_demo and not isinstance(self.port, int):
+            print(self.port)
             self.port.write('atz\r')
             #self.port.atKeepAlive = 0
 
@@ -785,6 +786,7 @@ class ELM:
                 frsp = self.send_raw(raw_command[Fc] + '1')
             else:
                 frsp = self.send_raw(raw_command[Fc])
+            
             Fc = Fc + 1
             s0 = []
             for s in frsp.upper().split('\n'):
@@ -937,6 +939,9 @@ class ELM:
         self.startSession = start_session_cmd
         if len(self.startSession) > 0:
             self.lastinitrsp = self.cmd(self.startSession)
+            if self.lastinitrsp.startswith('50'):
+                return True
+            return False
 
     def start_session_can(self, start_session):
         self.startSession = start_session
@@ -1062,12 +1067,12 @@ class ELM:
                 self.lf.write('#' * 60 + '\n#    Double BRP, try CAN250 and then CAN500\n' + '#' * 60 + '\n')
                 self.lf.flush()
             self.set_can_250(TXa)
-            tmprsp = self.send_raw('0210C0')
+            """tmprsp = self.send_raw('0210C0')
             if 'CAN ERROR' in tmprsp:
                 ecu['brp'] = '0'
                 self.set_can_500(TXa)
             else:
-                ecu['brp'] = '1'
+                ecu['brp'] = '1'"""
         elif 'brp' in ecu.keys() and '1' in ecu['brp']:
             self.set_can_250(TXa)
         else:
