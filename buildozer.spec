@@ -93,8 +93,7 @@ fullscreen = 1
 #icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
 
 # (list) Permissions
-android.permissions = INTERNET,BLUETOOTH,BLUETOOTH_ADMIN,MANAGE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,BLUETOOTH_CONNECTION,BLUETOOTH_CONNECT,BLUETOOTH_SCAN,REQUEST_INSTALL_PACKAGES
-#READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
+android.permissions = INTERNET,BLUETOOTH,BLUETOOTH_ADMIN,MANAGE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,BLUETOOTH_CONNECTION,BLUETOOTH_CONNECT,BLUETOOTH_SCAN,REQUEST_INSTALL_PACKAGES,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host
 
@@ -277,7 +276,7 @@ android.wakelock = True
 
 # (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
 # In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
-android.archs = armeabi-v7a,x86,arm64-v8a
+android.archs = armeabi-v7a, arm64-v8a, x86, x86_64
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing
