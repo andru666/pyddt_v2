@@ -757,7 +757,6 @@ class DDTLauncher(App):
         dct = {}
         if len(self.dValue):
             for d in self.dValue.keys():
-                EventLoop.idle()
                 EventLoop.window.mainloop()
                 if self.dValue[d]['request'] not in self.REQ: continue
                 val = get_value(self.dValue[d], self.decu, self.elm)
