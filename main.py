@@ -52,7 +52,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.12.59'
+__version__ = '0.13.00'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -428,7 +428,7 @@ class PYDDT(App):
             mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
         else:
             mod_globals.opt_log = ''
-        if 'com1' in self.mainbutton.text.lower() or 'com6' in self.mainbutton.text.lower():
+        if 'com1' in self.mainbutton.text.lower() or 'com7' in self.mainbutton.text.lower():
             mod_globals.opt_port = '127.0.0.1:35000'
         elif 'wifi' in self.mainbutton.text.lower():
             mod_globals.opt_port = '192.168.0.10:35000'

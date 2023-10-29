@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys, os, ast, time, pickle, copy, string, zipfile
+import sys, os, ast, time, pickle, copy, string, zipfile, threading
 from shutil import copyfile
 from datetime import datetime
 from kivy.app import App
@@ -622,10 +622,10 @@ class DDTLauncher(App):
             self.startStopButton.text = LANG.b_start
             self.clock_event = ''
         else:
-            self.start = True
+            if not mod_globals.opt_demo: self.start = True
             self.startStopButton.text = LANG.b_stop
 
-    def update_values(self, dt):
+    def updates_values(self):
         if not self.start:
             return
         self.decu.elm.clear_cache()
@@ -751,7 +751,7 @@ class DDTLauncher(App):
                     else:
                         self.Labels[key].text = val
         if self.start:
-            self.clock_event = Clock.schedule_once(self.update_values, 0.02)
+            threading.Thread(target=self.updates_values).start()
 
     def get_ecu_values(self):
         dct = {}
@@ -807,7 +807,7 @@ class DDTLauncher(App):
     
     def loadScreen(self, scr, data):
         self.Layout.clear_widgets()
-        self.start = True
+        if not mod_globals.opt_demo: self.start = True
         self.startStopButton = MyButton(text='', size_hint=(1, 1))
         if self.start:
             self.startStopButton.text = LANG.b_stop
@@ -1055,11 +1055,11 @@ class DDTLauncher(App):
         
         self.update_dInputs()
         if self.start:
-            self.clock_event = Clock.schedule_once(self.update_values, 0.02)
+            threading.Thread(target=self.updates_values).start()
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
-        self.start = True
+        if not mod_globals.opt_demo: self.start = True
         self.Layout.clear_widgets()
         read_cmd = self.decu.requests[rq].SentBytes
         if read_cmd[:2]=='21':
@@ -1163,7 +1163,7 @@ class DDTLauncher(App):
             self.startScreen(self.dReq)
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(self.xml, self.screens)))
         if self.start:
-            self.clock_event = Clock.schedule_once(self.update_values, 0.02)
+            threading.Thread(target=self.updates_values).start()
 
     def readDTC(self):
         if "ReadDTCInformation.ReportDTC" in self.decu.requests.keys():
@@ -1547,10 +1547,11 @@ class DDTLauncher(App):
     def no(self, instance):
         try:
             self.popup_confirm.dismiss()
+            self.start = False
+            return
         except:
             pass
-        self.start = True
-        self.start = Clock.schedule_once(self.update_values, 0.02)
+        if not mod_globals.opt_demo:self.start = True
         return False
 
     def yes(self, slist):
@@ -1573,7 +1574,7 @@ class DDTLauncher(App):
         root = ScrollView(size_hint=(1, 0.85))
         root.add_widget(layout)
         self.MyPopup(content_box=root)
-        self.start = Clock.schedule_once(self.update_values, 0.02)
+        if not mod_globals.opt_demo: self.start = True
         try:
             self.update_dInputs()
         except:
