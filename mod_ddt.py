@@ -54,6 +54,10 @@ class DDTLauncher(App):
         
         if mod_globals.opt_lang == 'ru':
             import lang_ru as LANG
+        elif mod_globals.opt_lang == 'sp':
+            import lang_sp as LANG
+        elif mod_globals.opt_lang == 'tr':
+            import lang_tr as LANG
         elif mod_globals.opt_lang == 'en':
             import lang_en as LANG
         elif mod_globals.opt_lang == 'sk':

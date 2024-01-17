@@ -52,7 +52,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.00'
+__version__ = '0.13.01'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -263,6 +263,10 @@ class PYDDT(App):
         self.settings = mod_globals.Settings()
         if mod_globals.opt_lang == 'ru':
             import lang_ru as LANG
+        elif mod_globals.opt_lang == 'sp':
+            import lang_sp as LANG
+        elif mod_globals.opt_lang == 'tr':
+            import lang_tr as LANG
         elif mod_globals.opt_lang == 'en':
             import lang_en as LANG
         elif mod_globals.opt_lang == 'sk':
@@ -474,8 +478,8 @@ class PYDDT(App):
         glay = GridLayout(cols=1, size_hint=(1, 1))
         self.find = TextInput(text='', size_hint=(1, None), font_size=fs*1.5, multiline=False, height=(fs * 3), padding=[fs/2, fs/2])
         glay.add_widget(self.find)
-        glay.add_widget(MyButton(text='FIND', height=(fs * 3), on_release=lambda btn:self.popup_in_car(btn.text)))
-        self.popup = Popup(title='FIND CAR', title_size=fs*1.5, title_align='center', content=glay, size=(Window.size[0]*0.8, fs*12), size_hint=(None, None), auto_dismiss=True)
+        glay.add_widget(MyButton(text=LANG.b_find, height=(fs * 3), on_release=lambda btn:self.popup_in_car(btn.text)))
+        self.popup = Popup(title=LANG.l_title5, title_size=fs*1.5, title_align='center', content=glay, size=(Window.size[0]*0.8, fs*12), size_hint=(None, None), auto_dismiss=True)
         self.popup.open()
 
     def in_car(self):
@@ -506,7 +510,7 @@ class PYDDT(App):
             pass
         layout = MyGridLayout(cols=1, padding=(fs/3), height=(fs * 4), size_hint=(1.0, None))
         layout.bind(minimum_height=layout.setter('height'))
-        if text == 'FIND':
+        if text == LANG.b_find:
             for avto in self.avtosd:
                 for car in avto['list']:
                     if self.find.text.lower() in str(car).lower():
@@ -573,7 +577,7 @@ class PYDDT(App):
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
         label = MyLabel(text=LANG.l_lang, font_size=fs*2, halign='left', size_hint=(1, None), height=(fs * 3))
         self.bt_lang = DropDown(height=(fs * 2))
-        lang = {'English':'en','France':'fr','Русский':'ru','Slovenský':'sk'}
+        lang = {'English':'en', 'France':'fr', 'Русский':'ru', 'Slovenský':'sk', 'Türk':'tr', 'Español':'sp'}
         for v, k in lang.items():
             but = MyButton(text=v, id=k, font_size=fs*2)
             but.bind(on_release=self.select_lang)
