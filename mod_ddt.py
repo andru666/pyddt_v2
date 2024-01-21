@@ -150,12 +150,10 @@ class DDTLauncher(App):
                 if key == 'addr':
                     continue
                 elif key == 'name':
-                    if v[key] in LANG.list_ru.keys():
-                        name = LANG.list_ru[v[key]]
+                    if v['addr'] in LANG.list_lang.keys():
+                        name = LANG.list_lang[v['addr']]
                     elif v[key] in list_name.keys():
                         name = list_name[v[key]]
-                    elif v[key] in LANG.list_name.keys():
-                        name = LANG.list_name[v[key]]
                     else:
                         name = v[key]
                     self.but_xml = MyButton(text=name, id=v['addr'], size_hint=(1, None), on_press=self.popup_xml, height=fs*5, font_size=fs*0.8)
@@ -1864,7 +1862,7 @@ class DDTLauncher(App):
         filename = os.path.join(mod_globals.user_data_dir, filename)
         if not os.path.isfile(filename):
             return
-        with open(filename, 'r') as fin:
+        with open(filename, 'r', encoding='utf-8') as fin:
             lines = fin.read().splitlines()
  
         self.carecus = []
@@ -2186,7 +2184,6 @@ class MyLabelGreen(Label):
         with self.canvas.before:
             Color(0, 1, 0, 0.25)
             Rectangle(pos=self.pos, size=self.size)
-            
 
 class MyLabelBlue(Label):
     def __init__(self, mfs = None, **kwargs):
@@ -2212,7 +2209,6 @@ class MyLabelBlue(Label):
             Color(0, 0, 1, 0.25)
             Rectangle(pos=self.pos, size=self.size)
 
-
 class MyButton(Button):
     global fs
     id = ''
@@ -2232,7 +2228,6 @@ class MyButton(Button):
             self.font_size = fs
         if 'size_hint' not in kwargs:
             self.size_hint = (1, None)
-
     
 class DDTECU():
     global LANG
