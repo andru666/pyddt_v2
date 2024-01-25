@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys, os, ast, time, pickle, copy, string, zipfile, threading
+import sys, os, ast, time, pickle, copy, string, zipfile#, threading
 from shutil import copyfile
 from datetime import datetime
 from kivy.app import App
@@ -95,6 +95,7 @@ class DDTLauncher(App):
         self.label = {}
         self.dict_trans = {}
         self.dict_t = {}
+        self.params = {}
         self.currentsession = ''
         self.v_addr = ''
         self.Roll_back = ''
@@ -627,16 +628,16 @@ class DDTLauncher(App):
             if not mod_globals.opt_demo: self.start = True
             self.startStopButton.text = LANG.b_stop
 
-    def updates_values(self):
+    def updates_values(self, dt):
         if not self.start:
             return
         self.decu.elm.clear_cache()
         self.elm.clear_cache()
         try:
-            params = self.get_ecu_values()
+            self.get_ecu_values()
         except:
             return
-        for key, v in params.items():
+        for key, v in self.params.items():
             listIndex = None
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
@@ -753,12 +754,14 @@ class DDTLauncher(App):
                     else:
                         self.Labels[key].text = val
         if self.start:
-            threading.Thread(target=self.updates_values).start()
+            self.clock_event = Clock.schedule_once(self.updates_values, 0.02)
+            #threading.Thread(target=self.updates_values).start()
 
     def get_ecu_values(self):
-        dct = {}
+        self.params = {}
         if len(self.dValue):
             for d in self.dValue.keys():
+                EventLoop.idle()
                 EventLoop.window.mainloop()
                 if self.dValue[d]['request'] not in self.REQ: continue
                 val = get_value(self.dValue[d], self.decu, self.elm)
@@ -771,8 +774,8 @@ class DDTLauncher(App):
                         if len(val['value'])==0:break
                     val['value'] = val['value'].decode()
                 self.dValue[d]['value'] = val['value'].strip()
-                dct[d] = self.dValue[d]
-        return dct
+                self.params[d] = self.dValue[d]
+        #return dct
 
     def change_screen(self, dt=False):
         if self.make_box:
@@ -1057,7 +1060,8 @@ class DDTLauncher(App):
         
         self.update_dInputs()
         if self.start:
-            threading.Thread(target=self.updates_values).start()
+            self.clock_event = Clock.schedule_once(self.updates_values, 0.02)
+            #threading.Thread(target=self.updates_values).start()
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
@@ -1165,7 +1169,8 @@ class DDTLauncher(App):
             self.startScreen(self.dReq)
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(self.xml, self.screens)))
         if self.start:
-            threading.Thread(target=self.updates_values).start()
+            self.clock_event = Clock.schedule_once(self.updates_values, 0.02)
+            #threading.Thread(target=self.updates_values).start()
 
     def readDTC(self):
         if "ReadDTCInformation.ReportDTC" in self.decu.requests.keys():
