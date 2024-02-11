@@ -1,5 +1,83 @@
 import sys, string
 import mod_globals
+from kivy.core.window import Window
+from kivy.uix.button import Button
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.textinput import TextInput
+from kivy.uix.dropdown import DropDown
+from kivy.graphics import Color, Rectangle
+from kivy.uix.label import Label
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.popup import Popup
+import kivy.metrics
+
+def MyPopup_close(title='', cont='', l=True, op=True, cl=None):
+    fs = mod_globals.fontSize
+    layout = GridLayout(cols=1, padding=5, spacing=10, size_hint=(1, 1))
+    t = 'CLOSE'
+    
+    btn = MyButton(text=t, size_hint=(1, None), font_size=fs*2)
+    layout.add_widget(cont)
+    layout.add_widget(btn)
+    pop = MyPopup(title=title, content=layout)
+    if cl:
+        btn.bind(on_press=lambda *args:exit())
+    else:
+        btn.bind(on_press=lambda *args:pop.dismiss())
+    if op:
+        pop.open()
+    else:
+        return pop
+
+class MyPopup(Popup):
+    close = ''
+    def __init__(self, **kwargs):
+        fs = mod_globals.fontSize
+        super(MyPopup, self).__init__(**kwargs)
+        if 'title' not in kwargs:
+            self.title='INFO'
+        if 'auto_dismiss' not in kwargs:
+            self.auto_dismiss=True
+        if 'title_size' not in kwargs:
+            self.title_size=str(fs) + 'sp'
+        if 'content' not in kwargs:
+            self.content=MyLabel(text='LOADING', size_hint = (1, 1))
+        if 'title_align' not in kwargs:
+            self.title_align='center'
+        if 'size_hint' not in kwargs:
+            self.size_hint=(None, None)
+            self.size=(Window.size[0]*0.95, Window.size[1]*0.95)
+
+class MyButton(Button):
+    def __init__(self, **kwargs):
+        fs = mod_globals.fontSize
+        id = ''
+        if 'id' in kwargs:
+            self.id = kwargs['id']
+            del kwargs ['id']
+        super(MyButton, self).__init__(**kwargs)
+        self.bind(size=self.setter('text_size'))
+        if 'halign' not in kwargs:
+            self.halign = 'center'
+        if 'size_hint' not in kwargs:
+            self.size_hint = (1, None)
+        if 'font_size' not in kwargs:
+            self.font_size = fs
+        if 'valign' not in kwargs:
+            self.valign = 'middle'
+        if 'height' not in kwargs:
+            lines = len(self.text.split('\n'))
+            simb = round((len(self.text) * self.font_size) / (Window.size[0] * self.size_hint[0]), 2)
+            if lines < simb: lines = simb
+            if lines < 2: lines = lines * 1.5
+            self.height = lines * self.font_size * 1.5
+        if mod_globals.os == 'android':
+            self.font_size = self.font_size * 0.8
+        self.height = kivy.metrics.dp(self.height)
+        self.font_size = kivy.metrics.dp(self.font_size)
 
 def pyren_encode(inp):
     return inp.encode('utf-8', errors='replace')

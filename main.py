@@ -47,12 +47,15 @@ from kivy.uix.switch import Switch
 from kivy.uix.textinput import TextInput
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.floatlayout import FloatLayout
+from kivy.core.clipboard import Clipboard
+from mod_utils import *
+
 import traceback
 import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.01'
+__version__ = '0.13.02'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -307,11 +310,44 @@ class PYDDT(App):
         layout.add_widget(self.orientation())
         layout.add_widget(self.make_box_switch('CAN2', mod_globals.opt_can2))
         layout.add_widget(self.lang_app())
+        layout.add_widget(MyButton(text='DONATE', height=fs*2, on_release=self.donate))
         root = ScrollView(size_hint=(1, 1))
         root.add_widget(layout)
         Fl.add_widget(root)
         #Fl.add_widget(MyLabel(text='Version : ' + __version__ , size_hint =(.3, None), pos=(0, Window.size[1]-title.height/2), font_size=(fs*0.8), height=fs*1.4, multiline=True))
         return Fl
+
+    def donate(self, dt):
+        layout = GridLayout(cols=1, padding=fs/4, spacing=fs/4, size_hint=(1, 1))
+        glay0 = BoxLayout(orientation='horizontal', size_hint=(1, 1))
+        self.carte1 = MyLabel(text='5435 5311 2185 5868', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
+        glay0.add_widget(MyLabel(text='№ card:', bgcolor = (0.5, 0.5, 0, 1), size_hint=(0.2, 1)))
+        glay0.add_widget(self.carte1)
+        glay0.add_widget(MyButton(text='Copy', id='0', size_hint=(0.2, 1), on_release=self.copy_donate))
+        layout.add_widget(glay0)
+        glay1 = BoxLayout(orientation='horizontal', size_hint=(1, 1))
+        self.carte2 = MyLabel(text='5265 5200 0560 3762', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
+        glay1.add_widget(MyLabel(text='№ card:', bgcolor = (0.5, 0.5, 0, 1), size_hint=(0.2, 1)))
+        glay1.add_widget(self.carte2)
+        glay1.add_widget(MyButton(text='Copy', id='1', size_hint=(0.2, 1), on_release=self.copy_donate))
+        layout.add_widget(glay1)
+        glay2 = BoxLayout(orientation='horizontal', size_hint=(1, 1))
+        self.qiwi = MyLabel(text='+375293144900', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
+        glay2.add_widget(MyLabel(text='QIWI:', bgcolor = (0.5, 0.5, 0, 1), size_hint=(0.2, 1)))
+        glay2.add_widget(self.qiwi)
+        glay2.add_widget(MyButton(text='Copy', id='2', size_hint=(0.2, 1), on_release=self.copy_donate))
+        layout.add_widget(glay2)
+        MyPopup_close(title='Select the donation method to copy the data', cont=layout, l=None)
+
+    def copy_donate(self, dt):
+        if dt.id == '0':
+            d = self.carte1.text
+        if dt.id == '1':
+            d = self.carte2.text
+        if dt.id == '2':
+            d = self.qiwi.text
+        Clipboard.copy(d)
+        MyPopup_close(title='INFO', cont=MyLabel(text='Copied to the clipboard '+d, size_hint=(1, 1)), l=None)
 
     def orientation(self):
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
@@ -700,6 +736,7 @@ class MyLabel(Label):
     def __init__(self, **kwargs):
         if 'bgcolor' in kwargs:
             self.bgcolor = kwargs['bgcolor']
+            del kwargs['bgcolor']
         else:
             self.bgcolor = (0.5, 0.5, 0, 1)
         
