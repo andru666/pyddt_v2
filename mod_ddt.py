@@ -273,7 +273,7 @@ class DDTLauncher(App):
                 if (xfn + '.') in f:
                     dumpIs = True
                     break
-        if mod_globals.opt_demo:            
+        if mod_globals.opt_demo: 
             if len(ce['dump'])==0:
                 self.lbltxt = Label(text=LANG.l_text1)
                 popup_init = Popup(title=LANG.l_load, content=self.lbltxt, size=(self.Window_size[0]*0.7, 400), size_hint=(None, None))
@@ -752,6 +752,7 @@ class DDTLauncher(App):
                         self.Labels[key].text = self.dict_t[val]
                     else:
                         self.Labels[key].text = val
+        if mod_globals.opt_demo: self.start = False
         if self.start:
             threading.Thread(target=self.updates_values).start()
 
@@ -809,7 +810,7 @@ class DDTLauncher(App):
     
     def loadScreen(self, scr, data):
         self.Layout.clear_widgets()
-        if not mod_globals.opt_demo: self.start = True
+        self.start = True
         self.startStopButton = MyButton(text='', size_hint=(1, 1))
         if self.start:
             self.startStopButton.text = LANG.b_stop
@@ -1061,7 +1062,7 @@ class DDTLauncher(App):
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
-        if not mod_globals.opt_demo: self.start = True
+        self.start = True
         self.Layout.clear_widgets()
         read_cmd = self.decu.requests[rq].SentBytes
         if read_cmd[:2]=='21':
@@ -2436,6 +2437,7 @@ class DDTECU():
         return rsp
 
     def loadDump(self, dumpname=''):
+        print('loadDump')
         global ecudump
 
         ecudump = {}

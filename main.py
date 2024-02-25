@@ -55,7 +55,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.02'
+__version__ = '0.13.03'
 
 if mod_globals.os == 'android':
     fs = fs*2
@@ -310,7 +310,7 @@ class PYDDT(App):
         layout.add_widget(self.orientation())
         layout.add_widget(self.make_box_switch('CAN2', mod_globals.opt_can2))
         layout.add_widget(self.lang_app())
-        layout.add_widget(MyButton(text='DONATE', height=fs*2, on_release=self.donate))
+        layout.add_widget(MyButton(text='DONATE', height=fs*3, on_release=self.donate))
         root = ScrollView(size_hint=(1, 1))
         root.add_widget(layout)
         Fl.add_widget(root)
@@ -320,34 +320,34 @@ class PYDDT(App):
     def donate(self, dt):
         layout = GridLayout(cols=1, padding=fs/4, spacing=fs/4, size_hint=(1, 1))
         glay0 = BoxLayout(orientation='horizontal', size_hint=(1, 1))
-        self.carte1 = MyLabel(text='5435 5311 2185 5868', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
+        carte1 = MyLabel(text='5435531121855868', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
         glay0.add_widget(MyLabel(text='№ card:', bgcolor = (0.5, 0.5, 0, 1), size_hint=(0.2, 1)))
-        glay0.add_widget(self.carte1)
-        glay0.add_widget(MyButton(text='Copy', id='0', size_hint=(0.2, 1), on_release=self.copy_donate))
+        glay0.add_widget(carte1)
+        glay0.add_widget(MyButton(text='Copy', id=carte1.text, size_hint=(0.2, 1), on_release=self.copy_donate))
         layout.add_widget(glay0)
         glay1 = BoxLayout(orientation='horizontal', size_hint=(1, 1))
-        self.carte2 = MyLabel(text='5265 5200 0560 3762', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
+        carte2 = MyLabel(text='5265520005603762', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
         glay1.add_widget(MyLabel(text='№ card:', bgcolor = (0.5, 0.5, 0, 1), size_hint=(0.2, 1)))
-        glay1.add_widget(self.carte2)
-        glay1.add_widget(MyButton(text='Copy', id='1', size_hint=(0.2, 1), on_release=self.copy_donate))
+        glay1.add_widget(carte2)
+        glay1.add_widget(MyButton(text='Copy', id=carte2.text, size_hint=(0.2, 1), on_release=self.copy_donate))
         layout.add_widget(glay1)
         glay2 = BoxLayout(orientation='horizontal', size_hint=(1, 1))
-        self.qiwi = MyLabel(text='+375293144900', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
-        glay2.add_widget(MyLabel(text='QIWI:', bgcolor = (0.5, 0.5, 0, 1), size_hint=(0.2, 1)))
-        glay2.add_widget(self.qiwi)
-        glay2.add_widget(MyButton(text='Copy', id='2', size_hint=(0.2, 1), on_release=self.copy_donate))
+        carte3 = MyLabel(text='410014615392075', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
+        glay2.add_widget(MyLabel(text='№ card yoomoney:', bgcolor = (0.5, 0.5, 0, 1), size_hint=(0.2, 1)))
+        glay2.add_widget(carte3)
+        glay2.add_widget(MyButton(text='Copy', id=carte3.text, size_hint=(0.2, 1), on_release=self.copy_donate))
         layout.add_widget(glay2)
+        glay3 = BoxLayout(orientation='horizontal', size_hint=(1, 1))
+        carte4 = MyLabel(text='5599002015406004', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
+        glay3.add_widget(MyLabel(text='№ card yoomoney:', bgcolor = (0.5, 0.5, 0, 1), size_hint=(0.2, 1)))
+        glay3.add_widget(carte3)
+        glay3.add_widget(MyButton(text='Copy', id=carte4.text, size_hint=(0.2, 1), on_release=self.copy_donate))
+        layout.add_widget(glay3)
         MyPopup_close(title='Select the donation method to copy the data', cont=layout, l=None)
 
     def copy_donate(self, dt):
-        if dt.id == '0':
-            d = self.carte1.text
-        if dt.id == '1':
-            d = self.carte2.text
-        if dt.id == '2':
-            d = self.qiwi.text
-        Clipboard.copy(d)
-        MyPopup_close(title='INFO', cont=MyLabel(text='Copied to the clipboard '+d, size_hint=(1, 1)), l=None)
+        Clipboard.copy(dt.id)
+        MyPopup_close(title='INFO', cont=MyLabel(text='Copied to the clipboard '+dt.id, size_hint=(1, 1)), l=None)
 
     def orientation(self):
         glay = MyGridLayout(cols=2, padding=(fs/3), height=(fs * 4), size_hint=(1, None))
