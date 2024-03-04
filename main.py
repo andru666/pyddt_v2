@@ -55,7 +55,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.03'
+__version__ = '0.13.04'
 
 if mod_globals.os == 'android':
     fs = fs*2

@@ -313,7 +313,7 @@ class ddtAddressing():
                 XId = fu.findall('ns0:XId',ns)
                 fun[addr]['XId'] = ''
                 if XId:
-                    if XId[0].text:
+                    if XId[0].text.strip():
                         if not XId[0].text.startswith('-'):
                             fun[addr]['XId'] = XId[0].text
                 else:
@@ -327,7 +327,7 @@ class ddtAddressing():
                 RId = fu.findall('ns0:RId',ns)
                 fun[addr]['RId'] = ''
                 if RId:
-                    if RId[0].text:
+                    if RId[0].text.strip():
                         if not RId[0].text.startswith('-'):
                             fun[addr]['RId'] = RId[0].text
                 else:
@@ -341,5 +341,6 @@ class ddtAddressing():
                 ISO8 = fu.findall('ns0:ISO8',ns)
                 fun[addr]['iso8'] = ''
                 if ISO8:
-                    fun[addr]['iso8'] = ISO8[0].text
+                    if ISO8[0].text.strip():
+                        fun[addr]['iso8'] = ISO8[0].text
         return fun, alist
