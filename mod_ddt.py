@@ -4,8 +4,10 @@ import sys, os, ast, time, pickle, copy, string, zipfile, threading
 from shutil import copyfile
 from datetime import datetime
 from kivy.app import App
+import kivy.base as base
 from kivy.base import EventLoop, ExceptionManager
 from kivy.clock import Clock
+from kivy.uix.progressbar import ProgressBar
 from kivy.graphics import Color, Rectangle, Line
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
@@ -288,14 +290,10 @@ class DDTLauncher(App):
                 self.decu.loadDump(os.path.join(mod_globals.dumps_dir, ce['dump']))
                 popup_init.dismiss()
         elif mod_globals.opt_dump:
-            self.lbltxt = Label(text=LANG.l_text2)
-            popup_init = Popup(title=LANG.l_load, content=self.lbltxt, size=(400, 400), size_hint=(None, None))
-            popup_init.open()
-            EventLoop.idle()
             ce['dump'] = self.guiSaveDump(self.decu)
             self.renewEcuList()
             self.SaveBtnClick(self.labels.text, None)
-            popup_init.dismiss()
+            self.popup_init.dismiss()
 
         if not mod_db_manager.file_in_ddt(self.decu.ecufname):
             return None
@@ -989,7 +987,6 @@ class DDTLauncher(App):
                         Text = self.dict_t[xText]
                     else:
                         Text = xText
-                    
                     button = MyButton(text=Text, text_size=(xrWidth/self.scf, xrHeight/self.scf), valign='middle', id=b, color=self.hex_to_rgb(xfColor), bold=xfBold, halign=halign, italic=xfItalic, font_size=xfSize*src, size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
                     button.bind(on_release = lambda btn=xText, key=b: self.buttonPressed(btn.text, btn.id))
                     self.flayout.add_widget(button)
@@ -2041,10 +2038,18 @@ class DDTLauncher(App):
             btn.bind(on_press=popup.dismiss)
 
     def guiSaveDump(self, decu):
+        layout = GridLayout(cols=1, padding=fs/4, spacing=fs/4, size_hint=(1, 1))
+        lbltxt = Label(text=LANG.l_text2)
+        pb = ProgressBar(max=len(decu.requests.keys()))
+        layout.add_widget(lbltxt)
+        layout.add_widget(pb)
+        self.popup_init = Popup(title=LANG.l_text2, content=layout, size=(400, 400), size_hint=(None, None))
+        base.runTouchApp(embedded=True)
+        self.popup_init.open()
+        EventLoop.idle()
         xmlname = decu.ecufname
         if xmlname.upper().endswith('.XML'):
             xmlname = xmlname[:-4]
-
         if '/' in xmlname:
             xmlname = xmlname.split('/')[-1]
         else:
@@ -2052,19 +2057,13 @@ class DDTLauncher(App):
         dumpFileName = str(int(time.time())) + '_' + xmlname + '.txt'
         df = open(os.path.join(mod_globals.dumps_dir, dumpFileName), 'wt')
         decu.elm.clear_cache()
-
-        max = len(decu.requests.keys())
-
-        progressValue = 1
-
-        im = ' from ' + str(max)
         i = 0
-               
         EventLoop.idle()
         for request in decu.requests.values():
-            self.lbltxt = Label(text='Сохранено ' + str(i) + '/' + str(len(list(decu.requests.keys()))))
+            lbltxt.text = 'Сохранено ' + str(i) + '/' + str(len(list(decu.requests.keys())))
+            EventLoop.idle()
+            pb.value = i
             i = i + 1
-            progressValue = progressValue + 1
             sys.stdout.flush()
             if request.SentBytes[:2] in AllowedList + ['17', '19']:
                 if request.SentBytes[:2] == '19' and request.SentBytes[:2] != '1902':
@@ -2073,6 +2072,7 @@ class DDTLauncher(App):
                 rsp = decu.elm.request(request.SentBytes, pos, False)
                 if ':' in rsp: continue
                 df.write('%s:%s\n' % (request.SentBytes, rsp))
+        EventLoop.idle()
         df.close()
         return dumpFileName
 
