@@ -714,7 +714,7 @@ class DDTLauncher(App):
                         self.iValueNeedUpdate[key] = False
                 if key+v['request'] in self.oLabels.keys():
                     if self.iValueNeedUpdate[key]:
-                        if listIndex:
+                        if listIndex in d.List.keys():
                             if listIndex in d.List.keys():
                                 if d.List[listIndex] in self.dict_t.keys():
                                     self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
@@ -725,7 +725,7 @@ class DDTLauncher(App):
                         self.iValueNeedUpdate[key] = False
                 elif (key+v['request']).replace('DataRead', 'DataWrite') in self.oLabels.keys():
                     if self.iValueNeedUpdate[key]:
-                        if listIndex:
+                        if listIndex in d.List.keys():
                             if listIndex in d.List.keys():
                                 if d.List[listIndex] in self.dict_t.keys():
                                     self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
@@ -733,6 +733,17 @@ class DDTLauncher(App):
                                     self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
                         else:
                             self.oLabels[(key+v['request']).replace('DataRead', 'DataWrite')].text = val
+                        self.iValueNeedUpdate[key] = False
+                elif (key+v['request']).replace(key+'Read', key+'Write') in self.oLabels.keys():
+                    if self.iValueNeedUpdate[key]:
+                        if listIndex in d.List.keys():
+                            if listIndex in d.List.keys():
+                                if d.List[listIndex] in self.dict_t.keys():
+                                    self.oLabels[(key+v['request']).replace(key+'Read', key+'Write')].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
+                                else:
+                                    self.oLabels[(key+v['request']).replace(key+'Read', key+'Write')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
+                        else:
+                            self.oLabels[(key+v['request']).replace(key+'Read', key+'Write')].text = val
                         self.iValueNeedUpdate[key] = False
                 elif len([I for I in self.oLabels.keys() if I.startswith(key)]):
                     if self.iValueNeedUpdate[key]:
@@ -2437,27 +2448,20 @@ class DDTECU():
         return rsp
 
     def loadDump(self, dumpname=''):
-        print('loadDump')
         global ecudump
-
         ecudump = {}
-        
         xmlname = self.ecufname.split('/')[-1]
         if xmlname.upper().endswith('.XML'):
             xmlname = xmlname[:-4]
-
         if len(dumpname)==0 or not os.path.exists(dumpname):
             flist = []
-         
             for root, dirs, files in os.walk(mod_globals.dumps_dir):
                 for f in files:
                     if(xmlname+'.') in f:
                         flist.append(f)
-                        
             if len(flist)==0: return
             flist.sort()
             dumpname = os.path.join(mod_globals.dumps_dir, flist[-1])
-
         mod_globals.dumpName = dumpname
         df = open(dumpname,'rt')
         lines = df.readlines()
@@ -2467,7 +2471,6 @@ class DDTECU():
             if l.count(':')==1:
                 req,rsp = l.split(':')
                 ecudump[req] = rsp
-        
         self.elm.setDump(ecudump)
         
     def clearELMcache(self):
