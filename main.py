@@ -340,7 +340,7 @@ class PYDDT(App):
         glay3 = BoxLayout(orientation='horizontal', size_hint=(1, 1))
         carte4 = MyLabel(text='5599002015406004', bgcolor = (0.5, 0, 0, 1), size_hint=(0.6, 1))
         glay3.add_widget(MyLabel(text='№ card yoomoney:', bgcolor = (0.5, 0.5, 0, 1), size_hint=(0.2, 1)))
-        glay3.add_widget(carte3)
+        glay3.add_widget(carte4)
         glay3.add_widget(MyButton(text='Copy', id=carte4.text, size_hint=(0.2, 1), on_release=self.copy_donate))
         layout.add_widget(glay3)
         MyPopup_close(title='Select the donation method to copy the data', cont=layout, l=None)
