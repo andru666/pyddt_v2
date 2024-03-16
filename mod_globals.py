@@ -55,6 +55,7 @@ log_dir = "./logs/"
 dumps_dir = "./dumps/"
 csv_dir = './csv/'
 fontSize = 20
+fontStart = 20
 screen_orient = False
 
 dumpName = ""
@@ -83,6 +84,7 @@ class Settings:
     si = False
     demo = False
     fontSize = 20
+    fontStart = 20
     screen_orient = False
     useDump = False
     csv = False
@@ -94,6 +96,7 @@ class Settings:
         global opt_log
         global opt_dump
         global fontSize
+        global fontStart
         global opt_port
         global opt_lang
         global opt_cfc0
@@ -106,6 +109,7 @@ class Settings:
         opt_log = self.logName
         opt_dump = self.useDump
         fontSize = self.fontSize
+        fontStart = self.fontStart
         opt_port = self.port
         opt_lang = self.lang
         opt_cfc0 = self.cfc
@@ -136,6 +140,7 @@ class Settings:
         self.logName = opt_log
         self.useDump = opt_dump
         self.fontSize = fontSize
+        self.fontStart = fontStart
         self.port = opt_port
         self.cfc = opt_cfc0
         self.screen_orient = screen_orient

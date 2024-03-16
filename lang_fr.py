@@ -56,6 +56,7 @@ l_text9 = 'RollBack DUMP'
 l_text10 = u'Orientation'
 l_op_scr = 'Ouverture de FICHIERS XML'
 l_font_size = 'Taille de police'
+l_font_start = "Police de l'écran d'accueil"
 l_car = 'AVTO'
 l_dump = 'DUMP'
 l_prot = 'Protocole'
