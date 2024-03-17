@@ -21,10 +21,6 @@ if platform != 'android':
         Window.size = Window.size[1]*0.7, Window.size[1]*0.85
 else:
     from kivy.core.window import Window
-    '''if Window.size[1] > Window.size[0]:
-        self.fs = Window.size[1]*8.0/Window.size[0]
-    else:
-        self.fs = Window.size[0]*8.0/Window.size[1]'''
 
 from mod_db_manager import get_zip
 from mod_elm import ELM
@@ -213,6 +209,8 @@ class PYDDT(App):
         self.ptree = {}
         self.Donate = {}
         self.elm = None
+        self.settings = mod_globals.Settings()
+        self.fs = mod_globals.fontStart
         super(PYDDT, self).__init__()
         Window.bind(on_keyboard=self.key_handler)
 
@@ -259,9 +257,6 @@ class PYDDT(App):
                 return permissionErrorLayout
 
         global LANG
-        
-        self.settings = mod_globals.Settings()
-        self.fs = mod_globals.fontStart
         if mod_globals.opt_lang == 'ru':
             import lang_ru as LANG
         elif mod_globals.opt_lang == 'sp':
