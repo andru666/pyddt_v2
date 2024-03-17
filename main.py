@@ -49,7 +49,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.08'
+__version__ = '0.13.09'
 
 if mod_globals.os == 'android':
     try:
@@ -471,7 +471,7 @@ class PYDDT(App):
         mod_globals.windows_size = Window.size
         mod_globals.opt_dump = self.button[LANG.l_dump].active
         mod_globals.opt_can2 = self.button['CAN2'].active
-        #mod_globals.savedCAR = 'savedCAR_x38.csv'
+        #mod_globals.savedCAR = 'savedCAR_VF1JK0UA634747882.csv'
         #mod_globals.savedCAR = 'savedCAR_test.csv'
         if self.button[LANG.b_log].state == 'down':
             mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
