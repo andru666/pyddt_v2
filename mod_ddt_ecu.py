@@ -190,8 +190,11 @@ def minD(value, iterable):
                     va = va + str(ord(v))
                 lvl[va] = vll
                 it.append(va)
-            m = lvl[min(it, key=lambda x:abs(int(x) - int(val)))]
-            return m
+            if len(val) > 1 and len(it) > 1:
+                m = lvl[min(it, key=lambda x:abs(int(x) - int(val)))]
+                return m
+            else:
+                return
         else:
             return min(iterable, key=lambda x: abs(ord(value) - ord(x)))
             
