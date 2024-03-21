@@ -2054,7 +2054,7 @@ class DDTLauncher(App):
         pb = ProgressBar(max=len(decu.requests.keys()))
         layout.add_widget(lbltxt)
         layout.add_widget(pb)
-        self.popup_init = Popup(title=LANG.l_text2, content=layout, size=(400, 400), size_hint=(None, None))
+        self.popup_init = Popup(title=LANG.l_text2, content=layout)
         base.runTouchApp(embedded=True)
         self.popup_init.open()
         EventLoop.idle()
