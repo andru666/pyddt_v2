@@ -48,10 +48,10 @@ user_data_dir = "./"
 ddt_arc = ""
 ddtroot = ".."
 db_archive_file = None
-cache_dir = "./cache/"
-crash_dir = "./crashs/"
+cache_dir = "./cache3/"
+crash_dir = "./crashs3/"
 
-log_dir = "./logs/"
+log_dir = "./logs3/"
 dumps_dir = "./dumps/"
 csv_dir = './csv/'
 fontSize = 20
@@ -121,15 +121,15 @@ class Settings:
         self.save()
         
     def load(self):
-        if not sysos.path.isfile(user_data_dir + '/settings.p'):
+        if not sysos.path.isfile(user_data_dir + '/settings3.p'):
             self.save()
         try:
-            with open(user_data_dir + 'settings.p', 'rb') as f:
+            with open(user_data_dir + 'settings3.p', 'rb') as f:
                 tmp_dict = pickle.load(f)
         except:
-            sysos.remove(user_data_dir + '/settings.p')
+            sysos.remove(user_data_dir + '/settings3.p')
             self.save()
-            with open(user_data_dir + 'settings.p', 'rb') as f:
+            with open(user_data_dir + 'settings3.p', 'rb') as f:
                 tmp_dict = pickle.load(f)
         self.__dict__.update(tmp_dict)        
     
@@ -146,5 +146,5 @@ class Settings:
         self.screen_orient = screen_orient
         self.csv = opt_csv
         self.dev_address = opt_dev_address
-        with open(user_data_dir + 'settings.p', 'wb') as f:
+        with open(user_data_dir + 'settings3.p', 'wb') as f:
             pickle.dump(self.__dict__, f)

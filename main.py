@@ -50,6 +50,7 @@ import os, sys, glob
 __all__ = 'install_android'
 
 __version__ = '0.13.09'
+data_update = '27-10-2024'
 
 if mod_globals.os == 'android':
     try:
@@ -135,10 +136,10 @@ if mod_globals.os == 'android':
         
         user_datadir = Environment.getExternalStorageDirectory().getAbsolutePath() + '/pyddt/'
         mod_globals.user_data_dir = user_datadir
-        mod_globals.cache_dir = user_datadir + '/cache/'
-        mod_globals.log_dir = user_datadir + '/logs/'
+        mod_globals.cache_dir = user_datadir + '/cache3/'
+        mod_globals.log_dir = user_datadir + '/logs3/'
         mod_globals.dumps_dir = user_datadir + '/dumps/'
-        mod_globals.crash_dir = user_datadir + '/crashs/'
+        mod_globals.crash_dir = user_datadir + '/crashs3/'
 
         AndroidActivityInfo = autoclass('android.content.pm.ActivityInfo')
         Params = autoclass('android.view.WindowManager$LayoutParams')
@@ -305,6 +306,7 @@ class PYDDT(App):
         layout.add_widget(self.make_box_switch('CAN2', mod_globals.opt_can2))
         layout.add_widget(self.lang_app())
         layout.add_widget(MyButton(text='DONATE', font_size=self.fs*1.5, height=self.fs*3, on_release=self.donate))
+        layout.add_widget(MyLabel(text='PyDDT3 by andru666    '+data_update, size_hint_y=None, font_size=(self.fs), height=(self.fs*1.5)))
         root = ScrollView(size_hint=(1, 1))
         root.add_widget(layout)
         Fl.add_widget(root)
