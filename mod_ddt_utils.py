@@ -205,7 +205,7 @@ class ddtAddressing():
         
         fun, self.list_name = self.iso_can_select(filename)
 
-        if True:
+        if '00' in fun.keys():
             v_pcan =  int(fun['00']['baudRate'])
         else:
             v_pcan = 0

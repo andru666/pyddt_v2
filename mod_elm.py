@@ -1,15 +1,10 @@
-#Embedded file name: /build/PyCLIP/android/app/mod_elm.py
-import mod_globals
-import sys
-import re
-import time
-import string
-import threading
-import socket
+# -*- coding: utf-8 -*-
+import mod_globals, sys, re, time, string, threading, socket
 from datetime import datetime
 from collections import OrderedDict
 from kivy.utils import platform
 import logging
+
 log = logging.getLogger("kivy")
 if platform != 'android':
     import serial
@@ -21,8 +16,10 @@ else:
     BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
     BluetoothSocket = autoclass('android.bluetooth.BluetoothSocket')
     UUID = autoclass('java.util.UUID')
+    PythonActivity = autoclass('org.kivy.android.PythonActivity')
+
 DevList = ['27', '28', '2E', '30', '31', '32', '34', '35', '36', '37', '3B', '3D']
-AllowedList = ['12', '19', '1A', '21', '22', '23']
+AllowedList = ['12', '17', '19', '1A', '21', '22', '23']
 MaxBurst = 7
 snat = {'01':'760', '02':'724', '04':'762', '06':'791', '07':'771', '08':'778', '09':'7EB', '0D':'775', '0E':'76E', '0F':'770', '11':'7C9', '12':'7C3', '13':'732', '71':'18DAF271', '1A':'731', '1B':'7AC', '1C':'76B', '1E':'768', '23':'773', '24':'77D', '25':'700', '26':'765', '27':'76D', '28':'7D7', '29':'764', '2A':'76F', '2B':'735', '2C':'772', '2D':'18DAF12D', '2E':'7BC', '2F':'76C', '32':'776', '3A':'7D2', '3C':'7DB', '40':'727', '46':'7CF', '47':'7A8', '4D':'7BD', '50':'738', '51':'763', '57':'767', '58':'767', '59':'734', '5B':'7A5', '5D':'18DAF25D', '60':'18DAF160', '61':'7BA', '62':'7DD', '63':'73E', '64':'7D5', '66':'739', '67':'793', '68':'77E', '6B':'7B5', '6E':'7E9', '73':'18DAF273', '77':'7DA', '78':'7BD', '79':'7EA', '7A':'7E8', '7B':'18DAF272', '7C':'77C', '81':'761', '82':'7AD', '86':'7A2', '87':'7A0', '91':'7ED', '93':'7BB', '95':'7EC', '97':'7C8', 'A1':'76C', 'A5':'725', 'A6':'726', 'A7':'733', 'A8':'7B6', 'C0':'7B9', 'D0':'18DAF1D0', 'D1':'7EE', 'D2':'18DAF1D2', 'D3':'7EE', 'DA':'18DAF1DA', 'DE':'69C', 'DF':'5C1', 'E0':'58B', 'E1':'5BA', 'E2':'5BB', 'E3':'4A7', 'E4':'757', 'E6':'484', 'E7':'7EC', 'E8':'5C4', 'E9':'762', 'EA':'4B3', 'EB':'5B8', 'EC':'5B7', 'ED':'704', 'F7':'736', 'F8':'737', 'FA':'77B', 'FD':'76F', 'FE':'76C', 'FF':'7D0'}
 dnat = {'01':'740', '02':'704', '04':'742', '06':'790', '07':'751', '08':'758', '09':'7E3', '0D':'755', '0E':'74E', '0F':'750', '11':'7C3', '12':'7C9', '13':'712', '71':'18DA71F2', '1A':'711', '1B':'7A4', '1C':'74B', '1E':'748', '23':'753', '24':'75D', '25':'70C', '26':'745', '27':'74D', '28':'78A', '29':'744', '2A':'74F', '2B':'723', '2D':'18DA2DF1', '2C':'752', '2E':'79C', '2F':'74C', '32':'756', '3A':'7D6', '3C':'7D9', '40':'707', '46':'7CD', '47':'788', '4D':'79D', '50':'718', '51':'743', '57':'747', '58':'747', '59':'714', '5B':'785', '5D':'18DA5DF2', '60':'18DA60F1', '61':'7B7', '62':'7DC', '63':'73D', '64':'7D4', '66':'719', '67':'792', '68':'75A', '6B':'795', '6E':'7E1', '73':'18DA73F2', '77':'7CA', '78':'79D', '79':'7E2', '7A':'7E0', '7B':'18DA72F2', '7C':'75C', '81':'73F', '82':'7AA', '86':'782', '87':'780', '91':'7E5', '93':'79B', '95':'7E4', '97':'7D8', 'A1':'74C', 'A5':'705', 'A6':'706', 'A7':'713', 'A8':'796', 'C0':'799', 'D0':'18DAD0F1', 'D1':'7E6', 'D2':'18DAD2F1', 'D3':'7E6', 'DA':'18DADAF1', 'DE':'6BC', 'DF':'641', 'E0':'60B', 'E1':'63A', 'E2':'63B', 'E3':'73A', 'E4':'74F', 'E6':'622', 'E7':'7E4', 'E8':'644', 'E9':'742', 'EA':'79A', 'ED':'714', 'EB':'638', 'EC':'637', 'ED':'714', 'F7':'716', 'F8':'717', 'FA':'75B', 'FD':'74F', 'FE':'74C', 'FF':'7D0',}
@@ -41,6 +38,7 @@ def get_usb_socket_stream():
 
 def get_bt_socket_stream():
     adapter = BluetoothAdapter.getDefaultAdapter()
+    adapter.enable()
     adapter.cancelDiscovery()
 
     device = adapter.getRemoteDevice(bytearray.fromhex(''.join(mod_globals.opt_dev_address.split(':'))))
@@ -72,6 +70,9 @@ def get_devices():
             devs[deviceName] = deviceAddress
     return devs
 
+def log_tmstr():
+    return datetime.now().strftime("%x %H:%M:%S.%f")[:21].ljust(21,'0')
+
 
 class Port:
     portType = 0
@@ -85,7 +86,17 @@ class Port:
 
     def __init__(self, portName, speed, portTimeout):
         self.portTimeout = portTimeout
+        self.portName = portName
+        self.speed = speed
         portName = portName.strip()
+        upPortName = portName.upper()
+        if len(mod_globals.opt_log)>0: # and mod_globals.opt_demo==False:
+            self.lf = open(mod_globals.log_dir + "elm_" + mod_globals.opt_log, "at")
+        if re.match(r"^[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}$", upPortName) or \
+           re.match(r"^[0-9A-F]{4}.[0-9A-F]{4}.[0-9A-F]{4}$", upPortName) or \
+           re.match(r"^[0-9A-F]{12}$", upPortName):
+            upPortName = upPortName.replace(':','').replace('.','')
+            MAC = ':'.join(a + b for a, b in zip(upPortName[::2], upPortName[1::2]))
         if re.match('^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\:\\d{1,5}$', portName):
             import socket
             self.ipaddr, self.tcpprt = portName.split(':')
@@ -106,7 +117,7 @@ class Port:
             except:
                 iterator = sorted(list(list_ports.comports()))
                 pass
-            self.check_elm()
+            #if self.speed == 38400: self.check_elm()
 
     def reinit(self):
         
@@ -130,6 +141,7 @@ class Port:
             self.portType = 3
             device = get_usb_socket_stream()
             self.hdr = serial4a.get_serial_port(device, self.speed, timeout=self.portTimeout)
+            #if self.speed == 38400: self.check_elm()
         else:
             self.portType = 2
             self.socket, self.recv_stream, self.send_stream = get_bt_socket_stream()
@@ -142,12 +154,16 @@ class Port:
                     byte = self.hdr.recv(1)
                 except:
                     pass
-
             elif self.portType == 2:
                 if self.recv_stream.available():
                     byte = chr(self.recv_stream.read())
-            elif self.hdr.inWaiting():
-                byte = self.hdr.read()
+            else:
+                inInputBuffer = self.hdr.inWaiting()
+                if inInputBuffer:
+                    if mod_globals.opt_obdlink:
+                        byte = self.hdr.read(inInputBuffer)
+                    else:
+                        byte = self.hdr.read(1)
         except:
             pass
         if type(byte) == str:
@@ -244,16 +260,23 @@ class Port:
             return
         if self.portType == 1:
             return
-        if boudrate == 38400:
-            self.write('at brd 68\r')
-        elif boudrate == 57600:
-            self.write('at brd 45\r')
-        elif boudrate == 115200:
-            self.write('at brd 23\r')
-        elif boudrate == 230400:
-            self.write('at brd 11\r')
-        elif boudrate == 500000:
-            self.write('at brd 8\r')
+        if mod_globals.opt_obdlink:
+            self.write("ST SBR " + str(boudrate) + "\r")
+        else:
+            if boudrate == 38400:
+                self.write('at brd 68\r')
+            elif boudrate == 57600:
+                self.write('at brd 45\r')
+            elif boudrate == 115200:
+                self.write('at brd 23\r')
+            elif boudrate == 230400:
+                self.write('at brd 11\r')
+            elif boudrate == 500000:
+                self.write('at brd 8\r')
+            elif boudrate ==1000000:
+                self.write("at brd 4\r")
+            elif boudrate == 2000000:
+                self.write("at brd 2\r")
         tb = time.time()
         self.buff = ''
         while True:
@@ -272,35 +295,12 @@ class Port:
                 sys.exit()
 
         self.hdr.timeout = 1
-        if boudrate == 38400:
-            self.hdr.baudrate = 38400
-        elif boudrate == 57600:
-            self.hdr.baudrate = 57600
-        elif boudrate == 115200:
-            self.hdr.baudrate = 115200
-        elif boudrate == 230400:
-            self.hdr.baudrate = 230400
-        elif boudrate == 500000:
-            self.hdr.baudrate = 500000
+        self.hdr.baudrate = boudrate
+        time.sleep(0.1)
+        self.write("\r")
         tb = time.time()
         self.buff = ''
-        while True:
-            if not mod_globals.opt_demo:
-                byte = self.read()
-            else:
-                byte = 'ELM'
-            if byte == '\r' or byte == '\n':
-                self.buff = ''
-                continue
-            self.buff += byte
-            tc = time.time()
-            if 'ELM' in self.buff:
-                break
-            if tc - tb > 1:
-                self.hdr.timeout = self.portTimeout
-                self.hdr.baudrate = mod_globals.opt_speed
-                return
-
+       
         self.write('\r')
         tb = time.time()
         self.buff = ''
@@ -315,6 +315,7 @@ class Port:
             self.buff += byte
             tc = time.time()
             if '>' in self.buff:
+                mod_globals.opt_rate = mod_globals.opt_speed
                 break
             if (tc - tb) > 1:
                 self.hdr.timeout = self.portTimeout
@@ -366,6 +367,10 @@ class ELM:
         if len(mod_globals.opt_log) > 0:
             self.lf = open(mod_globals.log_dir + 'elm_' + mod_globals.opt_log, 'at')
             self.vf = open(mod_globals.log_dir + 'ecu_' + mod_globals.opt_log, 'at')
+        if self.lf != 0:
+            self.lf.write('#' * 60 + "\n#[" + log_tmstr() + "] Check ELM type\n")
+            self.lf.write("Port Speed: " + str(speed) +"\n" + '#' * 60 + "\n")
+            self.lf.flush()
         self.lastCMDtime = 0
         self.ATCFC0 = mod_globals.opt_cfc0
 

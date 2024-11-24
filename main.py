@@ -50,7 +50,7 @@ import os, sys, glob
 __all__ = 'install_android'
 
 __version__ = '0.13.09'
-data_update = '27-10-2024'
+data_update = '24-11-2024'
 
 if mod_globals.os == 'android':
     try:
@@ -297,6 +297,7 @@ class PYDDT(App):
         layout.add_widget(self.but_demo)
         layout.add_widget(self.make_savedEcus())
         layout.add_widget(self.in_car())
+        layout.add_widget(self.make_opt_rate())
         layout.add_widget(self.make_bt_device_entry())
         layout.add_widget(self.make_input_toggle(LANG.b_log, mod_globals.opt_log, 'down' if len(mod_globals.opt_log) > 0 else  'normal'))
         layout.add_widget(self.make_input(LANG.l_font_size, str(mod_globals.fontSize)))
@@ -461,6 +462,10 @@ class PYDDT(App):
     def finish(self, instance):
         mod_globals.opt_car = self.carbutton.text
         mod_globals.savedCAR = self.ecusbutton.text
+        if self.ecus_opt_speed:
+            mod_globals.opt_speed = int(self.ecus_opt_speed.text)
+        else:
+            mod_globals.opt_speed = 38400
         #mod_globals.opt_car = 'x81 : Esp'
         if instance == 'scan':
             mod_globals.opt_demo = False
@@ -479,9 +484,7 @@ class PYDDT(App):
             mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
         else:
             mod_globals.opt_log = ''
-        if 'com1' in self.mainbutton.text.lower() or 'com7' in self.mainbutton.text.lower():
-            mod_globals.opt_port = '127.0.0.1:35000'
-        elif 'wifi' in self.mainbutton.text.lower():
+        if 'wifi' in self.mainbutton.text.lower():
             mod_globals.opt_port = '192.168.0.10:35000'
         else:
             bt_device = self.mainbutton.text.rsplit('>', 1)
@@ -600,6 +603,29 @@ class PYDDT(App):
         glay.add_widget(sw)
         return glay
 
+    def make_opt_rate(self):
+        glay = MyGridLayout(cols=2, padding=(self.fs/3), height=(self.fs * 4), size_hint=(1, None))
+        label = MyLabel(text='Port SPEED', font_size=self.fs*1.5, halign='left', size_hint=(0.7, 1))
+        label.bind(size=label.setter('text_size'))
+        self.opt_speed_dropdown = DropDown(height=(self.fs))
+        for s_ecus in ['38400', '115200', '230400', '500000', '1000000', '2000000']:
+            btn= MyButton(text=s_ecus, font_size=self.fs)
+            btn.height = label.height
+            btn.font_size = label.font_size
+            btn.bind(on_release=lambda btn: self.opt_speed_dropdown.select(btn.text))
+            self.opt_speed_dropdown.add_widget(btn)
+        self.ecus_opt_speed = MyButton(text='', font_size=self.fs)
+        self.ecus_opt_speed.bind(on_release=self.opt_speed_dropdown.open)
+        self.opt_speed_dropdown.bind(on_select=lambda instance, x: setattr(self.ecus_opt_speed, 'text', x))
+        self.opt_speed_dropdown.select(str(mod_globals.opt_speed))
+        self.ecus_opt_speed.height = label.height
+        self.ecus_opt_speed.font_size = label.font_size
+        glay.height = 1.2 * label.height
+        glay.padding = glay.spacing = glay.height / 12
+        glay.add_widget(label)
+        glay.add_widget(self.ecus_opt_speed)
+        return glay
+
     def make_bt_device_entry(self):
         ports = mod_ddt_utils.getPortList()
         label1 = MyLabel(text='ELM port', font_size=self.fs*1.5, halign='left', size_hint=(0.7, 1))
@@ -607,6 +633,9 @@ class PYDDT(App):
         label1.bind(size=label1.setter('text_size'))
         glay = MyGridLayout(cols=2, padding=(self.fs/3), height=(self.fs * 4), size_hint=(1, None))
         btn = MyButton(text='WiFi (192.168.0.10:35000)', font_size=self.fs)
+        btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
+        self.bt_dropdown.add_widget(btn)
+        btn = MyButton(text='127.0.0.1:35000', font_size=self.fs)
         btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
         self.bt_dropdown.add_widget(btn)
         porte = ports.items()
@@ -732,6 +761,7 @@ def main():
             os.makedirs(mod_globals.dumps_dir)
     except:
         print('Dir creation error!')
+    mod_globals.Settings()
     kivyScreenConfig()
 
 class MyGridLayout(GridLayout):
