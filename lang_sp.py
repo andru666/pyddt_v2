@@ -70,6 +70,8 @@ l_scan = 'Escaneo'
 l_load = 'Cargando'
 l_enter_here = 'ENTRAR'
 error = 'ERROR'
+l_titl_error = 'Error de conexión ELM'
+l_text_error = 'No se pudo conectar al OLMO.\n\n \n Causas posibles: \n - Bluetooth no está habilitado \n - otras aplicaciones están conectadas a su ELM, por ejemplo, Torque \n - otro dispositivo está usando este ELM \n - ELM desapareció \n-ELM se lee con un nombre nuevo o cambió su nombre \n\n\n Verifique su conexión ELM e inténtelo de nuevo.'
 not_ident = 'No hay identificadores coincidentes'
 lang = 'en'
 

@@ -49,8 +49,8 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.09'
-data_update = '24-11-2024'
+__version__ = '0.13.10'
+data_update = '14/12/2024'
 
 if mod_globals.os == 'android':
     try:
@@ -510,6 +510,14 @@ class PYDDT(App):
             try:
                 self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
             except:
+                lbltxt = MyLabel(text=LANG.l_text_error, size_hint=(1, 1), font_size=mod_globals.fontSize)
+                popup_load = MyPopup(title=LANG.l_titl_error, content=lbltxt, size=(Window.size[0]*0.9, Window.size[1]*0.9), on_dismiss=exit)
+                popup_load.open()
+                base.runTouchApp()
+                exit(2)
+            """try:
+                self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
+            except:
                 labelText = '''
                     Could not connect to the ELM.
 
@@ -526,7 +534,7 @@ class PYDDT(App):
                 popup_load = Popup(title='ELM connection error', title_size=self.fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.9, Window.size[1]*0.9), auto_dismiss=True, on_dismiss=exit)
                 popup_load.open()
                 exit(2)
-                return
+                return"""
 
     def find_in_car(self, ins):
         glay = GridLayout(cols=1, size_hint=(1, 1))

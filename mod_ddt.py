@@ -801,7 +801,7 @@ class DDTLauncher(App):
             ec = self.currentscreen[:-3] + 'txt'
             if ec not in arc.namelist():
                 return
-            search = '<..>"(.*)"</..><ru>"(.*)"</ru>'
+            search = '<..>"(.*)"</..><%s>"(.*)"</%s>'%(mod_globals.opt_lang,mod_globals.opt_lang)
             fr_ru = re.findall(search, mod_db_manager.get_file_content(ec, arc).decode('utf-8'))
             for fr, ru in fr_ru:
                 self.dict_trans[fr] = ru
@@ -2078,6 +2078,8 @@ class DDTLauncher(App):
             sys.stdout.flush()
             if request.SentBytes[:2] in AllowedList + ['17', '19']:
                 if request.SentBytes[:2] == '19' and request.SentBytes[:2] != '1902':
+                    continue
+                if request.SentBytes[:2] == '22' and len(request.SentBytes) < 6:
                     continue
                 pos = chr(ord(request.SentBytes[0]) + 4) + request.SentBytes[1]
                 rsp = decu.elm.request(request.SentBytes, pos, False)

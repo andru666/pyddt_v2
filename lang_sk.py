@@ -70,6 +70,8 @@ l_scan = 'Skenovanie'
 l_load = 'Načítam'
 l_enter_here = 'Zadaj údaje'
 error = 'CHYBA'
+l_titl_error = 'Napaka pri povezavi ELM'
+l_text_error = 'Ni se mogel povezati z brestom.\n\n\n možni vzroki: \n-Bluetooth ni omogočen \n - druge aplikacije so povezane z vašim brestom, npr. navor \n - druga naprava uporablja ta Brest \n - Brest dobil neparno \n-Brest se bere pod novim imenom ali pa je spremenil ime \n\n\n preverite povezavo Brest in poskusite znova.'
 not_ident = 'Žiadne identifikátory'
 lang = 'en'
 

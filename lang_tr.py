@@ -70,6 +70,8 @@ l_scan = 'Tarama'
 l_load = 'İndirme'
 l_enter_here = 'GİRİŞ'
 error = 'HATA'
+l_titl_error = 'ELM bağlantı hatası'
+l_text_error = "Karaağaçla bağlantı kurulamadı.\n\n\n Olası nedenler: \n-Bluetooth etkin değil \n-diğer uygulamalar elm'inize bağlı, örneğin Tork \n-diğer cihaz bu elm'i kullanıyor \n-ELM eşleştirilmemiş \n-ELM yeni adla okunuyor veya adını değiştirdi \n\n\n KARAAĞAÇ bağlantınızı kontrol edin ve tekrar deneyin."
 not_ident = 'Uygun kimlik yok'
 lang = 'en'
 

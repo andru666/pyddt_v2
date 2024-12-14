@@ -70,6 +70,8 @@ l_scan = 'Scanning'
 l_load = 'Loading'
 l_enter_here = 'ENTER'
 error = 'ERROR'
+l_titl_error = 'ELM connection error'
+l_text_error = 'Could not connect to the ELM.\n\n\nPossible causes:\n- Bluetooth is not enabled\n- other applications are connected to your ELM e.g Torque\n- other device is using this ELM\n- ELM got unpaired\n- ELM is read under new name or it changed its name\n\n\nCheck your ELM connection and try again.'
 not_ident = 'No matching identifiers'
 lang = 'en'
 

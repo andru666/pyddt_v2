@@ -70,6 +70,8 @@ l_scan = 'Balayage'
 l_load = 'Chargement'
 l_enter_here = 'ENTRER'
 error = 'ERREUR'
+l_titl_error = 'Erreur de connexion ELM'
+l_text_error = "Impossible de se connecter à l'ORME.\n\n \ n Causes possibles: \ n-Bluetooth n'est pas activé \n-d'autres applications sont connectées à votre ORME, par exemple Torque \n-un autre appareil utilise cet ORME \n-L'ORME n'est plus apparié \n - L'ORME est lu sous un nouveau nom ou il a changé de nom \n\n\n Vérifiez votre connexion ELM et réessayez."
 not_ident = 'Aucun identifiant correspondant'
 lang = 'fr'
 
