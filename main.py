@@ -49,8 +49,8 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.10'
-data_update = '14/12/2024'
+__version__ = '0.13.11'
+data_update = '20/12/2024'
 
 if mod_globals.os == 'android':
     try:
@@ -507,6 +507,7 @@ class PYDDT(App):
         except:
             mod_globals.fontStart = 20
         if mod_globals.opt_car != LANG.b_select or (mod_globals.savedCAR != LANG.b_select and not mod_globals.opt_scan):
+            #self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
             try:
                 self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
             except:

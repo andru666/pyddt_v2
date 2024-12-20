@@ -1680,9 +1680,9 @@ class DDTLauncher(App):
 
     def getSelectedECU(self, xml):
         if len(self.ecutree)==0:
-            pop = "Please select the project in the left list and then ECU in the bottom"
+            pop = LANG.l_not_SELecu
         else:
-            pop = "Please select an ECU in the bottom list"
+            pop = LANG.l_SELecu
         if not xml:
             Clock.schedule_once(lambda args:self.MyPopup(content=pop), 0.1)
             return None
