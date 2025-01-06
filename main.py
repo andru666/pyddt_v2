@@ -466,7 +466,6 @@ class PYDDT(App):
             mod_globals.opt_speed = int(self.ecus_opt_speed.text)
         else:
             mod_globals.opt_speed = 38400
-        #mod_globals.opt_car = 'x81 : Esp'
         if instance == 'scan':
             mod_globals.opt_demo = False
             mod_globals.opt_scan = True
@@ -478,7 +477,6 @@ class PYDDT(App):
         mod_globals.windows_size = Window.size
         mod_globals.opt_dump = self.button[LANG.l_dump].active
         mod_globals.opt_can2 = self.button['CAN2'].active
-        #mod_globals.savedCAR = 'savedCAR_VF1JK0UA634747882.csv'
         #mod_globals.savedCAR = 'savedCAR_test.csv'
         if self.button[LANG.b_log].state == 'down':
             mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
@@ -561,7 +559,8 @@ class PYDDT(App):
             btn.bind(on_release=lambda bt, a=avto: self.popup_in_car(bt.text, a))
             self.dropdown.add_widget(btn)
         self.carbutton = MyButton(text=LANG.b_select, font_size=self.fs, height=(self.fs * 3))
-        self.carbutton = MyButton(text='x81 : Espace IV', font_size=self.fs, height=(self.fs * 3))
+        if mod_globals.os == 'win': 
+            self.carbutton.text='x81 : Espace IV'
         self.carbutton.bind(on_release=self.dropdown.open)
         self.dropdown.bind(on_select=lambda instance, x: setattr(self.carbutton, 'text', x))
         glay.add_widget(self.carbutton)
@@ -650,9 +649,8 @@ class PYDDT(App):
         btn = MyButton(text='WiFi (192.168.0.10:35000)', font_size=self.fs)
         btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
         self.bt_dropdown.add_widget(btn)
-        btn = MyButton(text='127.0.0.1:35000', font_size=self.fs)
-        btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
-        self.bt_dropdown.add_widget(btn)
+        if mod_globals.os != 'android':
+            ports['127.0.0.1:35000'] = '127.0.0.1:35000'
         porte = ports.items()
         for name, address in porte:
             if mod_globals.opt_port == name:
