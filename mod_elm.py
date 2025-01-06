@@ -408,7 +408,7 @@ class ELM:
         self.lastCMDtime = 0
         self.ATCFC0 = mod_globals.opt_cfc0
         if self.lf != 0:
-            self.lf.write('#' * 60 + "\n#[" + log_log_tmstr()() + "] Check ELM type\n")
+            self.lf.write('#' * 60 + "\n#[" + log_tmstr() + "] Check ELM type\n")
             self.lf.write("Port Speed: " + str(speed) +"\n" + '#' * 60 + "\n")
             self.lf.flush()
         if not portName.startswith('127.0.0'):
@@ -535,7 +535,7 @@ class ELM:
                     #self.mlf.write (line + '\n')
 
                     #debug
-                    self.mlf.write(log_log_tmstr()() + ' : ' + line + '\n')
+                    self.mlf.write(log_tmstr() + ' : ' + line + '\n')
                 
                 if frameBuffLen >= coalescing_frames:
                     if self.monitorSendAllow is None or not self.monitorSendAllow.isSet ():
@@ -649,7 +649,7 @@ class ELM:
 
                 # save log
                 if self.lf:
-                    self.lf.write('mon: '+log_log_tmstr()() + ' : ' + line + '\n')
+                    self.lf.write('mon: '+log_tmstr() + ' : ' + line + '\n')
 
                 if frameBuffLen >= coalescing_frames:
                     if self.monitorSendAllow is None or not self.monitorSendAllow.isSet():
