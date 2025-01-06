@@ -1679,18 +1679,18 @@ class DDTLauncher(App):
             self.elm.set_iso_addr(ce['addr'], ecudata)
 
     def getSelectedECU(self, xml):
-        if len(self.ecutree)==0:
+        '''if len(self.ecutree)==0:
             pop = LANG.l_not_SELecu
         else:
-            pop = LANG.l_SELecu
+            pop = LANG.l_SELecu'''
         if not xml:
-            Clock.schedule_once(lambda args:self.MyPopup(content=pop), 0.1)
+            #Clock.schedule_once(lambda args:self.MyPopup(content=pop), 0.1)
             return None
         else:
             try:
                 line = [self.ecutree[v]['values'] for v in range(len(self.ecutree)) if xml in self.ecutree[v]['values']][0]
             except:
-                self.MyPopup(content=pop)
+                #self.MyPopup(content=pop)
                 return None
             try:
                 ecu = ast.literal_eval(line[4])

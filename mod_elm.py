@@ -422,9 +422,8 @@ class ELM:
                     if version_number >= stpx_introduced_in_version_number:
                         mod_globals.opt_obdlink = True
                 except:
-                    input("\nCannot determine OBDLink version.\n" +
-                    "OBDLink performance may be decreased.\n" + 
-                    "Press any key to continue...\n")
+                    #input("\nCannot determine OBDLink version.\nOBDLink performance may be decreased.\nPress any key to continue...\n")
+                    pass
 
                 # check STN
                 elm_rsp = self.cmd("STP 53")
@@ -887,7 +886,6 @@ class ELM:
                         tmp_addr = dnat[self.currentaddress]
                     self.vf.write(log_tmstr() + ';' + tmp_addr + ';' + command + ';' + line + ';' + negrsp[line[6:8]] + '\n')
                     self.vf.flush()
-
         return cmdrsp
 
     def send_cmd(self, command):

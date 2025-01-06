@@ -49,8 +49,8 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.11'
-data_update = '20/12/2024'
+__version__ = '0.13.12'
+data_update = '06/01/2025'
 
 if mod_globals.os == 'android':
     try:
@@ -507,9 +507,9 @@ class PYDDT(App):
         except:
             mod_globals.fontStart = 20
         if mod_globals.opt_car != LANG.b_select or (mod_globals.savedCAR != LANG.b_select and not mod_globals.opt_scan):
-            #self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
+            self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
             try:
-                self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
+                self.elm1 = ''#ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
             except:
                 lbltxt = MyLabel(text=LANG.l_text_error, size_hint=(1, 1), font_size=mod_globals.fontSize)
                 popup_load = MyPopup(title=LANG.l_titl_error, content=lbltxt, size=(Window.size[0]*0.9, Window.size[1]*0.9), on_dismiss=exit)
@@ -561,6 +561,7 @@ class PYDDT(App):
             btn.bind(on_release=lambda bt, a=avto: self.popup_in_car(bt.text, a))
             self.dropdown.add_widget(btn)
         self.carbutton = MyButton(text=LANG.b_select, font_size=self.fs, height=(self.fs * 3))
+        self.carbutton = MyButton(text='x81 : Espace IV', font_size=self.fs, height=(self.fs * 3))
         self.carbutton.bind(on_release=self.dropdown.open)
         self.dropdown.bind(on_select=lambda instance, x: setattr(self.carbutton, 'text', x))
         glay.add_widget(self.carbutton)
