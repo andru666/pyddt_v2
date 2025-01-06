@@ -23,7 +23,7 @@ else:
     from kivy.core.window import Window
 
 from mod_db_manager import get_zip
-from mod_elm import ELM
+from mod_elm import get_devices, ELM, Port
 mod_globals.os = platform
 from kivy import base
 import webbrowser, time
@@ -49,7 +49,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.12'
+__version__ = '0.13.11'
 data_update = '06/01/2025'
 
 if mod_globals.os == 'android':
@@ -612,6 +612,11 @@ class PYDDT(App):
         glay.add_widget(label1)
         glay.add_widget(sw)
         return glay
+        
+    def select_usb(self, dt=None):
+        self.bt_dropdown.select(dt.text)
+        mod_globals.opt_log = 'USB.txt'
+        Port('USB', mod_globals.opt_speed, 5).getConnected()
 
     def make_opt_rate(self):
         glay = MyGridLayout(cols=2, padding=(self.fs/3), height=(self.fs * 4), size_hint=(1, None))
@@ -637,7 +642,7 @@ class PYDDT(App):
         return glay
 
     def make_bt_device_entry(self):
-        ports = mod_ddt_utils.getPortList()
+        ports = get_devices()
         label1 = MyLabel(text='ELM port', font_size=self.fs*1.5, halign='left', size_hint=(0.7, 1))
         self.bt_dropdown = DropDown(height=(self.fs))
         label1.bind(size=label1.setter('text_size'))
@@ -652,8 +657,14 @@ class PYDDT(App):
         for name, address in porte:
             if mod_globals.opt_port == name:
                 mod_globals.opt_dev_address = address
-            btn = MyButton(text=name + '>' + address, font_size=self.fs)
-            btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
+            if name == 'USB' and address:
+                btn = MyButton(text='USB', font_size=self.fs)
+            else:
+                btn = MyButton(text=name + '>' + address, font_size=self.fs)
+            if name == 'USB' and address:
+                btn.bind(on_release=self.select_usb)
+            else:
+                btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
             self.bt_dropdown.add_widget(btn)
         self.mainbutton = MyButton(text='', font_size=self.fs)
         self.mainbutton.bind(on_release=self.bt_dropdown.open)

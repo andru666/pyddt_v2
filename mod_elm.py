@@ -413,6 +413,9 @@ class ELM:
             self.lf.flush()
         if not portName.startswith('127.0.0'):
             elm_rsp = self.cmd("STI")
+            if 'TIMEOUT' in elm_rsp:
+                self.port.check_elm()
+                elm_rsp = self.cmd("STI")
             if elm_rsp and '?' not in elm_rsp:
                 firmware_version = elm_rsp.split(" ")[-1]
                 try:
@@ -500,9 +503,7 @@ class ELM:
             if (ct - lst) > coalescing_time:  # and frameBuffLen>0:
                 if self.monitorSendAllow is None or not self.monitorSendAllow.isSet ():
                     self.monitorSendAllow.set ()
-                    #print 'time callback'
                     callback (frameBuff)
-                    #print 'return from callback'
                 lst = ct
                 frameBuff = ""
                 frameBuffLen = 0
@@ -556,9 +557,6 @@ class ELM:
         if mod_globals.opt_demo or self.monitorCallBack is None: return
         # if len(filter)!=3 or len(mask)!=3: return
         
-        print()
-        print("Filter : " + filt)
-        print("Mask   : " + mask)
         sys.stdout.flush ()
         
         # stop monitor
@@ -575,7 +573,6 @@ class ELM:
     
     def startMonitor(self, callback, sendAllow=None, c_t=0.1, c_f=10):
         if self.currentprotocol != "can":
-            print("Monitor mode is possible only on CAN bus")
             return
         self.run_allow_event = threading.Event ()
         self.run_allow_event.set ()
@@ -626,9 +623,7 @@ class ELM:
             if (ct - lst) > coalescing_time:  # and frameBuffLen>0:
                 if self.monitorSendAllow is None or not self.monitorSendAllow.isSet():
                     self.monitorSendAllow.set()
-                    # print 'time callback'
                     callback(frameBuff)
-                    # print 'return from callback'
                 lst = ct
                 frameBuff = ""
                 frameBuffLen = 0
@@ -653,9 +648,7 @@ class ELM:
                 if frameBuffLen >= coalescing_frames:
                     if self.monitorSendAllow is None or not self.monitorSendAllow.isSet():
                         self.monitorSendAllow.set()
-                        # print 'frame callback'
                         callback(frameBuff)
-                        # print 'return from callback'
                     lst = ct
                     frameBuff = ""
                     frameBuffLen = 0
@@ -668,7 +661,6 @@ class ELM:
 
     def nr78_startMonitor(self, callback, sendAllow=None, c_t=0.1, c_f=1):
         if self.currentprotocol != "can":
-            print("Monitor mode is possible only on CAN bus")
             return
         self.run_allow_event = threading.Event()
         self.run_allow_event.set()
@@ -743,14 +735,7 @@ class ELM:
 
         while not self.endWaitingFrames and ( pyren_time()-beg < timeout ):
             time.sleep(0.01)
-
-        #debug
-        #print '>>>> ', self.waitedFrames
         self.nr78_stopMonitor()
-
-        #debug
-        #print '>>>> ', self.waitedFrames
-
         return self.waitedFrames
 
     def getFromCache(self, req ):
@@ -1203,9 +1188,6 @@ class ELM:
             result = ' '.join(a + b for a, b in zip(result[::2], result[1::2]))
             return result
         else:
-            # check for negative response (repeat the same as in cmd())
-            # debug
-            # print "Size error: ", result
             if result[:2] == '7F' and result[4:6] in list(negrsp.keys()):
                 if self.vf != 0:
                     self.vf.write(
