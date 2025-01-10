@@ -50,7 +50,7 @@ import os, sys, glob
 __all__ = 'install_android'
 
 __version__ = '0.13.11'
-data_update = '06/01/2025'
+data_update = '10/01/2025'
 
 if mod_globals.os == 'android':
     try:
@@ -453,6 +453,8 @@ class PYDDT(App):
             btn.bind(on_release=lambda btn: self.ecus_dropdown.select(btn.text))
             self.ecus_dropdown.add_widget(btn)
         self.ecusbutton = MyButton(text=LANG.b_select, font_size=self.fs, size_hint=(0.7, None), height=(self.fs * 3))
+        if mod_globals.os == 'win':
+            self.ecusbutton.text = 'savedCAR_p33A.csv'
         self.ecusbutton.bind(on_release=self.ecus_dropdown.open)
         self.ecus_dropdown.bind(on_select=lambda instance, x: setattr(self.ecusbutton, 'text', x))
         glay.add_widget(toggle)

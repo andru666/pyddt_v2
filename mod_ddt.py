@@ -1188,6 +1188,7 @@ class DDTLauncher(App):
         bytestosend = list(map(''.join, zip(*[iter(requests.SentBytes)]*2)))
         dtcread_command = ''.join(bytestosend)
         can_response = self.elm.request(dtcread_command)
+
         moredtcread_command = None
         if 'MoreDTC' in requests.SentDI.keys():
             moredtcfirstbyte = int(requests.SentDI['MoreDTC'].FirstByte)
@@ -1213,6 +1214,7 @@ class DDTLauncher(App):
                 can_response += more_can_response[2:]
                 maxcount -= 1
         numberofdtc = int('0x' + can_response[1], 16)
+
         self.Layout.clear_widgets()
         self.Layout.add_widget(MyLabel(text=LANG.l_title6, height=fs*3, bgcolor=(0.8,0,0,1), markup=True))
         root = ScrollView(size_hint=(1, None), height=self.Window_size[1]-fs*9)
@@ -1229,8 +1231,10 @@ class DDTLauncher(App):
                         self.data_dtc[hex(int(device.attrib['DTC'])).replace("0x", "").upper()]['FreezeFrame'] = device.attrib['FreezeFrame']
                     self.data_dtc[hex(int(device.attrib['DTC'])).replace("0x", "").upper()]['name'] = device.attrib['Name']
         box = GridLayout(cols=1, size_hint=(1, None), height=fs)
+        mB = requests.MinBytes
         for dn in range(0, numberofdtc):
-            DTC = ''.join(can_response[2:4])
+            DTC = ''.join(can_response[mB:mB+2])
+            if not DTC in self.data_dtc: continue
             ln = MyButton(text='[b]DTC #%i' % dn + '[/b] ' + DTC, id=DTC, background_color=(0,0.5,0,1), markup=True)
             if DTC in self.data_dtc.keys():
                 self.data_dtc[DTC]['resp'] = ' '.join(can_response)
@@ -1241,7 +1245,6 @@ class DDTLauncher(App):
                     ln.text += ' : ' +  self.dict_t[tx]
                 else:
                     ln.text += ' : ' + tx
-                
             box.add_widget(MyLabel(text='', height=fs*0.4, bgcolor=(0,0,0.2,1)))
             box.add_widget(ln)
             box.height = box.height + ln.height + fs*0.4
@@ -1255,20 +1258,20 @@ class DDTLauncher(App):
         tit = dt.text.split(':', 1)[1]
         requests = self.data_dtc[dt.id]['requests']
         box = GridLayout(cols=1, spacing=5, size_hint=(1, None))
-        box.height = len(requests.ReceivedDI.keys()) * fs*3
+        box.height = len(requests.ReceivedDI.keys()) * fs
         
         for k in requests.ReceivedDI.keys():
             if k == "NDTC" or k == "FirstDTC": continue
             value_hex = get_value({'request':requests.Name,'name':k}, self.decu, self.elm, resp=self.data_dtc[dt.id]['resp'])
             if value_hex['value'] == None or value_hex['value'] == 'None': continue
             glay = GridLayout(cols=2, size_hint=(1, None))
-            glay.height = fs*2*math.ceil(len(k)*1.0/(glay.width*0.7/2))
+            glay.height = fs*2.5*math.ceil(len(k)*1.0/(self.Window_size[0]*0.7))
+            
             if k in self.dict_t.keys():
                 k_txt = self.dict_t[k]
             else:
                 k_txt = k
             label1 = MyLabelBlue(text=k_txt, halign='left', valign='middle', size_hint=(0.6, 1), font_size=fs)
-            glay.add_widget(label1)
             if ':' not in value_hex['value']:
                 value = int('0x' + value_hex['value'], 16)
                 if k in self.decu.datas.keys():
@@ -1287,23 +1290,25 @@ class DDTLauncher(App):
                             value = self.dict_t[value]
                     else:
                         value = '[' + str(value[0]) + '] ' + value[1]
-            v_h = fs*2*math.ceil(len(value)*1.0/(glay.width*0.4/2))
+            v_h = fs*2*math.ceil(len(value)*1.0/(self.Window_size[0]*0.4))
             if v_h > glay.height:
                 glay.height = v_h
             label2 = MyLabelGreen(text=value, size_hint=(0.4, 1))
+            glay.add_widget(label1)
             glay.add_widget(label2)
+            box.height += glay.height
             box.add_widget(glay)
         if 'FreezeFrame' in self.data_dtc[dt.id]:
             box.add_widget(Label(text='Момент проявления неисправности', size_hint=(1, None), height=fs*3))
             requests_mem = self.decu.requests[self.data_dtc[dt.id]['FreezeFrame']]
-            box.height += len(requests_mem.ReceivedDI.keys()) * fs*3
+            #box.height += len(requests_mem.ReceivedDI.keys()) * fs*3
             dtcread_command = requests_mem.SentBytes
             if dtcread_command == '1200040000':
                 dtcread_command = '120004'+dt.id
             resp = self.elm.request(dtcread_command)
             for k in requests_mem.ReceivedDI.keys():
                 glay = GridLayout(cols=2, size_hint=(1, None))
-                glay.height = fs*2*math.ceil(len(k)*1.0/(glay.width*0.7/2))
+                glay.height = fs*2.5*math.ceil(len(k)*1.0/(self.Window_size[0]*0.06))
                 if k in self.dict_t.keys():
                     txt = self.dict_t[k]
                 else:
@@ -1315,11 +1320,12 @@ class DDTLauncher(App):
                     value = value['value'].split(':', 1)[1]
                 else:
                     value = value['value']
-                v_h = fs*2*math.ceil(len(value)*1.0/(glay.width*0.4/2))
+                v_h = fs*2*math.ceil(len(value)*1.0/(self.Window_size[0]*0.4))
                 if v_h > glay.height:
                     glay.height = v_h
                 label2 = MyLabelGreen(text=value, size_hint=(0.4, 1))
                 glay.add_widget(label2)
+                box.height += glay.height
                 box.add_widget(glay)
         root = ScrollView(size_hint=(1, 1))
         root.add_widget(box)
