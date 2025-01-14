@@ -216,7 +216,7 @@ class PYDDT(App):
         Window.bind(on_keyboard=self.key_handler)
 
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
-        
+        print(keycode1)
         global resizeFont
         if resizeFont:
             return True
