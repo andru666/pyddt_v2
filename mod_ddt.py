@@ -118,6 +118,19 @@ class DDTLauncher(App):
         if mod_globals.opt_scan:
             self.ScanAllBtnClick()
         super(DDTLauncher, self).__init__()
+        Window.bind(on_keyboard=self.key_handler)
+        
+    def key_handler(self, window, keycode1, keycode2, text, modifiers):
+        if keycode1 == 24:
+            self.CH_font = True
+            self.src = self.src * 1.25
+            self.update_dInputs()
+            self.loadScreen(self.currentscreen, dt)
+        if keycode1 == 25:
+            self.CH_font = True
+            self.src = self.src / 1.25
+            self.update_dInputs()
+            self.loadScreen(self.currentscreen, dt)
 
     def build(self):
         p = len(self.carecus)
@@ -828,6 +841,7 @@ class DDTLauncher(App):
         self.loadScreen(self.currentscreen, dt)
 
     def loadScreen(self, scr, data):
+        self.DATA = data
         self.Layout.clear_widgets()
         self.start = True
         self.startStopButton = MyButton(text='', size_hint=(1, 1))
