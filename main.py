@@ -49,7 +49,7 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.11'
+__version__ = '0.13.12'
 data_update = '10/01/2025'
 
 if mod_globals.os == 'android':
