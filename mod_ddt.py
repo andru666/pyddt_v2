@@ -5,6 +5,9 @@ from shutil import copyfile
 from datetime import datetime
 from kivy.app import App
 import kivy.base as base
+from kivy.config import Config
+Config.set('kivy', 'exit_on_escape', '0')
+Config.set('graphics', 'multisamples', '0')
 from kivy.base import EventLoop, ExceptionManager
 from kivy.clock import Clock
 from kivy.uix.progressbar import ProgressBar

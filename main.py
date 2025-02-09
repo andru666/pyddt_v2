@@ -6,6 +6,7 @@ except:
 from kivy.utils import platform
 from kivy.config import Config
 Config.set('kivy', 'exit_on_escape', '0')
+Config.set('graphics', 'multisamples', '0')
 import mod_globals, mod_ddt_utils, mod_ddt
 if platform != 'android':
     import ctypes
