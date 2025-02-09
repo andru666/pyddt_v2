@@ -75,6 +75,7 @@ class DDTLauncher(App):
         self.elm = elm
         self.Protocol = Protocol
         self.scf = 5.0
+        self.fon = 1
         if mod_globals.os != 'android': self.scf = 10.0
         self.clock_event = None
         self.roll_back = False
@@ -120,6 +121,12 @@ class DDTLauncher(App):
         super(DDTLauncher, self).__init__()
         Window.bind(on_keyboard=self.key_handler)
         
+    def on_pause(self):
+        return True
+
+    def on_resume(self):
+        pass
+    
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
             self.CH_font = True
@@ -832,13 +839,25 @@ class DDTLauncher(App):
         self.loadScreen(self.currentscreen, dt)
 
     def change_font(self, dt, i):
-        self.CH_font = True
         if i == '+':
-            self.src = self.src * 1.25
+            fotn = 1.25
+            self.fon = self.fon * 1.25
         else:
-            self.src = self.src / 1.25
-        self.update_dInputs()
-        self.loadScreen(self.currentscreen, dt)
+            fotn = 0.75
+            self.fon = self.fon / 1.25
+        for v in [self.oLabels, self.iLabels, self.dropbutton, self.dLabels, self.LabelS, self.Labels]:
+            if len(v):
+                if isinstance(v, list):
+                    for y in v:
+                        y.font_size = y.font_size * fotn
+                else:
+                    for l, i in v.items():
+                        if isinstance(i, list):
+                            for y in i:
+                                y.font_size = y.font_size * fotn
+                        else:
+                            i.font_size = i.font_size * fotn
+        
 
     def loadScreen(self, scr, data):
         self.DATA = data
@@ -867,6 +886,7 @@ class DDTLauncher(App):
         self.BValue = []
         self.SValue = {}
 
+        self.LabelS = {}
         self.Labels = {}
         self.oLabels = {}
         self.dLabels = {}
@@ -884,6 +904,7 @@ class DDTLauncher(App):
         self.dBtnSend = {}
 
         self.ListOption = {}
+        self.dropbutton = []
         self.dropdowns = {}
         self.triggers = {}
         
@@ -907,6 +928,7 @@ class DDTLauncher(App):
             else:
                 self.src = (scr_h*0.5 / scr_w)
             if self.src < 1.5: self.src = 1.5
+        self.src = self.src * self.fon
         self.CH_font = False
         labels = ecu_labels(self.LValue, scr)
         dispalys = ecu_dispalys(self.DValue, scr, self.decu)
@@ -996,7 +1018,9 @@ class DDTLauncher(App):
                         Text = self.dict_t[xText]
                     else:
                         Text = xText
-                    self.flayout.add_widget(MyLabel_scr(text=Text, id=xText, halign=halign, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*self.src, valign=xAlignment, bgcolor=self.hex_to_rgb(xColor),  size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrHeight+xrTop)/self.scf)))
+                    lab = MyLabel_scr(text=Text, id=xText, halign=halign, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xfSize*self.src, valign=xAlignment, bgcolor=self.hex_to_rgb(xColor),  size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrHeight+xrTop)/self.scf))
+                    self.LabelS[xText] = lab
+                    self.flayout.add_widget(lab)
             if len(self.DValue) > 0:
                 for d in self.DValue:
                     xText, xReq, xColor, xWidth, xrLeft, xrTop, xrHeight, xrWidth, xfName, xfSize, xfBold, xfItalic, xfColor, xAlignment, halign = d
@@ -1015,6 +1039,7 @@ class DDTLauncher(App):
                     
                     if xWidth/self.scf > 40:
                         label = MyLabel_scr(text=Text, id=xText+'_'+xReq, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, font_size=xSize*self.src, halign='left', bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        self.LabelS[xText+'_'+xReq] = label
                         self.flayout.add_widget(label)
                     if not labe and self.hex_to_rgb(self.scr_c) == self.hex_to_rgb(xColor):
                         xColor = int(xColor)/2
@@ -1031,6 +1056,7 @@ class DDTLauncher(App):
                         Text = xText
                     button = MyButton(text=Text, text_size=(xrWidth/self.scf, xrHeight/self.scf), valign='middle', id=b, color=self.hex_to_rgb(xfColor), bold=xfBold, halign=halign, italic=xfItalic, font_size=xfSize*self.src, size_hint=(None, None), size=(xrWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
                     button.bind(on_release = lambda btn=xText, key=b: self.buttonPressed(btn.text, btn.id))
+                    self.LabelS[b] = button
                     self.flayout.add_widget(button)
             
             if len(self.IValue) > 0:
@@ -1043,6 +1069,7 @@ class DDTLauncher(App):
                     
                     if xWidth/self.scf > 40:
                         label = MyLabel_scr(text=Text, id=i, valign=xAlignment, color=self.hex_to_rgb(xfColor), bold=xfBold, italic=xfItalic, halign='left', font_size=xfSize*self.src, bgcolor=self.hex_to_rgb(xColor), size_hint=(None, None), size=(xWidth/self.scf, xrHeight/self.scf), pos=(xrLeft/self.scf, self.size_screen[1]-(xrTop+xrHeight)/self.scf))
+                        self.LabelS[Text+'_'+i] = label
                         self.flayout.add_widget(label)
                     if i+xReq not in self.iValue.keys():
                         if i not in self.dValue.keys():
@@ -1070,6 +1097,7 @@ class DDTLauncher(App):
                                     oText = o
                             btn = MyButton(text=oText, id=o, font_size=xfSize*self.src*self.flayout.scale, size_hint_y=None, height=xrHeight)
                             btn.bind(on_release=lambda btn=btn, i=i+xReq: self.select_option(btn.text, i))
+                            self.dropbutton.append(btn)
                             self.dropdowns[i+xReq].add_widget(btn)
                         o = self.iValue[i+xReq]['value']
                         if ':' in o:
@@ -1127,6 +1155,7 @@ class DDTLauncher(App):
         self.iLabels = {}
         
         self.ListOption = {}
+        self.dropbutton = []
         self.dropdowns = {}
         self.triggers = {}
         
@@ -1965,6 +1994,7 @@ class DDTLauncher(App):
             for o in self.ListOption[i]:
                 btn = MyButton(text=o, id=o, size_hint=(1, None), height=fs*3)
                 btn.bind(on_release=lambda btn=btn, i=i+v: self.select_option(btn.text, i))
+                self.dropbutton.append(btn)
                 self.dropdowns[i+v].add_widget(btn)
             self.triggers[i+v] = MyButton(text=self.ListOption[i][0], id=i+v, size_hint=(1, 1))
             self.triggers[i+v].bind(on_release=self.dropdowns[i+v].open)

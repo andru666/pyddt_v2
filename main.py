@@ -49,8 +49,8 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.12'
-data_update = '10/01/2025'
+__version__ = '0.13.13'
+data_update = '09/02/2025'
 
 if mod_globals.os == 'android':
     try:
@@ -143,6 +143,10 @@ if mod_globals.os == 'android':
 
         AndroidActivityInfo = autoclass('android.content.pm.ActivityInfo')
         Params = autoclass('android.view.WindowManager$LayoutParams')
+        Service = autoclass('org.kivy.android.PythonService')
+        mActivity = autoclass('org.kivy.android.PythonActivity').mActivity
+        service = Service(mActivity)
+        service.start()
     except:
         mod_globals.ecu_root = '../'
         try:
@@ -214,6 +218,12 @@ class PYDDT(App):
         self.fs = mod_globals.fontStart
         super(PYDDT, self).__init__()
         Window.bind(on_keyboard=self.key_handler)
+
+    def on_pause(self):
+        return True
+
+    def on_resume(self):
+        pass
 
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         global resizeFont
@@ -453,7 +463,7 @@ class PYDDT(App):
             self.ecus_dropdown.add_widget(btn)
         self.ecusbutton = MyButton(text=LANG.b_select, font_size=self.fs, size_hint=(0.7, None), height=(self.fs * 3))
         if mod_globals.os == 'win':
-            self.ecusbutton.text = 'savedCAR_p33A.csv'
+            self.ecusbutton.text = 'savedCAR_x81.csv'
         self.ecusbutton.bind(on_release=self.ecus_dropdown.open)
         self.ecus_dropdown.bind(on_select=lambda instance, x: setattr(self.ecusbutton, 'text', x))
         glay.add_widget(toggle)
