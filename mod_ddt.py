@@ -33,7 +33,8 @@ from mod_ddt_data import *
 import xml.etree.ElementTree as et
 fmn = 1.3
 from mod_elm import *
-import mod_globals, mod_ddt_utils, mod_db_manager, mod_scan_ecus, mod_ddt_ecu
+import mod_globals, mod_ddt_utils, mod_db_manager, mod_scan_ecus, mod_ddt_ecu, logging
+logging.basicConfig(level=logging.DEBUG)
 
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
@@ -125,9 +126,11 @@ class DDTLauncher(App):
         Window.bind(on_keyboard=self.key_handler)
         
     def on_pause(self):
+        logging.debug('App paused')
         return True
 
     def on_resume(self):
+        logging.debug('App resumed')
         pass
     
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
