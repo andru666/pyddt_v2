@@ -793,7 +793,7 @@ class DDTLauncher(App):
                         self.Labels[key].text = self.dict_t[val]
                     else:
                         self.Labels[key].text = val
-        Clock.schedule_once(self.updates_data, 0.05)
+        threading.Thread(target=self.updates_data).start()
 
     def updates_values(self, dt=None):
         if not self.start:
