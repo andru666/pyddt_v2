@@ -128,11 +128,13 @@ class DDTLauncher(App):
         
     def on_pause(self):
         self.start = False
+        self.clock_event.pause()
         logging.debug('App paused')
         return True
 
     def on_resume(self):
         self.start = True
+        self.clock_event.resume()
         logging.debug('App resumed')
         pass
     
@@ -661,7 +663,7 @@ class DDTLauncher(App):
         self.decu.elm.clear_cache()
         self.elm.clear_cache()
         self.get_ecu_values()
-        for key, v in params.items():
+        for key, v in self.params.items():
             listIndex = None
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
@@ -790,7 +792,7 @@ class DDTLauncher(App):
                         self.Labels[key].text = val
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            self.clock_event = threading.Thread(target=self.updates_data, daemon=True)
+            self.clock_event = PausableThread(target=self.updates_data, daemon=True)
             self.clock_event.start()
             #threading.Thread(target=self.updates_values).start()
 
@@ -1278,7 +1280,7 @@ class DDTLauncher(App):
         
         self.update_dInputs()
         if self.start:
-            self.clock_event = threading.Thread(target=self.updates_data, daemon=True)
+            self.clock_event = PausableThread(target=self.updates_data, daemon=True)
             self.clock_event.start()
             #threading.Thread(target=self.updates_values).start()
 
@@ -1389,7 +1391,7 @@ class DDTLauncher(App):
             self.startScreen(self.dReq)
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(self.xml, self.screens)))
         if self.start:
-            self.clock_event = threading.Thread(target=self.updates_data, daemon=True)
+            self.clock_event = PausableThread(target=self.updates_data, daemon=True)
             self.clock_event.start()
             #threading.Thread(target=self.updates_values).start()
 
@@ -2317,6 +2319,32 @@ def DDT_START(filterText, elm=None, p=None):
     while 1:
         root = DDTLauncher(filterText, elm, p)
         root.run()
+
+class PausableThread(threading.Thread):
+    def __init__(self):
+        super().__init__()
+        self.pause_event = threading.Event()  # Событие для приостановки
+        self.stop_event = threading.Event()   # Событие для остановки потока
+        self.pause_event.set()  # Изначально поток не приостановлен
+
+    def run(self):
+        while not self.stop_event.is_set():
+            self.pause_event.wait()  # Ждем, если поток приостановлен
+            print("Thread is running...")
+            time.sleep(1)
+
+    def pause(self):
+        """Приостановить поток."""
+        self.pause_event.clear()  # Очищаем событие, чтобы поток остановился
+
+    def resume(self):
+        """Возобновить поток."""
+        self.pause_event.set()  # Устанавливаем событие, чтобы поток продолжил работу
+
+    def stop(self):
+        """Остановить поток."""
+        self.stop_event.set()  # Устанавливаем событие для остановки
+        self.resume()  # Если поток был приостановлен, возобновляем его для завершения
 
 class MyLabel_scr(Label):
     def __init__(self, **kwargs):
