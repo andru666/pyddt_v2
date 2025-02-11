@@ -790,12 +790,11 @@ class DDTLauncher(App):
                         self.Labels[key].text = val
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            if mod_globals.opt_csv:
+            '''if mod_globals.opt_csv:
                 Clock.schedule_once(self.updates_values, 0.02)
             else:
-                Clock.schedule_once(self.updates_values, 0.05)
-            #threading.Thread(target=self.updates_values).start()
-            #threading.Thread(target=self.updates_values).start()
+                Clock.schedule_once(self.updates_values, 0.05)'''
+            threading.Thread(target=self.updates_values).start()
 
     def get_ecu_values(self):
         dct = {}
