@@ -661,11 +661,11 @@ class DDTLauncher(App):
         self.get_ecu_values()
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            #Clock.schedule_once(self.update_label, 0.05)
-            threading.Thread(target=self.update_label).start()
+            Clock.schedule_once(self.update_label, 0.05)
+            #threading.Thread(target=self.update_label).start()
         
 
-    def update_label(self, dt):
+    def update_label(self, dt=None):
         for key, v in self.params.items():
             listIndex = None
             val = v['value']
@@ -793,7 +793,7 @@ class DDTLauncher(App):
                         self.Labels[key].text = self.dict_t[val]
                     else:
                         self.Labels[key].text = val
-
+        Clock.schedule_once(self.updates_data, 0.05)
 
     def updates_values(self, dt=None):
         if not self.start:
