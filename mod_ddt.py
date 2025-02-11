@@ -796,7 +796,7 @@ class DDTLauncher(App):
                         self.Labels[key].text = val
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            self.clock_event = PausableThread(target=self.updates_data, daemon=True)
+            self.clock_event = PausableThread(target=self.updates_values, daemon=True)
             self.clock_event.start()
             #threading.Thread(target=self.updates_values).start()
 
