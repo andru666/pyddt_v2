@@ -432,6 +432,7 @@ class PYDDT(App):
         label = Label(text=LANG.l_n_car2, font_size=self.fs*3, size_hint=(1, 1), halign = 'center', valign = 'middle', text_size=(Window.size[0]*0.7, Window.size[1]*0.7))
         popup = Popup(title=LANG.error, title_size=self.fs*1.5, title_align='center', content=label, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
         if mod_globals.opt_car !=LANG.b_select or mod_globals.savedCAR != LANG.b_select:
+            base.EventLoop.window.canvas.clear()
             instance.background_color= (0,1,0,1)
             if mod_globals.opt_demo:
                 lbltxt = Label(text=LANG.l_demo)
@@ -442,11 +443,10 @@ class PYDDT(App):
             popup_init = Popup(title=LANG.l_load, title_size=self.fs*1.5, title_align='center', content=lbltxt, size=(Window.size[0]*0.8, Window.size[1]*0.8), size_hint=(None, None))
             popup_init.open()
             base.EventLoop.idle()
-            sys.stdout.flush()
             popup_init.dismiss()
-            self.stop()
-            base.EventLoop.window.canvas.clear()
             mod_ddt.DDT_START(mod_globals.opt_car, self.elm)
+            base.EventLoop.idle()
+            #self.start_ddt(['KWP','CAN-250','CAN-500'])
         else:
             popup.open()
             return
