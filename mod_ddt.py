@@ -85,7 +85,7 @@ class DDTLauncher(App):
         self.roll_back = False
         self.translate = True
         self.CH_font = False
-        self.start = False
+        
         if ':' in self.filterText:
             self.v_proj = self.filterText.split(':')[0].strip()
         else:
@@ -103,7 +103,6 @@ class DDTLauncher(App):
         self.label = {}
         self.dict_trans = {}
         self.dict_t = {}
-        self.params = {}
         self.currentsession = ''
         self.v_addr = ''
         self.Roll_back = ''
@@ -127,20 +126,12 @@ class DDTLauncher(App):
         Window.bind(on_keyboard=self.key_handler)
         
     def on_pause(self):
-        self.start = False
-        self.clock_event.pause()
         logging.debug('App paused')
         return True
 
     def on_resume(self):
-        self.start = True
-        self.clock_event.resume()
         logging.debug('App resumed')
         pass
-    
-    def on_stop(self):
-        self.thread.stop()  # Останавливаем поток при завершении приложения
-        self.thread.join()
     
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
@@ -666,8 +657,11 @@ class DDTLauncher(App):
             return
         self.decu.elm.clear_cache()
         self.elm.clear_cache()
-        self.get_ecu_values()
-        for key, v in self.params.items():
+        try:
+            params = self.get_ecu_values()
+        except:
+            return
+        for key, v in params.items():
             listIndex = None
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
@@ -796,153 +790,12 @@ class DDTLauncher(App):
                         self.Labels[key].text = val
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            self.clock_event = PausableThread(target=self.updates_values, daemon=True)
-            self.clock_event.start()
-            #threading.Thread(target=self.updates_values).start()
-
-    def updates_data(self):
-        if not self.start:
-            return
-        while self.start:
-            self.decu.elm.clear_cache()
-            self.elm.clear_cache()
-            self.get_ecu_values()
             if mod_globals.opt_csv:
-                Clock.schedule_once(self.update_label, 0.02)
+                Clock.schedule_once(self.updates_values, 0.02)
             else:
-                Clock.schedule_once(self.update_label, 0.05)
-        if mod_globals.opt_demo: self.start = False
-    
-    def update_label(self, dt):
-        if not self.params:
-            return
-        for key, v in self.params.items():
-            listIndex = None
-            val = v['value']
-            d = self.decu.datas[self.dValue[key]['name']]
-            if val != 'None':
-                if len(d.List.keys()):
-                    listIndex = int(val,16)
-                if key in self.dLabels.keys():
-                    if len(d.List.keys()):
-                        listIndex = int(val,16)
-                        if listIndex in d.List.keys():
-                            if len(self.dLabels[key]) ==1:
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    self.dLabels[key][0].text = self.dict_t[d.List[listIndex]]
-                                else:
-                                    self.dLabels[key][0].text = d.List[listIndex]
-                            else:
-                                for iD in self.dLabels[key]:
-                                    if d.List[listIndex] in self.dict_t.keys():
-                                        iD.text = self.dict_t[d.List[listIndex]]
-                                    else:
-                                        iD.text = d.List[listIndex]
-                        else:
-                            if len(self.dLabels[key]) ==1:
-                                if val in self.dict_t.keys():
-                                    self.dLabels[key][0].text = self.dict_t[val]
-                                else:
-                                    self.dLabels[key][0].text = val
-                            else:
-                                for iD in self.dLabels[key]:
-                                    if val in self.dict_t.keys():
-                                        iD.text = self.dict_t[val]
-                                    else:
-                                        iD.text = val
-                    elif d.Scaled:
-                        if len(self.dLabels[key]) ==1:
-                            if val in self.dict_t.keys():
-                                self.dLabels[key][0].text = self.dict_t[val]+' '+d.Unit
-                            else:
-                                self.dLabels[key][0].text = val+' '+d.Unit
-                        else:
-                            for iD in self.dLabels[key]:
-                                if val in self.dict_t.keys():
-                                    iD.text = self.dict_t[val]
-                                else:
-                                    iD.text = val+' '+d.Unit
-                    else:
-                        if len(self.dLabels[key]) ==1:
-                            if val in self.dict_t.keys():
-                                self.dLabels[key][0].text = self.dict_t[val]
-                            else:
-                                self.dLabels[key][0].text = val
-                        else:
-                            for iD in self.dLabels[key]:
-                                if val in self.dict_t.keys():
-                                    iD.text = self.dict_t[val]
-                                else:
-                                    iD.text = val
-                else:
-                    if key in self.dLabels.keys():
-                        if len(self.dLabels[key]) == 1:
-                            if val in self.dict_t.keys():
-                                self.dLabels[key][0].text = self.dict_t[val]
-                            else:
-                                self.dLabels[key][0].text = val
-                        else:
-                            for iD in self.dLabels[key]:
-                                if val in self.dict_t.keys():
-                                    iD.text = self.dict_t[val]
-                                else:
-                                    iD.text = val
-                if key in self.iLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        if val in self.dict_t.keys():
-                            self.iLabels[key].text = self.dict_t[val]
-                        else:
-                            self.iLabels[key].text = val
-                        self.iValueNeedUpdate[key] = False
-                if key+v['request'] in self.oLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex in d.List.keys():
-                            if listIndex in d.List.keys():
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                                else:
-                                    self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        else:
-                            self.oLabels[key+v['request']].text = val
-                        self.iValueNeedUpdate[key] = False
-                elif (key+v['request']).replace('DataRead', 'DataWrite') in self.oLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex in d.List.keys():
-                            if listIndex in d.List.keys():
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                                else:
-                                    self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        else:
-                            self.oLabels[(key+v['request']).replace('DataRead', 'DataWrite')].text = val
-                        self.iValueNeedUpdate[key] = False
-                elif (key+v['request']).replace(key+'Read', key+'Write') in self.oLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex in d.List.keys():
-                            if listIndex in d.List.keys():
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    self.oLabels[(key+v['request']).replace(key+'Read', key+'Write')].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                                else:
-                                    self.oLabels[(key+v['request']).replace(key+'Read', key+'Write')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        else:
-                            self.oLabels[(key+v['request']).replace(key+'Read', key+'Write')].text = val
-                        self.iValueNeedUpdate[key] = False
-                elif len([I for I in self.oLabels.keys() if I.startswith(key)]):
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex in d.List.keys():
-                            if listIndex in d.List.keys():
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                                else:
-                                    self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        else:
-                            self.oLabels[key+v['request']].text = val
-                        self.iValueNeedUpdate[key] = False
-                if key in self.Labels.keys():
-                    if val in self.dict_t.keys():
-                        self.Labels[key].text = self.dict_t[val]
-                    else:
-                        self.Labels[key].text = val
+                Clock.schedule_once(self.updates_values, 0.05)
+            #threading.Thread(target=self.updates_values).start()
+            #threading.Thread(target=self.updates_values).start()
 
     def get_ecu_values(self):
         dct = {}
@@ -961,7 +814,6 @@ class DDTLauncher(App):
                     val['value'] = val['value'].decode()
                 self.dValue[d]['value'] = val['value'].strip()
                 dct[d] = self.dValue[d]
-        self.params = dct
         return dct
 
     def change_screen(self, dt=False):
@@ -1284,9 +1136,7 @@ class DDTLauncher(App):
         
         self.update_dInputs()
         if self.start:
-            self.clock_event = PausableThread(target=self.updates_data, daemon=True)
-            self.clock_event.start()
-            #threading.Thread(target=self.updates_values).start()
+            threading.Thread(target=self.updates_values).start()
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
@@ -1395,9 +1245,7 @@ class DDTLauncher(App):
             self.startScreen(self.dReq)
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(self.xml, self.screens)))
         if self.start:
-            self.clock_event = PausableThread(target=self.updates_data, daemon=True)
-            self.clock_event.start()
-            #threading.Thread(target=self.updates_values).start()
+            threading.Thread(target=self.updates_values).start()
 
     def readDTC(self):
         if "ReadDTCInformation.ReportDTC" in self.decu.requests.keys():
@@ -2323,35 +2171,6 @@ def DDT_START(filterText, elm=None, p=None):
     while 1:
         root = DDTLauncher(filterText, elm, p)
         root.run()
-
-class PausableThread(threading.Thread):
-    def __init__(self, target=None, daemon=None):
-        super().__init__()
-        self.target = target
-        self.daemon = daemon
-        self.pause_event = threading.Event()  # Событие для приостановки
-        self.stop_event = threading.Event()   # Событие для остановки потока
-        self.pause_event.set()  # Изначально поток не приостановлен
-
-    def run(self):
-        while not self.stop_event.is_set():
-            self.pause_event.wait()  # Ждем, если поток приостановлен
-            if self.target:
-                self.target()
-            time.sleep(1)
-
-    def pause(self):
-        """Приостановить поток."""
-        self.pause_event.clear()  # Очищаем событие, чтобы поток остановился
-
-    def resume(self):
-        """Возобновить поток."""
-        self.pause_event.set()  # Устанавливаем событие, чтобы поток продолжил работу
-
-    def stop(self):
-        """Остановить поток."""
-        self.stop_event.set()  # Устанавливаем событие для остановки
-        self.resume()  # Если поток был приостановлен, возобновляем его для завершения
 
 class MyLabel_scr(Label):
     def __init__(self, **kwargs):
