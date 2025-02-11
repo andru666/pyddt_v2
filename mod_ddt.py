@@ -649,7 +649,7 @@ class DDTLauncher(App):
             if not mod_globals.opt_demo: self.start = True
             self.startStopButton.text = LANG.b_stop
 
-    def updates_values(self):
+    def updates_values(self, dt=None):
         if not self.start:
             return
         self.decu.elm.clear_cache()
@@ -787,7 +787,12 @@ class DDTLauncher(App):
                         self.Labels[key].text = val
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            threading.Thread(target=self.updates_values).start()
+            if mod_globals.opt_csv:
+                Clock.schedule_once(self.updates_values, 0.02)
+            else:
+                Clock.schedule_once(self.updates_values, 0.05)
+            #threading.Thread(target=self.updates_values).start()
+            #threading.Thread(target=self.updates_values).start()
 
     def get_ecu_values(self):
         dct = {}
