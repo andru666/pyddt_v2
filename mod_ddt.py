@@ -2321,8 +2321,10 @@ def DDT_START(filterText, elm=None, p=None):
         root.run()
 
 class PausableThread(threading.Thread):
-    def __init__(self):
+    def __init__(self, target=None, daemon=None):
         super().__init__()
+        self.target = target
+        self.daemon = daemon
         self.pause_event = threading.Event()  # Событие для приостановки
         self.stop_event = threading.Event()   # Событие для остановки потока
         self.pause_event.set()  # Изначально поток не приостановлен
@@ -2330,7 +2332,8 @@ class PausableThread(threading.Thread):
     def run(self):
         while not self.stop_event.is_set():
             self.pause_event.wait()  # Ждем, если поток приостановлен
-            print("Thread is running...")
+            if self.target:
+                self.target()
             time.sleep(1)
 
     def pause(self):

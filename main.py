@@ -9,6 +9,8 @@ Config.set('kivy', 'exit_on_escape', '0')
 Config.set('graphics', 'multisamples', '0')
 import mod_globals, mod_ddt_utils, mod_ddt
 if platform != 'android':
+    Config.set('input', 'wm_pen', '')
+    Config.set('input', 'wm_touch', '')
     import ctypes
     user32 = ctypes.windll.user32
     Config.set('graphics', 'position', 'custom')
