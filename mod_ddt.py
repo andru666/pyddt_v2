@@ -138,6 +138,10 @@ class DDTLauncher(App):
         logging.debug('App resumed')
         pass
     
+    def on_stop(self):
+        self.thread.stop()  # Останавливаем поток при завершении приложения
+        self.thread.join()
+    
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
             self.CH_font = True
