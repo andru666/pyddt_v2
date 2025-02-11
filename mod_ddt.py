@@ -790,11 +790,9 @@ class DDTLauncher(App):
                         self.Labels[key].text = val
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            '''if mod_globals.opt_csv:
-                Clock.schedule_once(self.updates_values, 0.02)
-            else:
-                Clock.schedule_once(self.updates_values, 0.05)'''
-            threading.Thread(target=self.updates_values).start()
+            self.clock_event = threading.Thread(target=self.updates_data, daemon=True)
+            self.clock_event.start()
+            #threading.Thread(target=self.updates_values).start()
 
     def updates_data(self):
         if not self.start:
