@@ -85,7 +85,7 @@ class DDTLauncher(App):
         self.roll_back = False
         self.translate = True
         self.CH_font = False
-        
+        self.start = False
         if ':' in self.filterText:
             self.v_proj = self.filterText.split(':')[0].strip()
         else:
@@ -127,10 +127,12 @@ class DDTLauncher(App):
         Window.bind(on_keyboard=self.key_handler)
         
     def on_pause(self):
+        self.start = False
         logging.debug('App paused')
         return True
 
     def on_resume(self):
+        self.start = True
         logging.debug('App resumed')
         pass
     
