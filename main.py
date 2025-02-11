@@ -465,7 +465,7 @@ class PYDDT(App):
             btn.bind(on_release=lambda btn: self.ecus_dropdown.select(btn.text))
             self.ecus_dropdown.add_widget(btn)
         self.ecusbutton = MyButton(text=LANG.b_select, font_size=self.fs, size_hint=(0.7, None), height=(self.fs * 3))
-        if mod_globals.os == 'wi4n':
+        if mod_globals.os == 'win':
             self.ecusbutton.text = 'savedCAR_x81.csv'
         self.ecusbutton.bind(on_release=self.ecus_dropdown.open)
         self.ecus_dropdown.bind(on_select=lambda instance, x: setattr(self.ecusbutton, 'text', x))
