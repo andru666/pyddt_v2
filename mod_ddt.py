@@ -33,7 +33,7 @@ from mod_ddt_data import *
 import xml.etree.ElementTree as et
 fmn = 1.3
 from mod_elm import *
-import mod_globals, mod_ddt_utils, mod_db_manager, mod_scan_ecus, mod_ddt_ecu, logging, queue
+import mod_globals, mod_ddt_utils, mod_db_manager, mod_scan_ecus, mod_ddt_ecu, logging
 logging.basicConfig(level=logging.DEBUG)
 
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -654,20 +654,19 @@ class DDTLauncher(App):
             self.startStopButton.text = LANG.b_stop
 
     def updates_data(self, dt=None):
-        self.task_queue = queue.Queue()
         if not self.start:
             return
         self.decu.elm.clear_cache()
         self.elm.clear_cache()
         self.get_ecu_values()
-        self.task_queue.put(self.params)
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            Clock.schedule_once(self.update_label, 0.05)
+            #Clock.schedule_once(self.update_label, 0.05)
+            threading.Thread(target=self.update_label).start()
         
 
     def update_label(self, dt):
-        for key, v in self.task_queue.get_nowait().items():
+        for key, v in self.params.items():
             listIndex = None
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
@@ -934,10 +933,7 @@ class DDTLauncher(App):
                         self.Labels[key].text = val
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            if mod_globals.opt_csv:
-                Clock.schedule_once(self.updates_values, 0.02)
-            else:
-                Clock.schedule_once(self.updates_values, 0.05)
+            Clock.schedule_once(self.updates_values, 0.05)
             #threading.Thread(target=self.updates_values).start()
             #threading.Thread(target=self.updates_values).start()
 
@@ -1282,8 +1278,7 @@ class DDTLauncher(App):
         
         self.update_dInputs()
         if self.start:
-            Clock.schedule_interval(self.updates_data, 0.05)
-            #threading.Thread(target=self.updates_data).start()
+            threading.Thread(target=self.updates_data).start()
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
@@ -1908,7 +1903,6 @@ class DDTLauncher(App):
         else:
             pop = LANG.l_SELecu'''
         if not xml:
-            #Clock.schedule_once(lambda args:self.MyPopup(content=pop), 0.1)
             return None
         else:
             try:
