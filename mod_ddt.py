@@ -661,8 +661,9 @@ class DDTLauncher(App):
         self.get_ecu_values()
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            Clock.schedule_once(self.update_label, 0.05)
-            #threading.Thread(target=self.update_label).start()
+            def background_task():
+                Clock.schedule_once(self.update_label, 0.05)
+            threading.Thread(target=background_task, daemon = True).start()
         
 
     def update_label(self, dt=None):
