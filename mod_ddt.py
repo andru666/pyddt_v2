@@ -124,7 +124,20 @@ class DDTLauncher(App):
             self.ScanAllBtnClick()
         super(DDTLauncher, self).__init__()
         Window.bind(on_keyboard=self.key_handler)
+        Window.bind(on_minimize=self.on_minimize)
+        Window.bind(on_restore=self.on_restore)
         
+    def on_minimize(self, window):
+        # При сворачивании приложения
+        print("Приложение свернуто")
+        self.running = False  # Останавливаем поток
+
+    def on_restore(self, window):
+        # При разворачивании приложения
+        print("Приложение развернуто")
+        self.running = True
+        threading.Thread(target=self.update_label, daemon=True).start()  # Перезапускаем поток
+    
     def on_pause(self):
         logging.debug('App paused')
         return True
@@ -132,6 +145,10 @@ class DDTLauncher(App):
     def on_resume(self):
         logging.debug('App resumed')
         pass
+        
+    def on_stop(self):
+        # Останавливаем поток при закрытии приложения
+        self.running = False
     
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
@@ -653,7 +670,7 @@ class DDTLauncher(App):
         else:
             if not mod_globals.opt_demo:
                 self.start = True
-                threading.Thread(target=self.updates_data).start()
+                threading.Thread(target=self.updates_data, daemon=True).start()
             self.startStopButton.text = LANG.b_stop
 
     def updates_data1(self, dt=None):
@@ -811,7 +828,6 @@ class DDTLauncher(App):
                         self.Labels[key].text = self.dict_t[val]
                     else:
                         self.Labels[key].text = val
-        #threading.Thread(target=self.updates_data).start()
 
     def updates_values(self, dt=None):
         if not self.start:
@@ -1296,7 +1312,7 @@ class DDTLauncher(App):
         self.update_dInputs()
         if self.start:
             #Clock.schedule_once(self.updates_data, 0.05)
-            threading.Thread(target=self.updates_data).start()
+            threading.Thread(target=self.updates_data, daemon=True).start()
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
@@ -1405,8 +1421,8 @@ class DDTLauncher(App):
             self.startScreen(self.dReq)
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(self.xml, self.screens)))
         if self.start:
-            Clock.schedule_once(self.updates_data)
-            #threading.Thread(target=self.updates_data).start()
+            #Clock.schedule_once(self.updates_data)
+            threading.Thread(target=self.updates_data, daemon=True).start()
 
     def readDTC(self):
         if "ReadDTCInformation.ReportDTC" in self.decu.requests.keys():
