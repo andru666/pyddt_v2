@@ -656,7 +656,7 @@ class DDTLauncher(App):
                 threading.Thread(target=self.updates_data).start()
             self.startStopButton.text = LANG.b_stop
 
-    def updates_data(self, dt=None):
+    def updates_data1(self, dt=None):
         self.clock_event = asyncio.run(self.fetch_and_update())
 
     async def fetch_and_update(self):
@@ -673,17 +673,15 @@ class DDTLauncher(App):
             except asyncio.CancelledError:
                 break
 
-    def updates_data1(self, dt=None):
+    def updates_data(self, dt=None):
         if not self.start:
             return
-        self.decu.elm.clear_cache()
-        self.elm.clear_cache()
-        param = self.get_ecu_values()
-        if mod_globals.opt_demo: self.start = False
-        if self.start:
-            Clock.schedule_once(lambda dt: self.update_label(param), 0.05)
-            threading.Thread(target=self.updates_data, daemon = True).start()
-        
+        while self.start:
+            self.decu.elm.clear_cache()
+            self.elm.clear_cache()
+            param = self.get_ecu_values()
+            if mod_globals.opt_demo: self.start = False
+            Clock.schedule_once(lambda dt: self.update_label(param), 0.05)        
 
     def update_label(self, dt=None):
         for key, v in dt.items():
