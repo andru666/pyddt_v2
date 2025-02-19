@@ -125,26 +125,16 @@ class DDTLauncher(App):
             self.ScanAllBtnClick()
         super(DDTLauncher, self).__init__()
         Window.bind(on_keyboard=self.key_handler)
-        Window.bind(on_minimize=self.on_minimize)
-        Window.bind(on_restore=self.on_restore)
         
-    def on_minimize(self, window):
-        # При сворачивании приложения
-        print("Приложение свернуто")
-        self.running = False  # Останавливаем поток
-
-    def on_restore(self, window):
-        # При разворачивании приложения
-        print("Приложение развернуто")
-        self.running = True
-        threading.Thread(target=self.update_label, daemon=True).start()  # Перезапускаем поток
-    
     def on_pause(self):
         logging.debug('App paused')
+        self.running = False
         return True
 
     def on_resume(self):
         logging.debug('App resumed')
+        self.running = True
+        threading.Thread(target=self.update_label, daemon=True).start()
         pass
         
     def on_stop(self):
