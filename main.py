@@ -493,12 +493,14 @@ class PYDDT(App):
         mod_globals.opt_dump = self.button[LANG.l_dump].active
         mod_globals.opt_can2 = self.button['CAN2'].active
         #mod_globals.savedCAR = 'savedCAR_test.csv'
-        if self.button[LANG.b_log].state == 'down':
+        if mod_globals.os == 'android':
+            mod_globals.opt_log = 'log.txt'
+            self.button[LANG.b_log] = ''
+        elif self.button[LANG.b_log].state == 'down':
             mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
         else:
             mod_globals.opt_log = ''
-        if mod_globals.os == 'android':
-            mod_globals.opt_log = 'log.txt'
+        
         if 'wifi' in self.mainbutton.text.lower():
             mod_globals.opt_port = '192.168.0.10:35000'
         else:
