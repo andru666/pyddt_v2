@@ -218,7 +218,21 @@ class DDTLauncher(App):
         self.Layout.add_widget(root)
         quitbutton = MyButton(text=LANG.b_quit, size_hint=(1, None), height=fs*4, on_release=self.EXIT)
         self.Layout.add_widget(quitbutton)
+        Window.bind(on_context_lost=self.on_context_lost)
         return self.Layout
+
+    def on_context_lost(self, window):
+        print("Контекст OpenGL потерян! Восстанавливаем...")
+        self.draw_rectangle()
+    
+    def draw_rectangle(self):
+        # Очищаем Canvas
+        self.layout.canvas.clear()
+
+        # Добавляем графические инструкции
+        with self.layout.canvas:
+            Color(1, 0, 0, 1)  # Красный цвет
+            self.rect = Rectangle(pos=(100, 100), size=(200, 100))
 
     def popup_xml(self, inst):
         lbltxt = Label(text=LANG.l_cont10)
