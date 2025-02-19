@@ -695,11 +695,14 @@ class DDTLauncher(App):
         if not self.start:
             return
         while self.start:
-            self.decu.elm.clear_cache()
-            self.elm.clear_cache()
-            param = self.get_ecu_values()
-            if mod_globals.opt_demo: self.start = False
-            Clock.schedule_once(lambda dt: self.update_label(param), 0.05)        
+            try:
+                self.decu.elm.clear_cache()
+                self.elm.clear_cache()
+                param = self.get_ecu_values()
+                if mod_globals.opt_demo: self.start = False
+                Clock.schedule_once(lambda dt: self.update_label(param), 0.05)        
+            except Exception as e:
+                print(f"Ошибка в потоке: {e}")
 
     def update_label(self, dt=None):
         for key, v in self.param.items():
