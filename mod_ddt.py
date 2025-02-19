@@ -103,6 +103,7 @@ class DDTLauncher(App):
         self.label = {}
         self.dict_trans = {}
         self.dict_t = {}
+        self.param = {}
         self.currentsession = ''
         self.v_addr = ''
         self.Roll_back = ''
@@ -701,7 +702,7 @@ class DDTLauncher(App):
             Clock.schedule_once(lambda dt: self.update_label(param), 0.05)        
 
     def update_label(self, dt=None):
-        for key, v in dt.items():
+        for key, v in self.param.items():
             listIndex = None
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
@@ -989,6 +990,7 @@ class DDTLauncher(App):
                     val['value'] = val['value'].decode()
                 self.dValue[d]['value'] = val['value'].strip()
                 dct[d] = self.dValue[d]
+        self.param = dct
         return dct
 
     def change_screen(self, dt=False):
