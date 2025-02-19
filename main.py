@@ -311,7 +311,8 @@ class PYDDT(App):
         layout.add_widget(self.in_car())
         layout.add_widget(self.make_opt_rate())
         layout.add_widget(self.make_bt_device_entry())
-        layout.add_widget(self.make_input_toggle(LANG.b_log, mod_globals.opt_log, 'down' if len(mod_globals.opt_log) > 0 else  'normal'))
+        if mod_globals.os == 'win':
+            layout.add_widget(self.make_input_toggle(LANG.b_log, mod_globals.opt_log, 'down' if len(mod_globals.opt_log) > 0 else  'normal'))
         layout.add_widget(self.make_input(LANG.l_font_size, str(mod_globals.fontSize)))
         layout.add_widget(self.make_input(LANG.l_font_start, str(mod_globals.fontStart)))
         layout.add_widget(self.make_box_switch(LANG.l_dump, mod_globals.opt_dump))
@@ -496,6 +497,8 @@ class PYDDT(App):
             mod_globals.opt_log = 'log.txt' if self.textInput[LANG.b_log].text == '' else self.textInput[LANG.b_log].text
         else:
             mod_globals.opt_log = ''
+        if mod_globals.os == 'android':
+            mod_globals.opt_log = 'log.txt'
         if 'wifi' in self.mainbutton.text.lower():
             mod_globals.opt_port = '192.168.0.10:35000'
         else:

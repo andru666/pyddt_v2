@@ -332,7 +332,9 @@ class DDTLauncher(App):
     def show_screen(self, xml, data):
         self.make_box = False
         self.start = False
-        self.clock_event = ''
+        if self.clock_event is not None:
+            self.clock_event.cancel()
+            self.clock_event = None
         box = GridLayout(cols=1, spacing=3, size_hint=(1, None), height=fs*4*(len(data) + 4))
         self.Layout.clear_widgets()
         if isinstance(data, dict): datas = sorted(data.keys())
@@ -647,17 +649,21 @@ class DDTLauncher(App):
         if self.start:
             self.start = False
             self.startStopButton.text = LANG.b_start
-            self.clock_event = ''
+            self.clock_event = None
         else:
-            if not mod_globals.opt_demo: self.start = True
+            if not mod_globals.opt_demo:
+                self.start = True
+                threading.Thread(target=self.updates_data).start()
             self.startStopButton.text = LANG.b_stop
 
-    def updates_data(self):
+    def updates_data(self, dt=None):
         self.clock_event = asyncio.run(self.fetch_and_update())
 
     async def fetch_and_update(self):
         while self.start:
             try:
+                self.decu.elm.clear_cache()
+                self.elm.clear_cache()        
                 param = self.get_ecu_values()
                 Clock.schedule_once(lambda dt: self.update_label(param))
                 if mod_globals.opt_csv:
@@ -672,10 +678,10 @@ class DDTLauncher(App):
             return
         self.decu.elm.clear_cache()
         self.elm.clear_cache()
-        self.get_ecu_values()
+        param = self.get_ecu_values()
         if mod_globals.opt_demo: self.start = False
         if self.start:
-            Clock.schedule_once(self.update_label, 0.05)
+            Clock.schedule_once(lambda dt: self.update_label(param), 0.05)
             threading.Thread(target=self.updates_data, daemon = True).start()
         
 
@@ -952,8 +958,6 @@ class DDTLauncher(App):
             #threading.Thread(target=self.updates_values).start()
 
     def get_ecu_values(self):
-        self.decu.elm.clear_cache()
-        self.elm.clear_cache()
         dct = {}
         if len(self.dValue):
             EventLoop.window.mainloop()
@@ -1293,6 +1297,7 @@ class DDTLauncher(App):
         
         self.update_dInputs()
         if self.start:
+            #Clock.schedule_once(self.updates_data, 0.05)
             threading.Thread(target=self.updates_data).start()
 
     def loadSyntheticScreen(self, rq):
@@ -1402,7 +1407,8 @@ class DDTLauncher(App):
             self.startScreen(self.dReq)
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(self.xml, self.screens)))
         if self.start:
-            threading.Thread(target=self.updates_data).start()
+            Clock.schedule_once(self.updates_data)
+            #threading.Thread(target=self.updates_data).start()
 
     def readDTC(self):
         if "ReadDTCInformation.ReportDTC" in self.decu.requests.keys():
