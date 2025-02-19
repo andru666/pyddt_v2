@@ -137,8 +137,8 @@ class Settings:
         self.__dict__.update(tmp_dict)        
     
     def save(self):
-        self.opt_ecu = opt_speed
-        self.opt_speed = opt_ecu
+        self.opt_ecu = opt_ecu
+        self.opt_speed = opt_speed
         self.si = opt_si
         self.lang = opt_lang
         self.logName = opt_log

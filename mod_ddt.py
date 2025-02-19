@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys, os, ast, time, pickle, copy, string, zipfile, threading
+import sys, os, ast, time, pickle, copy, string, zipfile, threading, asyncio
 from shutil import copyfile
 from datetime import datetime
 from kivy.app import App
@@ -101,7 +101,6 @@ class DDTLauncher(App):
         self.dv_addr = []
         self.ecutree = {}
         self.label = {}
-        self.params = {}
         self.dict_trans = {}
         self.dict_t = {}
         self.currentsession = ''
@@ -653,7 +652,22 @@ class DDTLauncher(App):
             if not mod_globals.opt_demo: self.start = True
             self.startStopButton.text = LANG.b_stop
 
-    def updates_data(self, dt=None):
+    def updates_data(self):
+        self.clock_event = asyncio.run(self.fetch_and_update())
+
+    async def fetch_and_update(self):
+        while self.start:
+            try:
+                param = self.get_ecu_values()
+                Clock.schedule_once(lambda dt: self.update_label(param))
+                if mod_globals.opt_csv:
+                    await asyncio.sleep(0.02)
+                else:
+                    await asyncio.sleep(0.05)
+            except asyncio.CancelledError:
+                break
+
+    def updates_data1(self, dt=None):
         if not self.start:
             return
         self.decu.elm.clear_cache()
@@ -666,7 +680,7 @@ class DDTLauncher(App):
         
 
     def update_label(self, dt=None):
-        for key, v in self.params.items():
+        for key, v in dt.items():
             listIndex = None
             val = v['value']
             d = self.decu.datas[self.dValue[key]['name']]
@@ -938,6 +952,8 @@ class DDTLauncher(App):
             #threading.Thread(target=self.updates_values).start()
 
     def get_ecu_values(self):
+        self.decu.elm.clear_cache()
+        self.elm.clear_cache()
         dct = {}
         if len(self.dValue):
             EventLoop.window.mainloop()
@@ -955,8 +971,7 @@ class DDTLauncher(App):
                     val['value'] = val['value'].decode()
                 self.dValue[d]['value'] = val['value'].strip()
                 dct[d] = self.dValue[d]
-        self.params = dct
-        #return dct
+        return dct
 
     def change_screen(self, dt=False):
         if self.make_box:
