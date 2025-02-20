@@ -93,7 +93,6 @@ class DDTLauncher(App):
         if self.v_proj == LANG.b_all_cars:
             self.v_proj = 'ALL_CARS'
             self.filterText = 'ALL_CARS'
-        self.labels = TextInput(text=self.v_proj, size_hint=(0.6, None), padding=[0, fs/1.5], font_size=fs, height=3*fs)
         self.pl = mod_ddt_utils.ddtProjects()
         
         self.carecus = []
@@ -140,6 +139,7 @@ class DDTLauncher(App):
             self.loadScreen(self.currentscreen, dt)
 
     def build(self):
+        self.labels = TextInput(text=self.v_proj, size_hint=(0.6, None), padding=[0, fs/1.5], font_size=fs, height=3*fs)
         p = len(self.carecus)
         if not mod_globals.opt_demo: height_g = fs*5.07*len([v for v in range(len(self.carecus)) if self.carecus[v]['xml']])
         else: height_g = fs*5.07*(p)
@@ -386,7 +386,11 @@ class DDTLauncher(App):
             self.clock_event = None
         if mod_globals.opt_csv and self.csvf!=0:
             self.csvf.close()
-        self.stop()
+        self.root.clear_widgets()
+        # Создаем новый корневой виджет
+        new_root = self.build()
+        self.root.add_widget(new_root)
+        #self.stop()
 
     def res_show_screen(self, xx, data=None):
         x = xx.id
