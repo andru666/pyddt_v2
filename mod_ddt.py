@@ -133,7 +133,7 @@ class DDTLauncher(App):
     def on_resume(self):
         # Этот метод вызывается, когда приложение восстанавливается
         logging.debug("Приложение восстановлено")
-        self.loadScreen(self.currentscreen, self.DATA)
+        self.restart_ui()
 
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
@@ -396,10 +396,14 @@ class DDTLauncher(App):
         if mod_globals.opt_csv and self.csvf!=0:
             self.csvf.close()
         self.root.clear_widgets()
-        # Создаем новый корневой виджет
         new_root = self.build()
         self.root.add_widget(new_root)
-        #self.stop()
+
+    def restart_ui(self):
+        self.root.clear_widgets()
+        new_root = self.build()
+        self.root.add_widget(new_root)
+        self.loadScreen(self.currentscreen, self.DATA)
 
     def res_show_screen(self, xx, data=None):
         x = xx.id
