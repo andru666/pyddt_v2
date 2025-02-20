@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys, os, ast, time, pickle, copy, string, zipfile, threading, asyncio
+import sys, os, ast, time, pickle, copy, string, zipfile, threading
 from shutil import copyfile
 from datetime import datetime
 from kivy.app import App
@@ -135,12 +135,12 @@ class DDTLauncher(App):
         return True  # Возвращаем True, чтобы приложение могло продолжить работу после восстановления
 
     def on_resume(self):
+        logging.debug("Приложение восстановлено")
         self.start = True
         self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
         self.thread.start()
         # Этот метод вызывается, когда приложение восстанавливается
-        logging.debug("Приложение восстановлено")
-
+        
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
             self.CH_font = True
@@ -219,7 +219,6 @@ class DDTLauncher(App):
         self.Layout.add_widget(root)
         quitbutton = MyButton(text=LANG.b_quit, size_hint=(1, None), height=fs*4, on_release=self.EXIT)
         self.Layout.add_widget(quitbutton)
-        self.loop = asyncio.get_event_loop()
         return self.Layout
 
     def popup_xml(self, inst):
@@ -684,9 +683,6 @@ class DDTLauncher(App):
                 self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
             self.startStopButton.text = LANG.b_stop
 
-    def updates_data1(self, dt=None):
-        self.clock_event = asyncio.run(self.fetch_and_update())
-
     def updates_data(self):
         while self.start:
             try:
@@ -701,7 +697,7 @@ class DDTLauncher(App):
                     Clock.schedule_once(lambda dt: self.update_label(param), 0.02)
                 else:
                     Clock.schedule_once(lambda dt: self.update_label(param), 0.05)
-            except asyncio.CancelledError:
+            except:
                 break
 
     def update_label(self, dt=None):
@@ -1173,7 +1169,6 @@ class DDTLauncher(App):
         if self.start:
             #Clock.schedule_once(self.updates_data, 0.05)
             self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
-            print('loadScreen')
             #self.loop.create_task(self.updates_data())
 
     def loadSyntheticScreen(self, rq):
