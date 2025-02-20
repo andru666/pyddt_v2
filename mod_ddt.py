@@ -381,7 +381,6 @@ class DDTLauncher(App):
 
     def finish(self, instance):
         print('finish')
-        self.start = False
         if self.clock_event is not None:
             self.clock_event.cancel()
             self.clock_event = None
@@ -1304,8 +1303,8 @@ class DDTLauncher(App):
         
         self.update_dInputs()
         if self.start:
-            #Clock.schedule_once(self.updates_data, 0.05)
-            Clock.schedule_once(lambda dt: threading.Thread(target=self.updates_data, daemon=True).start())
+            Clock.schedule_once(self.updates_data, 0.05)
+            #threading.Thread(target=self.updates_data, daemon=True).start()
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
