@@ -1167,6 +1167,7 @@ class DDTLauncher(App):
         
         self.update_dInputs()
         if self.start:
+            logging.debug('start')
             #Clock.schedule_once(self.updates_data, 0.05)
             self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
             #self.loop.create_task(self.updates_data())
