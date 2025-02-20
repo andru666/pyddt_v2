@@ -127,12 +127,13 @@ class DDTLauncher(App):
 
     def on_pause(self):
         # Этот метод вызывается, когда приложение сворачивается
-        print("Приложение свернуто")
+        logging.debug("Приложение свернуто")
         return True  # Возвращаем True, чтобы приложение могло продолжить работу после восстановления
 
     def on_resume(self):
         # Этот метод вызывается, когда приложение восстанавливается
-        print("Приложение восстановлено")
+        logging.debug("Приложение восстановлено")
+        self.loadScreen(self.currentscreen, self.DATA)
 
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
@@ -692,19 +693,6 @@ class DDTLauncher(App):
             except asyncio.CancelledError:
                 break
 
-    def updates_data1(self, dt=None):
-        if not self.start:
-            return
-        while self.start:
-            try:
-                self.decu.elm.clear_cache()
-                self.elm.clear_cache()
-                param = self.get_ecu_values()
-                if mod_globals.opt_demo: self.start = False
-                Clock.schedule_once(lambda dt: self.update_label(param), 0.05)        
-            except Exception as e:
-                print(f"Ошибка в потоке: {e}")
-
     def update_label(self, dt=None):
         for key, v in self.param.items():
             listIndex = None
@@ -833,147 +821,6 @@ class DDTLauncher(App):
                         self.Labels[key].text = self.dict_t[val]
                     else:
                         self.Labels[key].text = val
-
-
-    def updates_values(self, dt=None):
-        if not self.start:
-            return
-        self.decu.elm.clear_cache()
-        self.elm.clear_cache()
-        try:
-            params = self.get_ecu_values()
-        except:
-            return
-        for key, v in params.items():
-            listIndex = None
-            val = v['value']
-            d = self.decu.datas[self.dValue[key]['name']]
-            if val != 'None':
-                if len(d.List.keys()):
-                    listIndex = int(val,16)
-                if key in self.dLabels.keys():
-                    if len(d.List.keys()):
-                        listIndex = int(val,16)
-                        if listIndex in d.List.keys():
-                            if len(self.dLabels[key]) ==1:
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    self.dLabels[key][0].text = self.dict_t[d.List[listIndex]]
-                                else:
-                                    self.dLabels[key][0].text = d.List[listIndex]
-                            else:
-                                for iD in self.dLabels[key]:
-                                    if d.List[listIndex] in self.dict_t.keys():
-                                        iD.text = self.dict_t[d.List[listIndex]]
-                                    else:
-                                        iD.text = d.List[listIndex]
-                        else:
-                            if len(self.dLabels[key]) ==1:
-                                if val in self.dict_t.keys():
-                                    self.dLabels[key][0].text = self.dict_t[val]
-                                else:
-                                    self.dLabels[key][0].text = val
-                            else:
-                                for iD in self.dLabels[key]:
-                                    if val in self.dict_t.keys():
-                                        iD.text = self.dict_t[val]
-                                    else:
-                                        iD.text = val
-                    elif d.Scaled:
-                        if len(self.dLabels[key]) ==1:
-                            if val in self.dict_t.keys():
-                                self.dLabels[key][0].text = self.dict_t[val]+' '+d.Unit
-                            else:
-                                self.dLabels[key][0].text = val+' '+d.Unit
-                        else:
-                            for iD in self.dLabels[key]:
-                                if val in self.dict_t.keys():
-                                    iD.text = self.dict_t[val]
-                                else:
-                                    iD.text = val+' '+d.Unit
-                    else:
-                        if len(self.dLabels[key]) ==1:
-                            if val in self.dict_t.keys():
-                                self.dLabels[key][0].text = self.dict_t[val]
-                            else:
-                                self.dLabels[key][0].text = val
-                        else:
-                            for iD in self.dLabels[key]:
-                                if val in self.dict_t.keys():
-                                    iD.text = self.dict_t[val]
-                                else:
-                                    iD.text = val
-                else:
-                    if key in self.dLabels.keys():
-                        if len(self.dLabels[key]) == 1:
-                            if val in self.dict_t.keys():
-                                self.dLabels[key][0].text = self.dict_t[val]
-                            else:
-                                self.dLabels[key][0].text = val
-                        else:
-                            for iD in self.dLabels[key]:
-                                if val in self.dict_t.keys():
-                                    iD.text = self.dict_t[val]
-                                else:
-                                    iD.text = val
-                if key in self.iLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        if val in self.dict_t.keys():
-                            self.iLabels[key].text = self.dict_t[val]
-                        else:
-                            self.iLabels[key].text = val
-                        self.iValueNeedUpdate[key] = False
-                if key+v['request'] in self.oLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex in d.List.keys():
-                            if listIndex in d.List.keys():
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                                else:
-                                    self.oLabels[key+v['request']].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        else:
-                            self.oLabels[key+v['request']].text = val
-                        self.iValueNeedUpdate[key] = False
-                elif (key+v['request']).replace('DataRead', 'DataWrite') in self.oLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex in d.List.keys():
-                            if listIndex in d.List.keys():
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                                else:
-                                    self.oLabels[key+v['request'].replace('DataRead', 'DataWrite')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        else:
-                            self.oLabels[(key+v['request']).replace('DataRead', 'DataWrite')].text = val
-                        self.iValueNeedUpdate[key] = False
-                elif (key+v['request']).replace(key+'Read', key+'Write') in self.oLabels.keys():
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex in d.List.keys():
-                            if listIndex in d.List.keys():
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    self.oLabels[(key+v['request']).replace(key+'Read', key+'Write')].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                                else:
-                                    self.oLabels[(key+v['request']).replace(key+'Read', key+'Write')].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        else:
-                            self.oLabels[(key+v['request']).replace(key+'Read', key+'Write')].text = val
-                        self.iValueNeedUpdate[key] = False
-                elif len([I for I in self.oLabels.keys() if I.startswith(key)]):
-                    if self.iValueNeedUpdate[key]:
-                        if listIndex in d.List.keys():
-                            if listIndex in d.List.keys():
-                                if d.List[listIndex] in self.dict_t.keys():
-                                    self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+self.dict_t[d.List[listIndex]]
-                                else:
-                                    self.oLabels[[I for I in self.oLabels.keys() if I.startswith(key)][0]].text = hex(listIndex)[2:]+':'+d.List[listIndex]
-                        else:
-                            self.oLabels[key+v['request']].text = val
-                        self.iValueNeedUpdate[key] = False
-                if key in self.Labels.keys():
-                    if val in self.dict_t.keys():
-                        self.Labels[key].text = self.dict_t[val]
-                    else:
-                        self.Labels[key].text = val
-        if mod_globals.opt_demo: self.start = False
-        if self.start:
-            Clock.schedule_once(self.updates_values, 0.05)
 
     def get_ecu_values(self):
         dct = {}
