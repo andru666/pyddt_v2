@@ -125,21 +125,7 @@ class DDTLauncher(App):
             self.ScanAllBtnClick()
         super(DDTLauncher, self).__init__()
         Window.bind(on_keyboard=self.key_handler)
-        
-    def on_pause(self):
-        logging.debug('App paused')
-        self.running = False
-        return True
 
-    def on_resume(self):
-        logging.debug('App resumed')
-        self.running = True
-        threading.Thread(target=self.update_label, daemon=True).start()
-        pass
-        
-    def on_stop(self):
-        # Останавливаем поток при закрытии приложения
-        self.running = False
     
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
@@ -386,11 +372,22 @@ class DDTLauncher(App):
                 self.MyPopup(content=LANG.l_cont13)
             quitbutton.bind(on_release=lambda x=xml:self.res_show_screen(x,self.screens))
         else:
-            quitbutton.bind(on_release=self.stop)
+            print('stop')
+            quitbutton.bind(on_release=self.finish)
         roots = ScrollView(size_hint=(1, None), height=self.Window_size[1]-fs*4)
         roots.add_widget(box)
         self.Layout.add_widget(roots)
         self.Layout.add_widget(quitbutton)
+
+    def finish(self, instance):
+        print('finish')
+        self.start = False
+        if self.clock_event is not None:
+            self.clock_event.cancel()
+            self.clock_event = None
+        if mod_globals.opt_csv and self.csvf!=0:
+            self.csvf.close()
+        self.stop()
 
     def res_show_screen(self, xx, data=None):
         x = xx.id
