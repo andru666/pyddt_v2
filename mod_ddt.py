@@ -127,7 +127,7 @@ class DDTLauncher(App):
 
     def on_pause(self):
         print('Свернуто')
-        return True
+        return False
 
     def on_resume(self):
         print('Востановлено')
