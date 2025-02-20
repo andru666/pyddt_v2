@@ -126,14 +126,19 @@ class DDTLauncher(App):
         Window.bind(on_keyboard=self.key_handler)
 
     def on_pause(self):
+        self.start = False
+        if self.thread and self.thread.is_alive():
+            self.thread.join() 
         # Этот метод вызывается, когда приложение сворачивается
         logging.debug("Приложение свернуто")
         return True  # Возвращаем True, чтобы приложение могло продолжить работу после восстановления
 
     def on_resume(self):
+        self.start = True
+        self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
+        self.thread.start()
         # Этот метод вызывается, когда приложение восстанавливается
         logging.debug("Приложение восстановлено")
-        self.restart_ui()
 
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
@@ -674,7 +679,7 @@ class DDTLauncher(App):
         else:
             if not mod_globals.opt_demo:
                 self.start = True
-                threading.Thread(target=self.updates_data, daemon=True).start()
+                self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
             self.startStopButton.text = LANG.b_stop
 
     def updates_data(self, dt=None):
@@ -1165,7 +1170,7 @@ class DDTLauncher(App):
         self.update_dInputs()
         if self.start:
             #Clock.schedule_once(self.updates_data, 0.05)
-            threading.Thread(target=self.updates_data, daemon=True).start()
+            self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
@@ -1275,7 +1280,7 @@ class DDTLauncher(App):
         self.Layout.add_widget(MyButton(text=LANG.b_close, size_hint=(1, None), height=fs*3, on_release=lambda x:self.show_screen(self.xml, self.screens)))
         if self.start:
             #Clock.schedule_once(self.updates_data)
-            threading.Thread(target=self.updates_data, daemon=True).start()
+            self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
 
     def readDTC(self):
         if "ReadDTCInformation.ReportDTC" in self.decu.requests.keys():
