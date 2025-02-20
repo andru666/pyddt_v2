@@ -1305,7 +1305,7 @@ class DDTLauncher(App):
         self.update_dInputs()
         if self.start:
             #Clock.schedule_once(self.updates_data, 0.05)
-            threading.Thread(target=self.updates_data, daemon=True).start()
+            Clock.schedule_once(lambda dt: threading.Thread(target=self.updates_data, daemon=True).start())
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
@@ -2338,6 +2338,7 @@ class DDTLauncher(App):
 
 def DDT_START(filterText, elm=None, p=None):
     while 1:
+        loop = asyncio.get_event_loop()
         root = DDTLauncher(filterText, elm, p)
         root.run()
 
