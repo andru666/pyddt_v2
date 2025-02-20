@@ -218,21 +218,7 @@ class DDTLauncher(App):
         self.Layout.add_widget(root)
         quitbutton = MyButton(text=LANG.b_quit, size_hint=(1, None), height=fs*4, on_release=self.EXIT)
         self.Layout.add_widget(quitbutton)
-        Window.bind(on_context_lost=self.on_context_lost)
         return self.Layout
-
-    def on_context_lost(self, window):
-        print("Контекст OpenGL потерян! Восстанавливаем...")
-        self.draw_rectangle()
-    
-    def draw_rectangle(self):
-        # Очищаем Canvas
-        self.layout.canvas.clear()
-
-        # Добавляем графические инструкции
-        with self.layout.canvas:
-            Color(1, 0, 0, 1)  # Красный цвет
-            self.rect = Rectangle(pos=(100, 100), size=(200, 100))
 
     def popup_xml(self, inst):
         lbltxt = Label(text=LANG.l_cont10)
@@ -678,7 +664,7 @@ class DDTLauncher(App):
                 threading.Thread(target=self.updates_data, daemon=True).start()
             self.startStopButton.text = LANG.b_stop
 
-    def updates_data1(self, dt=None):
+    def updates_data(self, dt=None):
         self.clock_event = asyncio.run(self.fetch_and_update())
 
     async def fetch_and_update(self):
@@ -693,9 +679,9 @@ class DDTLauncher(App):
                 else:
                     await asyncio.sleep(0.05)
             except asyncio.CancelledError:
-                break
+                continue#break
 
-    def updates_data(self, dt=None):
+    def updates_data1(self, dt=None):
         if not self.start:
             return
         while self.start:
@@ -1003,12 +989,10 @@ class DDTLauncher(App):
     def change_screen(self, dt=False):
         if self.make_box:
             self.make_box = False
-            self.update_dInputs()
-            self.loadScreen(self.currentscreen, dt)
+            self.loadScreen(self.currentscreen, self.DATA)
         else:
-            self.update_dInputs()
             self.make_box = True
-            self.loadScreen(self.currentscreen, dt)
+            self.loadScreen(self.currentscreen, self.DATA)
     
     def load_translite(self):
         trans = os.path.join(mod_globals.user_data_dir, mod_globals.opt_lang + '.zip')
@@ -1053,7 +1037,6 @@ class DDTLauncher(App):
                         else:
                             i.font_size = i.font_size * fotn
         
-
     def loadScreen(self, scr, data):
         self.DATA = data
         self.Layout.clear_widgets()
