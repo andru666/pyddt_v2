@@ -125,7 +125,12 @@ class DDTLauncher(App):
         super(DDTLauncher, self).__init__()
         Window.bind(on_keyboard=self.key_handler)
 
-    
+    def on_pause(self):
+        print('Свернуто')
+
+    def on_resume(self):
+        print('Востановлено')
+
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
             self.CH_font = True
@@ -966,7 +971,6 @@ class DDTLauncher(App):
         if mod_globals.opt_demo: self.start = False
         if self.start:
             Clock.schedule_once(self.updates_values, 0.05)
-            
 
     def get_ecu_values(self):
         dct = {}
