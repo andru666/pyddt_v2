@@ -127,9 +127,11 @@ class DDTLauncher(App):
 
     def on_pause(self):
         print('Свернуто')
+        return True
 
     def on_resume(self):
         print('Востановлено')
+        pass
 
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
