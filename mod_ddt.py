@@ -672,14 +672,17 @@ class DDTLauncher(App):
             try:
                 self.decu.elm.clear_cache()
                 self.elm.clear_cache()        
-                param = self.get_ecu_values()
+                try:
+                    param = self.get_ecu_values()
+                except:
+                    break
                 Clock.schedule_once(lambda dt: self.update_label(param))
                 if mod_globals.opt_csv:
                     await asyncio.sleep(0.02)
                 else:
                     await asyncio.sleep(0.05)
             except asyncio.CancelledError:
-                continue#break
+                break
 
     def updates_data1(self, dt=None):
         if not self.start:
@@ -822,6 +825,7 @@ class DDTLauncher(App):
                         self.Labels[key].text = self.dict_t[val]
                     else:
                         self.Labels[key].text = val
+
 
     def updates_values(self, dt=None):
         if not self.start:
