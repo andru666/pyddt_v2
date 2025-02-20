@@ -126,12 +126,13 @@ class DDTLauncher(App):
         Window.bind(on_keyboard=self.key_handler)
 
     def on_pause(self):
-        print('Свернуто')
-        return False
+        # Этот метод вызывается, когда приложение сворачивается
+        print("Приложение свернуто")
+        return True  # Возвращаем True, чтобы приложение могло продолжить работу после восстановления
 
     def on_resume(self):
-        print('Востановлено')
-        pass
+        # Этот метод вызывается, когда приложение восстанавливается
+        print("Приложение восстановлено")
 
     def key_handler(self, window, keycode1, keycode2, text, modifiers):
         if keycode1 == 24:
