@@ -966,8 +966,7 @@ class DDTLauncher(App):
         if mod_globals.opt_demo: self.start = False
         if self.start:
             Clock.schedule_once(self.updates_values, 0.05)
-            #threading.Thread(target=self.updates_values).start()
-            #threading.Thread(target=self.updates_values).start()
+            
 
     def get_ecu_values(self):
         dct = {}
@@ -1307,8 +1306,8 @@ class DDTLauncher(App):
         
         self.update_dInputs()
         if self.start:
-            Clock.schedule_once(self.updates_data, 0.05)
-            #threading.Thread(target=self.updates_data, daemon=True).start()
+            #Clock.schedule_once(self.updates_data, 0.05)
+            threading.Thread(target=self.updates_data, daemon=True).start()
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
