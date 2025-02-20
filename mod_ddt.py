@@ -33,6 +33,7 @@ from mod_ddt_data import *
 import xml.etree.ElementTree as et
 fmn = 1.3
 from mod_elm import *
+
 import mod_globals, mod_ddt_utils, mod_db_manager, mod_scan_ecus, mod_ddt_ecu, logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -218,6 +219,7 @@ class DDTLauncher(App):
         self.Layout.add_widget(root)
         quitbutton = MyButton(text=LANG.b_quit, size_hint=(1, None), height=fs*4, on_release=self.EXIT)
         self.Layout.add_widget(quitbutton)
+        self.loop = asyncio.get_event_loop()
         return self.Layout
 
     def popup_xml(self, inst):
@@ -682,10 +684,10 @@ class DDTLauncher(App):
                 self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
             self.startStopButton.text = LANG.b_stop
 
-    def updates_data(self, dt=None):
+    def updates_data1(self, dt=None):
         self.clock_event = asyncio.run(self.fetch_and_update())
 
-    async def fetch_and_update(self):
+    def updates_data(self):
         while self.start:
             try:
                 self.decu.elm.clear_cache()
@@ -694,11 +696,11 @@ class DDTLauncher(App):
                     param = self.get_ecu_values()
                 except:
                     break
-                Clock.schedule_once(lambda dt: self.update_label(param))
+                #Clock.schedule_once(lambda dt: self.update_label(param))
                 if mod_globals.opt_csv:
-                    await asyncio.sleep(0.02)
+                    Clock.schedule_once(lambda dt: self.update_label(param), 0.02)
                 else:
-                    await asyncio.sleep(0.05)
+                    Clock.schedule_once(lambda dt: self.update_label(param), 0.05)
             except asyncio.CancelledError:
                 break
 
@@ -1171,6 +1173,8 @@ class DDTLauncher(App):
         if self.start:
             #Clock.schedule_once(self.updates_data, 0.05)
             self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
+            print('loadScreen')
+            #self.loop.create_task(self.updates_data())
 
     def loadSyntheticScreen(self, rq):
         rq = rq.replace('ddt_all_commands', '')
@@ -1281,6 +1285,7 @@ class DDTLauncher(App):
         if self.start:
             #Clock.schedule_once(self.updates_data)
             self.thread = threading.Thread(target=self.updates_data, daemon=True).start()
+            #self.loop.create_task(self.updates_data())
 
     def readDTC(self):
         if "ReadDTCInformation.ReportDTC" in self.decu.requests.keys():
@@ -2203,7 +2208,6 @@ class DDTLauncher(App):
 
 def DDT_START(filterText, elm=None, p=None):
     while 1:
-        loop = asyncio.get_event_loop()
         root = DDTLauncher(filterText, elm, p)
         root.run()
 
