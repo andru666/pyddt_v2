@@ -524,9 +524,9 @@ class PYDDT(App):
         except:
             mod_globals.fontStart = 20
         if mod_globals.opt_car != LANG.b_select or (mod_globals.savedCAR != LANG.b_select and not mod_globals.opt_scan):
-            self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
+            #self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
             try:
-                self.elm1 = ''#ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
+                self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
             except:
                 lbltxt = MyLabel(text=LANG.l_text_error, size_hint=(1, 1), font_size=mod_globals.fontSize)
                 popup_load = MyPopup(title=LANG.l_titl_error, content=lbltxt, size=(Window.size[0]*0.9, Window.size[1]*0.9), on_dismiss=exit)
