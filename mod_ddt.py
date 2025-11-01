@@ -2092,6 +2092,13 @@ class DDTLauncher(App):
         sendDelay = '1000'
         slist = []
         smap = {}
+        if "StartDiagnosticSession.Extended" in self.decu.requests.keys():
+            data = self.decu.requests["StartDiagnosticSession.Extended"].SentBytes
+            xText += "%-10s Delay:%s\n" % (data, '0')
+            smap['d'] = '0'
+            smap['c'] = data
+            slist.append (copy.deepcopy (smap))
+            
         for i in diff:
             xText += "%-10s Delay:%s\n" % (i,sendDelay)
             smap['d'] = sendDelay

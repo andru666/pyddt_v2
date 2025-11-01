@@ -52,8 +52,8 @@ import os, sys, glob
 
 __all__ = 'install_android'
 
-__version__ = '0.13.14'
-data_update = '19/02/2025'
+__version__ = '0.13.15'
+data_update = '02/11/2025'
 
 if mod_globals.os == 'android':
     try:
@@ -466,7 +466,7 @@ class PYDDT(App):
             btn.bind(on_release=lambda btn: self.ecus_dropdown.select(btn.text))
             self.ecus_dropdown.add_widget(btn)
         self.ecusbutton = MyButton(text=LANG.b_select, font_size=self.fs, size_hint=(0.7, None), height=(self.fs * 3))
-        if mod_globals.os == 'win':
+        if mod_globals.os == 'win1':
             self.ecusbutton.text = 'savedCAR_x81.csv'
         self.ecusbutton.bind(on_release=self.ecus_dropdown.open)
         self.ecus_dropdown.bind(on_select=lambda instance, x: setattr(self.ecusbutton, 'text', x))
@@ -578,7 +578,7 @@ class PYDDT(App):
             btn.bind(on_release=lambda bt, a=avto: self.popup_in_car(bt.text, a))
             self.dropdown.add_widget(btn)
         self.carbutton = MyButton(text=LANG.b_select, font_size=self.fs, height=(self.fs * 3))
-        if mod_globals.os == 'win': 
+        if mod_globals.os == 'win1': 
             self.carbutton.text='x81 : Espace IV'
         self.carbutton.bind(on_release=self.dropdown.open)
         self.dropdown.bind(on_select=lambda instance, x: setattr(self.carbutton, 'text', x))
